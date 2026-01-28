@@ -1,0 +1,5 @@
+- Decide hardware, archecture, software
+- Decide what to buy
+- Update overall plan and phase 0
+- Start simulations
+- Start mini project

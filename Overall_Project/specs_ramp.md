@@ -121,3 +121,5 @@ Rev 4.2 is the **"Finished" Design for Builders**
 - Removes last weak link (Plastic Shoulder Planetary).  
 - Adds last missing feature (Encoders).  
 - Fixes fire hazard (RAMPS connectors).  
+
+- PCB way has 6 axis control boards as well

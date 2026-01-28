@@ -1,6 +1,6 @@
-# 🤖 6-DOF Robotic Arm — Final Integrated Design Blueprint (Rev 4.6)
+# 🤖 6-DOF Robotic Arm — Final Integrated Design Blueprint (Rev 4.7)
 
-**The "FluidNC" Edition: Plug-and-Play Electronics, Wireless, Heavy Duty**
+**The "Research" Edition: Data Science Ready, Python-Controlled, High Telemetry**
 
 ---
 
@@ -8,130 +8,110 @@
 
 | Parameter | Value / Design |
 |-----------|----------------|
-| **Brain** | ESP32 via "FluidNC 6-Pack" Controller |
-| **Degrees of Freedom** | 6 (Base, Shoulder, Elbow, Wrist Pitch, Wrist Roll, Gripper) |
-| **Kinematic Structure** | Standard Serial Linkage (Motor-on-Joint) |
-| **Max Payload** | 1.5 kg (Rated safe load) |
-| **Control Frequency** | 200 kHz+ (Smooth, Wi-Fi enabled) |
-| **Smoothing Tech** | Software S-Curve (FluidNC) + Geometric Gravity Springs |
-| **Sensors** | Absolute Magnetic Encoders (AS5600) on major joints |
-| **Connectivity** | Native Wi-Fi / Bluetooth (Phone App & WebUI Ready) |
-| **Transmission Style** | 100% Gear Driven (NO BELTS) |
+| **Hardware** | FluidNC 6-Pack Controller (ESP32-Based) |
+| **Firmware** | Custom "Telemetry" Sketch (C++/Arduino) — Replaces FluidNC Brain |
+| **Brain (Logic)** | Python (PC/Laptop) running Kinematics & Trajectory Planning |
+| **Degrees of Freedom** | 6 (Base, Shoulder, Elbow, Wrist P, Wrist R, Gripper) |
+| **Data Rate** | 100Hz - 500Hz Real-time Position, Error, & Current streaming |
+| **Control Loop** | Hardware-in-the-Loop (HIL) |
+| **Sensors** | Absolute Magnetic Encoders (AS5600) + Motor Current Sensing |
+| **Connectivity** | USB Serial (Low Latency) or Wi-Fi UDP (High Bandwidth) |
 
 ---
 
 ## 2️⃣ Mechanical Layout (The "Unbreakable" Stack)
 
-**Core Strategy:** Unchanged from previous designs. Robust spur gears + single strong motors.  
+**Core Strategy:** Identical to Rev 4.6. Mechanical stack is verified and robust.  
 
 | Joint | Motor | Transmission | Placement | Notes |
 |-------|-------|-------------|----------|-------|
-| Base | NEMA 23 (3.0 Nm) | 10:1 Planetary | Base Plate | Rotates the whole robot. Module 1.5 gears. |
-| Shoulder | NEMA 23 (3.0 Nm) | 20:1 Compound Spur | Base Plate | Metal hub mandatory. |
-| Elbow | NEMA 17 (59 Ncm) | 20:1 Compound Spur | Upper Arm | Open Air Design for cooling. |
-| Wrist P | NEMA 17 (59 Ncm) | 15:1 All-Gear | Forearm | 5:1 Metal Planetary (on motor) → 3:1 Printed Spur. |
+| Base | NEMA 23 (3.0 Nm) | 10:1 Planetary | Base Plate | Module 1.5 gears. |
+| Shoulder | NEMA 23 (3.0 Nm) | 20:1 Compound Spur | Base Plate | Metal Hub Mandatory. |
+| Elbow | NEMA 17 (59 Ncm) | 20:1 Compound Spur | Upper Arm | Open Air Design. |
+| Wrist P | NEMA 17 (59 Ncm) | 15:1 Planetary + Spur | Forearm | Metal 5:1 Planetary on motor. |
 | Wrist R | NEMA 11 (8 Ncm) | 5:1 Spur | Wrist Plate | Standardized small motor. |
 | Gripper | NEMA 11 (8 Ncm) | Worm Gear | End Effector | Self-Locking. |
 
 ---
 
-## 3️⃣ Electronics & Control (The "6-Pack" Upgrade)
+## 3️⃣ Electronics & Control (The "6-Pack" Hardware)
 
-**Core Strategy:** Use a dedicated CNC Motherboard to eliminate loose wiring.  
+**Core Strategy:** Stick with the 6-Pack board as a "Smart Interface" for Python.  
 
 | Component | Product / Details | Integration Strategy |
 |-----------|-----------------|-------------------|
-| Motherboard | FluidNC 6x Controller ("6-Pack") | All-in-One Board. Contains ESP32 slot, driver sockets, and I/O. |
-| Logic Voltage | 5V / 3.3V (Auto) | No Level Shifters needed. Board handles signal conversion internally. |
-| Base Drivers | 2 × DM556 (External) | Wire to board's "External Motor" screw terminals. |
-| Arm Drivers | 4 × TMC2209 (StepStick) | Plug directly into slots 1–4 on motherboard. |
-| Sensors | 2 × AS5600 (I2C) | Plug into board's I2C header (VCC, GND, SDA, SCL). |
-| Power Supply | 24V DC, 15A (360W) | Powers board directly. Board creates 5V for ESP32. |
+| Motherboard | FluidNC 6x Controller | Acts as the I/O Interface |
+| Logic Voltage | 5V / 3.3V (Auto) | No Level Shifters needed |
+| Base Drivers | 2 × DM556 (External) | Wire to board's screw terminals |
+| Arm Drivers | 4 × TMC2209 | Plug into slots 1–4 |
+| Sensors | 2 × AS5600 (I2C) | Plug into board's I2C header |
+| Power | 24V 15A PSU | Powers board directly |
 
 ---
 
-## 4️⃣ Gearbox Strategy (Hardened)
+## 4️⃣ The "Data Science" Pipeline (NEW SECTION)
 
-**Core Strategy:** Durability is paramount. Grease heavily.  
+**Replaces standard FluidNC configuration. This is where research happens.**
 
-| Joint | Ratio | Type | Module | Reinforcement Strategy |
-|-------|-------|------|--------|----------------------|
-| Base | 10:1 | Planetary | 1.5 | 100% Infill. Grease ports required. |
-| Shoulder | 20:1 | Compound Spur | 1.5 | Metal Output Hub required. Open design. |
-| Elbow | 20:1 | Compound Spur | 1.0 | Fan cooled. |
-| Wrist P | 15:1 | Planetary + Spur | 1.0 | Metal Gearbox on motor face drives printed spur gear. |
-| Gripper | 20:1 | Worm | 1.0 | Brass Worm recommended. |
+**Concept: Hardware-in-the-Loop (HIL)**  
+- Python performs decision-making instead of ESP32.  
 
----
+**Python Script (Mastermind)**  
+- Calculates Inverse Kinematics (Angles → Steps)  
+- Generates Trajectory (S-Curve / Trapezoidal)  
+- Sends command: `M1:100, M2:200...`  
 
-## 5️⃣ The "FluidNC Wiring" Guide (Simplified)
+**ESP32 (Nervous System)**  
+- Executes steps immediately  
+- Reads Encoders & Motor Current  
+- Streams data back to Python  
 
-**Since we are using the 6-Pack board, the wiring is standardized:**
-
-1. **Main Power**  
-   - Connect 24V PSU to Green Power Terminal on 6-Pack board.  
-   - Result: Board powers up, fans spin, ESP32 turns on.  
-
-2. **Small Motors (Wrist/Gripper)**  
-   - Plug TMC2209 Drivers into Slots 1–4.  
-   - Connect motor wires to the 4-pin headers next to them.  
-
-3. **Big Motors (Base/Shoulder)**  
-   - Locate "External Driver" terminals on Slots 5 & 6.  
-   - Wire: Step → PUL+, Dir → DIR+, GND → PUL-/DIR-.  
-   - Note: Board outputs 5V signals automatically. No converters needed.  
-
-4. **Encoders**  
-   - Locate I2C Header on board.  
-   - Wire SDA/SCL/GND/3.3V to AS5600 sensors.  
+**Analysis (Pandas/Matplotlib)**  
+- **Backlash Analysis:** Compare Commanded_Pos vs Encoder_Actual_Pos  
+- **PID Tuning:** Optimize gains based on real-world error  
+- **Vibration Analysis:** Detect oscillation using encoders  
 
 ---
 
-## 6️⃣ Smoothing & Intelligence
+## 5️⃣ Wiring Guide (Standardized)
 
-1. **Software S-Curves (FluidNC Native)**  
-   - Configure `acceleration_mm_per_sec2` in `config.yaml`.  
-   - ESP32 handles calculations, eliminates jerk.  
-
-2. **Geometric Gravity Assist**  
-   - Shoulder: Spring anchor High + Offset Behind axis.  
-   - Elbow: Spring anchor ensures max tension at full extension.  
-   - **Benefit:** Reduces motor load by 60%.  
-
-3. **Wireless Control**  
-   - WebUI: Connect phone to "FluidNC" Wi-Fi network.  
-   - Open browser to `192.168.0.1`.  
-   - **Benefit:** Full jogging control, macros, G-Code sending without installing an app.  
+**Thanks to the 6-Pack board, wiring is simplified:**  
+- **Main Power:** 24V PSU → Green Power Terminal on 6-Pack board  
+- **Small Motors:** Plug TMC2209 Drivers into Slots 1–4  
+- **Big Motors:** Wire DM556s to "External Driver" terminals on Slots 5 & 6  
+- **Sensors:** Wire AS5600s to I2C Header (SDA/SCL)  
 
 ---
 
-## 7️⃣ Build Phases (Rev 4.6)
+## 6️⃣ Build Phases (Rev 4.7)
 
-1. **Phase 1: The Config**  
-   - Plug ESP32 into 6-Pack Board.  
-   - Upload FluidNC Firmware via USB.  
-   - Edit `config.yaml` to define 6 axes (Motor currents, Steps per mm).  
+1. **Phase 1: The Firmware Swap**  
+   - Do NOT use FluidNC  
+   - Flash Custom Telemetry Sketch (Arduino C++) to ESP32  
+   - Goal: Verify board responds to serial commands (e.g., `M1 100`) and prints sensor data  
 
 2. **Phase 2: The Foundation**  
-   - Build Base & Shoulder.  
-   - Wire DM556 drivers to board screw terminals.  
-   - Test: Jog base using phone.  
+   - Assemble Base & Shoulder  
+   - Wire DM556s  
+   - Test: Use Python script to jog base 10°  
 
-3. **Phase 3: The Arm**  
-   - Assemble Elbow + Wrist (All Gears).  
-   - Plug TMC2209s into board slots.  
+3. **Phase 3: The Arm & Sensors**  
+   - Assemble Elbow + Wrist  
+   - Connect AS5600 Encoders  
+   - Calibration: Map raw encoder values at 0° and 90° using Python  
 
-4. **Phase 4: The Network**  
-   - Connect AS5600s.  
-   - Calibrate "Home" positions in WebUI.  
+4. **Phase 4: The Data Loop**  
+   - Run full Python Control Script  
+   - Perform "Sweep Test" (move arm min → max)  
+   - Save data to `.csv` and plot error curves  
 
 ---
 
 ## 💡 Final Verdict
 
-**Rev 4.6 — "Gold Standard" for DIY Arms**  
+**Rev 4.7 — "Scientist's Robot"**  
 
-- **Complexity:** Low (Single board).  
-- **Performance:** High (ESP32 + S-Curves).  
-- **Cost:** Medium (~$45 board, saves hours of wiring).  
-- **Future Proof:** Ready for Computer Vision via Wi-Fi/USB.  
+- **Mechanicals:** Robust "Tractor" design  
+- **Electronics:** Clean "6-Pack" board, solves wiring issues  
+- **Brain:** Python via custom telemetry firmware  
+- **Telemetry:** High data rate, hardware-in-the-loop, full real-time control
