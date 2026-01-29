@@ -1,4 +1,4 @@
-# 🤖 6-DOF Robotic Arm — Final Master Blueprint (Rev 5.0)
+# 🤖 6-DOF Robotic Arm — Final Master Blueprint (Rev 5.2)
 
 **The "Research" Edition**  
 *Split-Brain, Hard Real-Time, Safety-Critical*
@@ -7,17 +7,17 @@
 
 ## 1️⃣ Robot Specifications (Comprehensive)
 
-| Parameter | Value / Design |
-|---------|----------------|
-| **Hardware** | Teensy 4.1 (Motion) + ESP32-C3 (Wi-Fi Bridge) + Discrete Drivers |
-| **Firmware Architecture** | PlatformIO Split Env: `env:motion_core` (Teensy) + `env:comms_bridge` (ESP32) |
-| **Brain (Logic)** | Python (PC) running Kinematics, Trajectory Planning & Safety Monitor |
-| **Update Rate** | 1 kHz internal loop / 100–500 Hz adaptive telemetry stream |
-| **Latency Model** | USB: Host-scheduled (Low Latency) · Wi-Fi: Nondeterministic (Telemetry Only) |
-| **Safety System** | Hard Watchdog (Teensy) + Physical E-Stop (Hardware) |
-| **Sensors** | 6 × AS5600 encoders installed · 1 active (Elbow) for Phase 1 |
-| **Motion Profile** | Trapezoidal (Phase 1 MVP) → S-Curve (Phase 2 Upgrade) |
-| **Payload Capacity** | 2.0 kg (requires gravity assist spring on J3) |
+| Parameter                 | Value / Design                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Hardware**              | Teensy 4.1 (Motion) + ESP32-C3 (Wi-Fi Bridge) + Discrete Drivers                                 |
+| **Firmware Architecture** | PlatformIO Split Env: env:motion_core (Teensy) + env:comms_bridge (ESP32)                        |
+| **Brain (Logic)**         | Python (PC) running Kinematics & Trajectory Planning (Safety invariants enforced autonomously on Teensy) |
+| **Update Rate**           | 1 kHz trajectory planner tick / Hardware-timer-driven step pulse engine (edge-accurate)         |
+| **Latency Model**         | USB: Host-scheduled (Buffered, Non-Blocking) · Wi-Fi: Nondeterministic (Telemetry Only)         |
+| **Safety System**         | Hardware Watchdog (Teensy) + Power-Dominant Physical E-Stop + Firmware Motion Limits            |
+| **Sensors**               | 6 × AS5600 encoders installed · 1 active (Elbow) for Phase 1 (temporary solution)               |
+| **Motion Profile**        | Trapezoidal (Phase 1 MVP) → S-Curve (Phase 2 Upgrade)                                           |
+| **Payload Capacity**      | 2.0 kg (requires gravity assist spring on J3 + monitored load envelope)                         |
 
 ---
 
@@ -25,29 +25,31 @@
 
 **Note:** The Elbow (Joint 3) is the critical load point.
 
-| Joint | Motor | Transmission | Placement | Notes |
-|-----|------|--------------|-----------|------|
-| **Base (J1)** | NEMA 23 (3.0 Nm) | 10:1 Planetary | Base Plate | Module 1.5 gears |
-| **Shoulder (J2)** | NEMA 23 (3.0 Nm) | 20:1 Compound | Base Plate | Metal hub mandatory |
-| **Elbow (J3)** | NEMA 17 | 20:1 + Spring | Upper Arm | Gravity assist spring mandatory for 2 kg payload |
-| **Wrist P (J4)** | NEMA 17 | 15:1 Planetary | Forearm | Metal 5:1 planetary on motor |
-| **Wrist R (J5)** | NEMA 11 | 5:1 Spur | Wrist Plate | Standardized small motor |
-| **Gripper (J6)** | NEMA 11 | Worm Gear | End Effector | Self-locking |
+| Joint             | Motor            | Transmission   | Placement    | Notes                                                                    |
+| ----------------- | ---------------- | -------------- | ------------ | ------------------------------------------------------------------------ |
+| **Base (J1)**     | NEMA 23 (3.0 Nm) | 10:1 Planetary | Base Plate   | Module 1.5 gears                                                         |
+| **Shoulder (J2)** | NEMA 23 (3.0 Nm) | 20:1 Compound  | Base Plate   | Metal hub mandatory                                                      |
+| **Elbow (J3)**    | NEMA 17          | 25:1 + Spring  | Upper Arm    | Gravity assist spring mandatory + encoder-based load anomaly detection   |
+| **Wrist P (J4)**  | NEMA 17          | 15:1 Planetary | Forearm      | Metal 5:1 planetary on motor                                             |
+| **Wrist R (J5)**  | NEMA 11          | 15:1 Spur       | Wrist Plate  | Standardized small motor                                                 |
+| **Gripper (J6)**  | NEMA 11          | 25:1 Worm Gear       | End Effector | Self-locking                                                             |
 
 ---
 
 ## 3️⃣ Electronics & Control (The “Hardened” Stack)
 
-**Changes:** Added level shifters, isolation, and E-Stop.
+**Changes:** Added power-dominant E-Stop authority, autonomous motion disable, and watchdog-safe shutdown.
 
-| Component | Product / Details | Critical Integration Note |
-|---------|------------------|---------------------------|
-| **Master** | Teensy 4.1 | DIN rail mount. USB power only (isolated from 24 V) |
-| **Safety** | Physical E-Stop Button | Wired to NC relay (cuts 24 V) **and** Teensy input |
-| **Base Drivers** | 2 × DM556T | Requires high-speed 5 V level shifter (3.3 V too weak) |
-| **Arm Drivers** | 4 × TMC2209 | StepStick adapters with capacitor decoupling |
-| **Power** | 24 V 15 A PSU | Star grounding point is mandatory |
-| **Signal Integrity** | Ferrite Beads | On USB cable and long encoder cables |
+| Component            | Product / Details          | Critical Integration Note                                           |
+| -------------------- | -------------------------- | ------------------------------------------------------------------- |
+| **Master**           | Teensy 4.1                 | DIN rail mount. USB power only (isolated from 24 V)                 |
+| **Safety**           | Physical E-Stop Button     | NC relay directly cuts driver EN lines and/or 24 V motor power (logic-independent) |
+| **Base Drivers**     | 2 × DM556T                 | Requires high-speed 5 V level shifter (3.3 V too weak)              |
+| **Arm Drivers**      | 4 × TMC2209                | StepStick adapters with capacitor decoupling                         |
+| **Driver Faults**    | DM556 / TMC fault outputs  | Wired to Teensy input → immediate step disable + driver + debouncing/filering + inhibit      |
+| **Power**            | 24 V 15 A PSU              | Star grounding point is mandatory                                     |
+| **Wi-Fi Power**      | ESP32-C3 via dedicated LDO | Prevents RF noise injection into logic rails                          |
+| **Signal Integrity** | Ferrite Beads              | On USB cable, long encoder, and near Wi-Ficables                                  |
 
 ---
 
@@ -60,42 +62,69 @@ This defines the path from **“Moving” → “Research Grade.”**
 ### 🧠 1. Motion Strategy (Teensy 4.1)
 
 #### Phase 1 (MVP): Trapezoidal Ramps
-- **Library:** TeensyStep or AccelStepper  
-- **Why:** Simple, mathematically cheap, robust  
-- **Guarantee:** Works on Day 1  
-- **Behavior:** Linear acceleration, slight jerk at start/stop
+
+* **Library:** TeensyStep or AccelStepper (used only as trajectory planners)  
+* **Why:** Simple, mathematically cheap, robust  
+* **Guarantee:** Works on Day 1  
+* **Behavior:** Linear acceleration, slight jerk at start/stop  
+
+**Hard Rules:**
+
+* Step pulses generated by a dedicated hardware timer ISR  
+* ISR performs only pin toggling and buffer advancement  
+* All step timing is precomputed and buffered  
+* Main loop, USB, Wi-Fi, and I²C cannot influence step timing  
+* Teensy enforces max joint velocity, acceleration, soft limits, and motion completion autonomy  
 
 #### Phase 2 (Research): S-Curve Profiles
-- **Library:** Custom 3rd-order polynomial generator  
-- **Why:** Eliminates vibration for data science precision  
-- **Behavior:** Ultra-smooth starts/stops  
-- **Requirement:** Buffered motion segments from Python
+
+* **Library:** Custom 3rd-order polynomial generator  
+* **Why:** Eliminates vibration for data science precision  
+* **Behavior:** Ultra-smooth starts/stops  
+* **Requirement:** ≥500 ms buffered motion segments resident on Teensy  
 
 ---
 
 ### 👁️ 2. Sensor Strategy (Encoders)
 
-**Hardware:** All 6 AS5600 encoders wired using shielded CAT5e/6
+**Hardware:** All 6 AS5600 encoders wired using shielded CAT5e/6 (Phase 1 only)
 
 #### Phase 1 (MVP): Single-Joint Feedback
-- **Active:** Elbow (J3) only  
-- **Bus:** I²C enabled for one device  
-- **Goal:** Detect stall on heaviest joint without I²C instability
+
+* **Active:** Elbow (J3) only  
+* **Bus:** I²C enabled for one device  
+* **Goal:** Detect stall or load anomaly on heaviest joint  
+
+**Firmware Safeguards:**
+
+* I²C timeout + non-blocking reads  
+* Manual SCL bus recovery on lockup  
+* Encoder delta validated against expected step motion  
+* Encoder failure triggers controlled deceleration and motion halt  
 
 #### Phase 2 (Research): Full-State Feedback
-- **Active:** All 6 encoders  
-- **Goal:** Real-time PID closure + backlash compensation
+
+* **Active:** All 6 encoders  
+* **Upgrade Path:** SPI or differential encoder interface  
+* **Goal:** Real-time PID closure + backlash compensation  
 
 ---
 
 ### 🐍 3. Python Strategy (The Planner)
 
-- **Protocol:** Streams time-parameterized motion segments
-- **Packet Format:**
-- <SegID=102, J1_Vel=50, J2_Vel=20, Duration=50ms>
+* **Protocol:** Streams time-parameterized motion segments  
 
-- **Safety Heartbeat:**  
-Python must send a *Keep Alive* packet every **100 ms**
+* **Packet Format:**  
+  `<SegID=102, J1_Vel=50, J2_Vel=20, Duration=50ms>`  
+
+* **Safety Heartbeat:** Python must send a Keep Alive packet every 100 ms  
+
+**Authority Boundary:**
+
+* Python may request motion  
+* Teensy validates and buffers segments  
+* Loss of Python prevents new motion only  
+* Teensy autonomously completes or safely decelerates active motion  
 
 ---
 
@@ -107,78 +136,74 @@ Python must send a *Keep Alive* packet every **100 ms**
 
 ### A. Power & Grounding (Star Topology)
 
-**Star Point:**  
-Negative terminal (–) of the 24 V PSU
+**Star Point:** Negative terminal (–) of the 24 V PSU  
 
 **Rules:**
-- Motor ground and logic ground meet **only** at the PSU
-- Never daisy-chain grounds between drivers
+
+* Motor ground and logic ground meet only at the PSU  
+* Never daisy-chain grounds between drivers  
+* Driver enable lines routed through E-Stop chain  
 
 ---
 
 ### B. Signal Wiring
 
 **Encoders (I²C):**
-- Shielded twisted pair required
-- Add **2.2 kΩ pull-up resistors** to SDA/SCL near Teensy
+
+* Shielded twisted pair required  
+* Add 2.2 kΩ pull-up resistors to SDA/SCL near Teensy  
+* Phase 1 only — upgrade required for multi-joint operation  
 
 **DM556T (Base / Shoulder):**
-- Teensy pin → Level shifter input
-- Level shifter 5 V output → DM556 `PUL+ / DIR+`
+
+* Teensy pin → Level shifter input  
+* Level shifter 5 V output → DM556 PUL+ / DIR+  
 
 **Cable Management:**
-- All moving cables inside **drag chains**
-- Strain relief at **both ends**
+
+* All moving cables inside drag chains  
+* Strain relief at both ends  
 
 ---
 
-## 6️⃣ Build Phases (Rev 5.0)
-
----
+## 6️⃣ Build Phases (Rev 5.2)
 
 ### Phase 1: The “Dry Run” (Electrical Validation)
 
 **Goal:** Prove electronics don’t smoke.
 
-- Wire Teensy, level shifters, and **one** driver
-- **Test:** Verify clean 0 V / 5 V square wave from level shifter using oscilloscope or multimeter
-
----
+* Wire Teensy, level shifters, and one driver  
+* **Test:** Verify clean 0 V / 5 V square wave from level shifter using oscilloscope or multimeter  
 
 ### Phase 2: The “Heartbeat” (Software Safety)
 
-**Goal:** Verify watchdog behavior.
+**Goal:** Verify watchdog behavior and autonomous motion safety.
 
-- Flash Teensy with motion watchdog code
-- Send motion commands from Python
-- Kill Python abruptly
+* Flash Teensy with buffered motion engine + watchdog  
+* Send motion commands from Python  
+* Kill Python abruptly  
 
-✅ **Success:** Signal ramps down and stops  
-🚫 **Do not connect motors until this works**
-
----
+✅ **Success:** Motion completes or decelerates safely, drivers disable  
+🚫 **Do not connect motors until this works**  
 
 ### Phase 3: The “Tractor” (Base Assembly)
 
-- Connect J1/J2 (DM556T)
-- Jog heavy loads using trapezoidal profiles
-- **Check:** EMI resets (Teensy crashing on motor stop)
-
----
+* Connect J1/J2 (DM556T)  
+* Jog heavy loads using trapezoidal profiles  
+* **Check:** EMI resets, driver fault handling, E-Stop power cut dominance  
 
 ### Phase 4: Full Integration (HIL)
 
-- Connect arm, elbow encoder, and Wi-Fi bridge
-- Run sweep test logging encoder vs step position
-- **Verify:** Gravity assist spring supports full 2 kg payload
+* Connect arm, elbow encoder, and Wi-Fi bridge  
+* Run sweep test logging encoder vs step position  
+* **Verify:** Gravity assist spring supports full 2 kg payload without anomaly flags  
 
 ---
 
 ## 💡 Final Verdict
 
-### **Rev 5.0 — “The Hardened Master Plan”**
+### Rev 5.2 — “The Actually Safety-Critical Research Plan”
 
-- **Mechanical:** 2 kg payload ready (spring-assisted elbow)
-- **Electrical:** Star-grounded, level-shifted, E-Stop protected
-- **Software:** Buffered trajectories, watchdog enforced
-
+* **Mechanical:** 2 kg payload with monitored gravity assist  
+* **Electrical:** Power-dominant E-Stop, fault-driven disable, star-grounded  
+* **Software:** Buffered, autonomous motion engine with ISR-isolated step timing

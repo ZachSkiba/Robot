@@ -1,5 +1,4 @@
-- Decide hardware, archecture, software
-- Decide what to buy
+- Decide what to buy and what we hve to geminis and check all compatability
 - Update overall plan and phase 0
 - Start simulations
 - Start mini project
