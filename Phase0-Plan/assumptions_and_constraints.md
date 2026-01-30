@@ -1,68 +1,89 @@
-# Phase 0 – Assumptions & Constraints
+# ⚙️ Phase 0 – Assumptions & Constraints (Rev 5.2)
 
-## **Assumptions**
+---
 
-### General
-- You have access to a laptop/desktop with Python 3.10+ installed.  
-- Python libraries for numerical computation and visualization are installed (`numpy`, `matplotlib`, `scipy`).  
-- A basic Arduino/stepper setup is available for reference testing if needed.  
-- Sketches, notes, and derivations can be performed on paper or digital tools.  
-- Both participants (mechanical engineer & data scientist) collaborate on decisions.  
-- Phase 0 is limited to simulation, kinematics, and planning — no full hardware assembly yet.  
+## 1️⃣ Assumptions
 
-### Mechanical Design
-- Arm will have 3 degrees of freedom (base rotation, shoulder, elbow).  
-- Link lengths are realistic and feasible for the motors selected.  
-- Torque required per joint is estimated including worst-case payload + gravity.  
-- Joint limits are known or can be reasonably assumed for safety and motion feasibility.  
+### General Architecture
+The "Split-Brain" Reality assumes a distributed control topology:
 
-### Stepper Motor / Control
-- Stepper motors are capable of required torque and microstepping resolution.  
-- Step-to-angle conversion is linear and accurate within microstepping limits.  
-- Max speed can be determined analytically or via Python simulation without skipped steps.  
-- Microstep effects on motion smoothness can be approximated in simulation.  
+- **PC (Python):** The high-level "Brain" handling kinematics, trajectory planning, and safety arbitration.  
+- **Teensy 4.1:** The hard real-time "Motion Core" handling step generation (1 kHz tick), acceleration ramps, and hardware safety.  
+- **ESP32-C3:** A strictly non-blocking telemetry bridge (no motion authority).
+
+**Collaborative Roles:**
+
+- **ME (Mechanical Engineer):** Owns the physical reliability, firmware execution (Teensy), and hardware safety (E-Stop).  
+- **DS (Data Scientist):** Owns the motion planning (Python), trajectory optimization, and anomaly detection algorithms.
+
+---
+
+### Mechanical & Physical Design
+- **6-DOF Configuration:** 6 active joints (Base, Shoulder, Elbow, Wrist P, Wrist R, Gripper).  
+- **Gravity Assist (J3):** J3 (Elbow) has a non-linear torque profile due to the gravity assist spring. Simulations must account for this "assisted" load.  
+
+**Transmission Realities:**
+
+- Gear ratios are fixed (10:1 to 25:1).  
+- Backlash is present but modeled as "zero" for initial kinematics; later added as a "noise factor" for encoder data simulation.
+
+---
+
+### Stepper Control & Latency
+- **Discrete Time:** Motion is a series of discrete hardware timer interrupts; simulations must validate Teensy can handle step rates for 6 simultaneous axes.  
+- **Buffered Execution:** Python planner must account for latency window (100–500ms buffered motion).  
+- **Trapezoidal First:** Phase 0 validates trapezoidal velocity profiles (Phase 1 MVP); data structure must support S-Curve parameters (Phase 2) without breaking.
+
+---
 
 ### Kinematics & Simulation
-- Forward kinematics (FK) equations are derivable for all 3 joints.  
-- Inverse kinematics (IK) is solvable numerically or analytically within reachable workspace.  
-- 2D simulation is sufficient for validating motion before 3D extension.  
-- Step-based motion can be modeled as discrete increments for visualization.  
-
-### Data & Logging
-- Future Phase 1 logging schema can be defined in Phase 0.  
-- Data for joint angles, steps, and end-effector positions is measurable or estimable in simulation.  
+- **3D Space:** Verification requires 3D visualization (Matplotlib 3D, RoboDK, or Python OpenGL) to check for self-collisions in 6-DOF space.  
+- **Inverse Kinematics (IK):** Analytical or robust numerical solution exists for this specific link configuration (likely a spherical wrist variant).  
+- **Safety Limits:** Soft limits (software) and hard limits (physical) are distinct. Teensy enforces soft limits autonomously if PC crashes.
 
 ---
 
-## **Constraints**
+## 2️⃣ Constraints
 
-### General
-- Phase 0 is limited to **simulation, calculation, and planning** — no full hardware assembly.  
-- Timebox: ~2 weeks for completion.  
-- Deliverables: verified FK/IK, stepper step mapping, trajectory plots, data schema, documentation.  
-- Stop conditions: once simulations are validated and design decisions justified.  
+### Scope & Timebox
+- **Hardware-Free Zone:** Phase 0 is strictly Calculation, Simulation, and Protocol Definition. No soldering or machining.  
 
-### Mechanical
-- Joint angles must respect safety limits to prevent collision or unrealistic designs.  
-- Link lengths and motor selection must be mechanically feasible.  
-- Arm should remain within defined workspace; no extreme configurations allowed.  
+**Deliverables:**
 
-### Stepper Motors
-- Steps per revolution, microstepping, and torque limits must be documented and respected.  
-- Max step rates cannot exceed driver or motor limits.  
-- Skipped steps, thermal limits, and current limits must be considered.  
-
-### Simulation & Kinematics
-- FK and IK solutions must be consistent with physical feasibility.  
-- Step-based motion is modeled in discrete increments — continuous motion assumptions are not used.  
-- Any approximations must not violate mechanical constraints or torque feasibility.  
-
-### Data & Logging
-- Data structures defined in Phase 0 must be compatible with future Phase 1 hardware implementation.  
-- Logging schema must include: joint angles, steps, timestamps, and end-effector positions.  
+- Validated DH Parameters for the 6-DOF chain  
+- Defined "Motion Packet" structure (Rev 5.2 Standard)  
+- Simulated "Heartbeat" failure test
 
 ---
 
-**Notes:**  
-- These assumptions and constraints are **strictly scoped to Phase 0**, separate from Mini-Projects.  
-- Purpose: ensure Phase 0 outputs a fully validated arm design, stepper motion model, and simulation framework for Phase 1.  
+### Mechanical Constraints
+- **Payload Envelope:** Arm constrained to 2.0 kg, dependent on the J3 spring. Trajectories exceeding torque limits flagged "Invalid" by Python planner.  
+- **Motor Limits:**  
+  - J1/J2 (NEMA 23): High torque, lower max RPM  
+  - J5/J6 (NEMA 11): Low torque, thermal sensitivity  
+- **Cable Drag:** Reduce effective torque due to drag chains/cabling (10–15% safety margin)
+
+---
+
+### Software & "Hardened" Safety Constraints
+- **Heartbeat Rule:** Loss of comms triggers controlled deceleration. Phase 0 architecture ensures the arm cannot keep moving if Python freezes.  
+- **Teensy Authority:** Teensy never executes step commands violating physical acceleration limits, regardless of Python requests.  
+- **USB vs. Wi-Fi:**  
+  - USB: Motion Commands (Deterministic)  
+  - Wi-Fi: Telemetry Only (Non-Deterministic)
+
+---
+
+### Data & Protocol Schema (Rev 5.2)
+- **Packet Design:** Define exact byte structure for `<SegID, Velocities, Duration>`  
+- **Encoder Integration:**  
+  - Phase 1: J3 feedback for stall detection  
+  - Phase 2: Full 6-axis feedback  
+- **Logging:** Simulation data must match hardware log format for "Sim-to-Real" validation
+
+---
+
+## 3️⃣ Next Steps (Phase 0 Execution)
+1. Define the **DH Parameters table** for the 6 joints  
+2. Write the **Python Class Structure** (e.g., `RobotController`, `TrajectoryPlanner`, `SafetyMonitor`)  
+3. Simulate a `"Move J1 to 90°"` command and plot the **Trapezoidal Velocity Profile vs. Time**

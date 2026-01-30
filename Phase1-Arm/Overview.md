@@ -19,8 +19,6 @@
 
 ## Step-by-Step Plan (With Roles)
 
----
-
 ### STEP 1.1 — Translate Simulation → Physical Design (Days 1–3)
 
 **Together**
@@ -181,8 +179,6 @@
 **Result**
 > “We built a robotic arm with safe control, telemetry, and repeatable motion.”
 
-That is a strong statement.
-
 ---
 
 ## Role Balance (Phase 1)
@@ -196,3 +192,21 @@ That is a strong statement.
 | Mechanical tuning   | ➖        | ✅               |
 | Data logging        | ✅        | ➖               |
 | Validation          | ✅        | ✅               |
+
+---
+
+## Timeline Adjustment (4h/day × 5 days/week)
+
+| Task                           | Hours Needed | Weeks | Notes |
+|--------------------------------|-------------|-------|-------|
+| Translate Simulation → Physical Design | 12 | 1.5 | Includes CAD review and parameter locking |
+| Mechanical Assembly            | 16          | 2     | Printing/fabrication + assembly + verification |
+| Electronics & Wiring           | 12          | 1.5   | Wiring, mounting, strain relief |
+| Homing & Safety                | 12          | 1.5   | Limit switches, software enforcement |
+| Motion Execution               | 16          | 2     | Command testing, tuning, velocity limits |
+| Telemetry & Logging            | 12          | 1.5   | Logger setup, schema validation, auto-save |
+| Phase 1 Deliverables & Demo    | 8           | 1     | README, demo, final validation |
+
+**Total Hours:** 88 → **Total Duration:** ~11 weeks at 4h/day combined pace  
+
+> Note: Some tasks can overlap (e.g., logging while tuning motion) to compress the timeline slightly.

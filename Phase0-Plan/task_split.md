@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This document defines **task responsibilities for Phase 0** of the robotic arm project (Architecture, Math, & Simulation).
+This document defines **task responsibilities for Phase 0** (Architecture, Math, & Simulation) of the robotic arm project.  
 
-It clarifies what each contributor focuses on while ensuring collaboration at key interaction points.
+It clarifies who focuses on what while ensuring collaboration at key interaction points.
 
 ---
 
@@ -29,7 +29,7 @@ It clarifies what each contributor focuses on while ensuring collaboration at ke
 | Implement FK in Python                             | ✅         | -                |
 | Derive FK on paper                                 | -         | ✅                |
 | Compare Python vs paper FK                         | ✅         | ✅                |
-| Check axes, rotations, and physical interpretation | -         | ✅                |
+| Verify axes, rotations, and physical interpretation | -       | ✅                |
 
 ---
 
@@ -51,8 +51,8 @@ It clarifies what each contributor focuses on while ensuring collaboration at ke
 | --------------------------------------------------- | --------- | ---------------- |
 | Define telemetry fields for logging                 | ✅         | ✅                |
 | Identify ML and plotting requirements               | ✅         | -                |
-| Verify what is physically measurable                | -         | ✅                |
-| Decide compromise between nice-to-have and feasible | ✅         | ✅                |
+| Verify physically measurable quantities            | -         | ✅                |
+| Balance nice-to-have vs feasible logging           | ✅         | ✅                |
 
 ---
 
@@ -61,7 +61,7 @@ It clarifies what each contributor focuses on while ensuring collaboration at ke
 | Task                                                    | Zach (DS) | Nicholas (MechE) |
 | ------------------------------------------------------- | --------- | ---------------- |
 | Implement numerical IK in Python                        | ✅         | -                |
-| Check joint limits, singularities, and pose feasibility | -         | ✅                |
+| Check joint limits, singularities, and pose feasibility | -        | ✅                |
 | Tune step sizes, constraints, and failure handling      | ✅         | ✅                |
 
 ---
@@ -81,7 +81,7 @@ It clarifies what each contributor focuses on while ensuring collaboration at ke
 
 | Task                                                             | Zach (DS) | Nicholas (MechE) |
 | ---------------------------------------------------------------- | --------- | ---------------- |
-| Prepare short README documenting problem, arm design, plots      | ✅         | ✅                |
+| Prepare README documenting problem, arm design, plots            | ✅         | ✅                |
 | Prepare demo script: target → motion → visualization             | ✅         | ✅                |
 | Ensure deliverables show validated design, FK/IK, and simulation | ✅         | ✅                |
 
@@ -89,4 +89,6 @@ It clarifies what each contributor focuses on while ensuring collaboration at ke
 
 ## Guiding Principle
 
-> **Phase 0 tasks are split by expertise but always involve collaboration at interaction points. Zach leads data, plots, and code; Nicholas leads mechanical feasibility; al
+> Phase 0 tasks are split by expertise but always involve collaboration at key interaction points.  
+> **Zach** leads data, code, plots, and simulation.  
+> **Nicholas** leads mechanical feasibility, sketches, and physical validation.
