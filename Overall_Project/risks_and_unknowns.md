@@ -1,213 +1,174 @@
-# Risks and Unknowns
+# ⚠️ Risks and Unknowns (Rev 2.0)
 
-## Purpose of This Document
-
-This document captures the **known risks, uncertainties, and open questions** associated with the overall robotic arm project.
-
-Unlike bugs or implementation issues, these items represent:
-
-* Architectural risks
-* Design assumptions that may prove invalid
-* Areas where learning, iteration, or redesign is expected
-
-This document is intentionally **honest and non-defensive**. Identifying risks early is a sign of system maturity, not weakness.
+**Context:** Aligned to Master Blueprint Rev 5.2 (Split-Brain Architecture)  
+**Purpose:** This document captures the specific engineering gambles inherent in the Rev 5.2 architecture. These are not bugs; they are the constraints we have chosen to accept.
 
 ---
 
-## 1. Mechanical & Hardware Risks
+## 1. Mechanical & Thermal Risks
 
-### 1.1 Actuator Performance Limitations
+### 1.1 Plastic Gearbox Thermal Deformation (NEMA 23)
 
-**Risk:** Selected actuators may lack sufficient torque, speed, or control fidelity once the arm is fully assembled.
+**Risk:**  
+The NEMA 23 motors (Base/Shoulder) can reach surface temperatures of **60°C–80°C** under load.
+
+**Context:**  
+Printed **PETG/PLA gears** are used directly coupled to or near these heat sources.
 
 **Impact:**
-
-* Poor trajectory tracking
-* Limited payload capacity
-* Control instability under load
+- Gears may soften, leading to tooth skipping or catastrophic stripping.
+- Press-fit shafts may loosen as plastic expands.
 
 **Mitigation:**
-
-* Conservative initial payload assumptions
-* Early joint-level testing
-* Design joints to be replaceable without full redesign
+- **Active Cooling:** Heatsinks/fans on NEMA 23s are mandatory if temps exceed 50°C.
+- **Material Upgrade:** Switch to ABS, ASA, or Nylon for motor-contact parts if PETG fails.
+- **ME Owner:** Monitor motor temps during **Phase 3 (Tractor)** stress tests.
 
 ---
 
-### 1.2 Structural Flex and Backlash
+### 1.2 The “J3 Gravity Spring” Singularity
 
-**Risk:** Mechanical compliance, backlash, or flex may invalidate rigid-body assumptions used in control and planning.
+**Risk:**  
+Joint 3 (Elbow) relies on a passive extension spring to counteract gravity for a **2.0 kg payload**.
 
 **Impact:**
-
-* Reduced accuracy
-* Model mismatch between simulation and hardware
-* Learning methods compensating for unmodeled physics
+- **Non-Linearity:** Springs are not perfectly linear; control models may fight the spring at certain angles.
+- **Fatigue:** If the spring weakens, the NEMA 17 will stall, as it is undersized for the full unassisted load.
 
 **Mitigation:**
-
-* Measure and log repeatability errors
-* Explicitly document modeling assumptions
-* Treat compliance as a first-class phenomenon if needed
+- **Tunable Mount:** Adjustable spring attachment point (e.g., screw tensioner).
+- **Current Limits:** Strict current limits on J3 to immediately detect stalls (DS task).
 
 ---
 
-### 1.3 Sensor Quality and Noise
+### 1.3 Backlash in Printed Planetaries
 
-**Risk:** Joint encoders, current sensing, or other sensors may have noise, latency, or drift beyond acceptable limits.
+**Risk:**  
+Printed planetary gearboxes (J1, J4) introduce significantly more backlash than machined gears.
 
 **Impact:**
-
-* Poor state estimation
-* Control degradation
-* Misleading data for optimization and learning
+- Encoder (joint) and motor (step count) disagree during direction changes.
+- PID loops may oscillate while correcting this “dead zone.”
 
 **Mitigation:**
-
-* Characterize sensors independently
-* Log raw signals alongside filtered values
-* Avoid hiding noise through excessive filtering
+- **Unidirectional Approach:** Motion planning may need to approach targets from a single direction.
+- **DS Task:** Characterize backlash width (in degrees) during **Phase 5**.
 
 ---
 
-## 2. Control & Modeling Risks
+## 2. Electrical & Signal Integrity Risks
 
-### 2.1 Model Inaccuracy
+### 2.1 I²C Bus Capacitance (The “Long Wire” Problem)
 
-**Risk:** Kinematic or dynamic models may not match the physical system closely enough for effective control or optimization.
+**Risk:**  
+Rev 5.2 uses AS5600 encoders (I²C) distributed across the arm. Standard I²C is designed for PCB traces, not **6-foot cables**.
 
 **Impact:**
-
-* Ineffective trajectory planning
-* Optimization converging to misleading solutions
+- Signal reflections or capacitance can lock the bus (SDA stuck low).
+- Phantom sensor readings.
 
 **Mitigation:**
-
-* Start with simple models
-* Validate models experimentally
-* Treat model identification as an explicit task, not an assumption
+- **Differential Transceivers (Critical):** PCA9615 or LTC4311 boards are required for reliability.
+- **Low Frequency:** Run I²C clock at **≤ 100 kHz** initially.
 
 ---
 
-### 2.2 Control Stability Margins
+### 2.2 Ground Loops in the “Star” Topology
 
-**Risk:** Controllers that work in simulation may become unstable or fragile on real hardware.
+**Risk:**  
+High-current devices (NEMA 23) and sensitive logic (Teensy/ESP32) share a single PSU.
 
 **Impact:**
-
-* Safety concerns
-* Hardware damage
-* Reduced confidence in experimentation
+- Motor acceleration causes voltage dips that reset the ESP32 (brownout).
+- Ground noise injects false steps into motor drivers.
 
 **Mitigation:**
-
-* Conservative gain tuning
-* Hard safety limits at multiple layers
-* Incremental bring-up from single-joint to full-arm control
+- **Strict Wiring:** Power and ground wires go from *component → PSU terminal*. Never daisy-chain.
+- **Capacitor Decoupling:** Every driver requires a **100µF capacitor** at its power input.
 
 ---
 
-## 3. Data & Learning Risks
+## 3. “Split-Brain” Control Risks
 
-### 3.1 Insufficient or Low-Quality Data
+### 3.1 Python ↔ Teensy Synchronization
 
-**Risk:** Logged data may be insufficient, biased, or poorly structured for meaningful optimization or learning.
+**Risk:**  
+The PC (Python) plans trajectories; the Teensy executes them. Windows/Python is not real-time.
 
 **Impact:**
-
-* Learning methods fail to improve performance
-* False conclusions from analysis
+- **Buffer Underrun:** Python garbage collection pauses can starve the Teensy of motion segments.
+- **Latency Jitter:** Python-side timestamps may not align with physical execution.
 
 **Mitigation:**
-
-* Define data schemas early
-* Log more than is initially needed
-* Include metadata and experiment context by default
+- **Deep Buffering:** Teensy must hold **≥ 500 ms** of motion segments.
+- **Keep-Alive Protocol:** Heartbeat system ensures safe halt if Python crashes.
 
 ---
 
-### 3.2 Learning Masking System Issues
+### 3.2 The “Blind” Motion Planner
 
-**Risk:** Learning-based components may compensate for underlying mechanical or control problems instead of fixing them.
+**Risk:**  
+Phase 1 uses open-loop stepping. The Teensy assumes the motor moved as commanded.
 
 **Impact:**
-
-* Fragile performance
-* Reduced explainability
-* Difficulty diagnosing failures
+- Missed steps permanently offset internal state until re-homing.
+- Robot may collide with physical stops while believing it is safe.
 
 **Mitigation:**
-
-* Require baseline comparisons
-* Freeze lower layers before introducing learning
-* Treat learning gains as suspect until validated
+- **Encoder Truth:** Monitor encoders even if not used for closed-loop control.
+- **Deviation E-Stop:** If  
+  \[
+  |\text{Encoder Angle} - \text{Step Angle}| > \text{Threshold}
+  \]  
+  → **HALT immediately**.
 
 ---
 
-## 4. Architectural & Project Risks
+## 4. Data Science & Validation Risks
 
-### 4.1 Scope Creep
+### 4.1 Timestamp Drift
 
-**Risk:** Expanding goals (e.g., perception, autonomy) dilute focus before foundational systems are solid.
+**Risk:**  
+Telemetry from Wi-Fi (ESP32) and USB (Teensy) creates two independent timelines.
 
 **Impact:**
-
-* Incomplete phases
-* Fragile architecture
+- Impossible to correlate voltage spikes (Teensy) with disconnect events (ESP32).
 
 **Mitigation:**
-
-* Phase exit criteria
-* Explicit non-goals
-* Resist adding features that do not support current phase objectives
+- **Master Clock:** `Teensy micros()` is the single source of truth.
+- ESP32 packets must be timestamped by the Teensy before transmission.
 
 ---
 
-### 4.2 Over-Engineering Early Phases
+### 4.2 “Over-Fitting” to Hardware Flaws
 
-**Risk:** Premature abstraction or complexity slows progress without delivering value.
-
-**Impact:**
-
-* Lost momentum
-* Harder debugging
-
-**Mitigation:**
-
-* Build the simplest system that supports measurement
-* Refactor only after evidence demands it
-
----
-
-### 4.3 Time and Resource Constraints
-
-**Risk:** Progress may be constrained by available time, budget, or hardware access.
+**Risk:**  
+DS may optimize trajectories that work only on this exact robot configuration.
 
 **Impact:**
-
-* Incomplete experiments
-* Long gaps between iterations
+- A fragile “golden sample” controller that fails with minor mechanical changes.
 
 **Mitigation:**
-
-* Favor simulation when possible
-* Keep hardware setups quick to reset
-* Maintain momentum with analysis and documentation work
+- **Vary Parameters:** Run tests across different payloads and speeds to ensure robustness.
 
 ---
 
 ## 5. Unknown Unknowns
 
-Some challenges will only emerge through execution:
-
-* Unexpected hardware failure modes
-* Emergent behaviors during optimization
-* Human factors in debugging and iteration
-
-These are expected and acceptable.
+- **EMI vs Wi-Fi:** Will NEMA 23 coils act as antennas and jam ESP32 Wi-Fi?
+- **PS5 Controller Safety:** Can a user issue commands faster than the plastic arm can physically tolerate, snapping a gearbox?
 
 ---
 
-## Guiding Principle
+## 🛡️ Risk Management Strategy
 
-> **Risks ignored early become failures later. Risks documented early become design inputs.**
+**“Fail Fast, Fail Cheap”**
+
+- **Phase 0 (Virtual):**  
+  If Python logic cannot handle a simulated buffer underrun, **do not power the system**.
+
+- **Phase 1 (Electrical):**  
+  If the I²C signal looks messy on an oscilloscope, **do not mount the encoders**.
+
+- **Phase 3 (Tractor):**  
+  If a NEMA 23 melts a PETG mount, **change materials before full arm assembly**.

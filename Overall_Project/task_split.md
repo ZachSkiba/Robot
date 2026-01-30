@@ -1,97 +1,110 @@
-# Task Split
+# ⚖️ Task Split & Governance (Rev 5.2)
 
 ## Purpose of This Document
+This document defines the Division of Labor and Separation of Concerns between the two primary engineers:
 
-This document defines how work is logically decomposed across the project and clarifies responsibilities between contributors.
+- **Mechanical Engineer (ME):** Your Brother  
+- **Data Scientist (DS):** You  
 
-Unlike the system-level decomposition, this version explicitly maps tasks to the primary team members: you (data science) and your brother (mechanical engineering).
+Under the Rev 5.2 Split-Brain Architecture, tasks are not just assigned based on skill, but on **System Authority**:
 
----
-
-## 1. Mechanical System Tasks (Handled by MechE)
-
-* Arm kinematic structure design
-* Joint and link geometry
-* Material selection and structural integrity
-* Assembly, alignment, and repeatability
-* Validate mechanical tolerances
-* Document assembly procedures
-
-**Deliverables:** CAD models, mechanical drawings, payload and range-of-motion specs
+- **ME owns the Hardware & Reflex (Teensy)**  
+- **DS owns the Strategy & Judgment (Python)**
 
 ---
 
-## 2. Electrical & Embedded Systems Tasks (Shared / Primarily MechE)
+## 1. The Core Philosophy: "Tension Model"
+We do not just "help each other." We act as **checks and balances**.
 
-* Motor drivers and power distribution
-* Sensor integration
-* Embedded control firmware
-* Safety mechanisms
-
-**Deliverables:** Schematics, wiring diagrams, firmware code, bring-up procedures
-
----
-
-## 3. Control & Modeling Tasks (Shared / Primarily MechE)
-
-* Kinematic and dynamic modeling
-* Low-level and mid-level control
-* Simulation models
-
-**Deliverables:** Mathematical derivations, control code, performance plots
+| Domain | Owner | Core Responsibility | Authority |
+|--------|-------|-------------------|----------|
+| Feasibility | ME | Making it move safely | **Veto Power:** Can refuse to run code that looks physically unsafe |
+| Truth | DS | Measuring how well it moved | **Blocking Power:** Can refuse to proceed to the next phase if data shows instability |
 
 ---
 
-## 4. Planning & Optimization Tasks (Shared / You Lead on Data & Analysis)
+## 2. Mechanical Engineering (ME) — "The Body & Reflex"
+The ME builds the physical machine and the hard real-time firmware that protects it.
 
-* Trajectory generation and optimization
-* Constraint handling
-* Performance evaluation
+### A. Hardware & Electronics
+- **CAD Design:** Fusion 360 models, printable parts, and gear design  
+- **Electrical Build:** Soldering, crimping, wire management (Star Topology)  
+- **Noise Suppression:** Installing ferrites, capacitors, and shielding  
+- **Safety Rig:** Building the E-Stop loop and PSU mount
 
-**Deliverables:** Planning algorithms, evaluation metrics, optimization results
+### B. Embedded Firmware (Teensy 4.1)
+- **Motion Core:** Writing the C++ timer interrupts for step generation  
+- **Safety Invariants:** Coding the hard limits, thermal checks, and watchdog  
+- **Buffer Logic:** Managing the ring buffer that receives commands  
+- **Sensor Drivers:** Writing the low-level I²C/SPI code to read encoders  
 
----
-
-## 5. Data, Analysis & Learning Tasks (Handled by Data Science - You)
-
-* Data logging infrastructure
-* Experiment management
-* Analysis, optimization, and learning
-
-**Deliverables:** Datasets, analysis scripts, learning models, reports
-
----
-
-## 6. Systems Integration Tasks (Shared)
-
-* Interface definition between subsystems
-* End-to-end testing
-* Regression prevention
-
-**Deliverables:** Interface documentation, integration tests, system validation reports
+**Primary Deliverable:** A machine that holds position, accepts commands, and triggers E-Stop if disconnected.
 
 ---
 
-## 7. Documentation & Project Management Tasks (Shared)
+## 3. Data Science (DS) — "The Brain & Conscience"
+The DS acts as the pilot (sending commands) and the auditor (grading performance).
 
-* Maintain clarity and continuity
-* Capture decisions and tradeoffs
-* Track risks and assumptions
-* Keep documentation synchronized with reality
+### A. Control Strategy (Python)
+- **Trajectory Planner:** Writing the IK solvers and path generation logic  
+- **Dashboard:** Building the real-time visualization tool (PyQt/Matplotlib)  
+- **Teleop Mapping:** Converting PS5 controller inputs into safe velocity vectors
 
-**Deliverables:** Updated documentation, design decision records, phase summaries
+### B. Data & Analysis
+- **Telemetry Pipeline:** Parsing binary packets from the ESP32  
+- **Signal Processing:** Analyzing encoder noise (FFT), jitter, and steady-state error  
+- **System ID:** Calculating real-world friction, gravity, and backlash from logs  
+- **Acceptance Testing:** Defining metrics (e.g., "Max Error < 0.5°") required to pass a Mini-Project  
+
+**Primary Deliverable:** Verified plots proving the robot is ready for the next phase.
 
 ---
 
-## Collaboration Model
+## 4. The "Demilitarized Zone" (Shared Tasks)
+These are the boundaries where the two domains meet and require **Synchronous Collaboration**.
 
-* Tasks overlap intentionally; all major decisions are discussed jointly
-* MechE focuses on hardware and low-level control
-* Data Science focuses on logging, analysis, learning, and evaluation
-* Integration and documentation remain collaborative
+### A. The API Contract
+- Define the packet structure (Bytes, Headers, Checksums)  
+- **Why:** ME needs to parse it (C++); DS needs to pack it (Python). If this drifts, the robot crashes.
+
+### B. Hardware-in-the-Loop (HIL) Integration
+- The physical day where Python is first connected to the Teensy  
+- **ME manages:** E-Stop button  
+- **DS manages:** Run button
+
+### C. Troubleshooting
+- **When the arm oscillates:**  
+  - ME checks belt tension and driver current  
+  - DS checks PID gains and latency logs
+
+---
+
+## 5. Execution by Phase
+
+### Mini-Project 1: Single Axis
+- **ME:** Wires the NEMA 17, Driver, and Encoder; writes basic "Step + Read" firmware  
+- **DS:** Writes the script to step 100 times and plot the encoder error  
+- **Decision:** DS reviews the plot. If noise > threshold, ME rewires with ferrites
+
+### Mini-Project 2: Coordination
+- **ME:** Wires 3 motors; updates firmware to handle multi-axis buffering  
+- **DS:** Writes a "Circle" trajectory generator  
+- **Decision:** DS compares the "Circle" in Python vs. the "Circle" in Encoder logs
+
+### Phase 4: Full Build
+- **ME:** Prints and assembles the plastic arm  
+- **DS:** Calibrates the gravity compensation constants in the Python model
+
+---
+
+## 6. Conflict Resolution Rules
+- **Safety Wins:** If ME says "The motor is getting too hot," we stop. No debate.  
+- **Data Wins:** If DS says "The encoder variance is too high," we do not add load. We fix the noise.  
+- **Code Wins:** The Architecture.md is the law. We do not hack "quick fixes" that violate the Split-Brain design
 
 ---
 
 ## Guiding Principle
+> "ME builds the vehicle. DS provides the map and the black box recorder."
 
-> **If a task touches more than one layer, it must be discussed jointly. Mechanical and Data Science responsibilities are clearly delineated, but collaboration is continuous.**
+This ensures clear authority boundaries while maintaining safe, data-driven development.

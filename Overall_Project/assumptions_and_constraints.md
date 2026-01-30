@@ -1,52 +1,154 @@
-# Robotic Arm Design: Assumptions and Constraints
-
-## 1. Assumptions
-
-These are things we accept as true to simplify design and control.
-
-### Mechanical
-- Joints are ideal rotational joints; friction and backlash are negligible.  
-- Linkages are rigid; no significant deformation under load.  
-- Arm components are precisely manufactured within ±0.5 mm tolerance.  
-
-### Electrical / Electronics
-- Servo motors and stepper motors operate within specified voltage and torque limits.  
-- Motor drivers can handle peak current without thermal shutdown.  
-- Sensors (e.g., encoders, IMUs) are calibrated and provide accurate readings within datasheet specs.  
-- Cables and wiring introduce negligible signal loss or interference.  
-
-### Control / Software
-- Arduino/ESP32 has sufficient computational power for all control algorithms.  
-- Real-time response of the control system is adequate for the intended motion speed.  
-- Communication protocols (I2C, SPI, UART) operate without errors under normal conditions.  
-
-### Environmental
-- Ambient temperature is within operating range of motors, electronics, and sensors.  
-- No unexpected external loads (e.g., wind, impacts) act on the arm during operation.  
+# 📜 Assumptions & Constraints — Rev 5.2 (Research Edition)
 
 ---
 
-## 2. Constraints
+## 1. Assumptions (System Modeling)
 
-These are hard limits or requirements that must be met.
+These are the simplifications we accept to make the math solvable.  
+**If these assumptions are false, the control theory fails.**
 
-### Mechanical
-- Maximum reach of arm ≤ 50–60 cm (adjust for workspace).  
-- Maximum payload ≤ 2 kg at full extension.  
-- Joint rotation limits as per motor/gear capabilities (e.g., 0°–180° for servos).  
-- Avoid collisions between links and base.  
+---
 
-### Electrical / Electronics
-- Power supply: 12 V, max 5 A (or match motor specs).  
-- Motor currents ≤ rated current to prevent overheating.  
-- Sensors’ voltage/current limits must not be exceeded.  
+### ⚙️ Mechanical
 
-### Software / Control
-- Sampling rate ≥ 100 Hz for smooth motion control.  
-- Control latency ≤ 10 ms for stability.  
-- All motor commands must be safe: no sudden jumps that exceed torque limits.  
+- **Finite Stiffness**  
+  We assume links are rigid, but we acknowledge **Joint 3 (Elbow)** will exhibit elastic deflection under the **2.0 kg max load**.  
+  This deflection is assumed to be repeatable (consistent hysteresis).
 
-### Project / Practical
-- Total project cost ≤ your budget (e.g., $300–500 for prototype).  
-- Materials available in your lab or locally.  
-- Design must be buildable with available tools (3D printer, drill, etc.).
+- **Gravity Compensation**  
+  We assume the passive spring on **J3** reduces the holding torque required by the **NEMA 17** motor to  
+  \[
+  < 60\% \text{ of its holding torque rating}
+  \]  
+  The spring does not need to be perfect—only sufficient to prevent thermal overload.
+
+- **Planar Base**  
+  The mounting surface is assumed to be perfectly rigid and level.  
+  Any vibration is attributed to the arm itself, not the supporting structure.
+
+---
+
+### ⚡ Electrical & Signal
+
+- **Noisy Environment**  
+  The chassis is assumed to be an EMI-hostile environment.  
+  Stepper cables will broadcast noise. Standard single-ended signals (e.g., I²C) are assumed to fail over cable runs longer than **20 cm**.
+
+- **Logic Isolation**  
+  USB power is assumed to be noisy and electrically separate from the clean **3.3V logic rail** required by sensors.
+
+- **Star Grounding**  
+  All high-current return paths must go directly to the PSU.  
+  This prevents ground bounce on the driver side from shifting logic thresholds on the **Teensy**.
+
+---
+
+### 🧠 Control & Software
+
+- **Host is Non-Deterministic**  
+  The Python host (PC) is not real-time.  
+  Packet arrival times may jitter by **±20 ms**.  
+  The Teensy must buffer sufficient motion data to survive these gaps.
+
+- **Kinematic Decoupling**  
+  The Wrist assembly (**J4/J5/J6**) is assumed to have sufficiently low mass such that its dynamics do not significantly perturb the **Base/Shoulder (J1/J2)** control loops.
+
+---
+
+## 2. Constraints (Hard Requirements)
+
+These are **binary pass/fail limits**.  
+Violating any constraint risks hardware damage or safety failure.
+
+---
+
+### 🛑 Safety & Hardware Protection
+
+- **Logic Voltage Cap**  
+  Strictly **3.3V logic only**.  
+  Any sensor or driver interface exceeding 3.3V is forbidden.  
+  Level shifting is mandatory for 5V components (e.g., **DM556T** inputs).
+
+- **E-Stop Authority**  
+  The physical **Emergency Stop** must directly cut **24V High Power** to the motor drivers.  
+  Software-based stops (Teensy-controlled) are not acceptable.
+
+- **Thermal Ceiling**  
+  Stepper motors must not exceed **80 °C case temperature** during a **10-minute hold cycle** at maximum payload.
+
+---
+
+### 🔌 Electrical & Communication
+
+- **Power Budget**  
+  - 24V DC Rail  
+  - 15A maximum (360W total)
+
+- **Sensor Interface**  
+  Any encoder located more than **10 cm** from the Teensy must use:
+  - Differential I²C (**PCA9615 / LTC4311**), or  
+  - **RS-485**
+
+  Standard ribbon cables for I²C are explicitly banned.
+
+- **Heartbeat Timeout**  
+  If the Teensy does not receive a valid **Keep Alive** packet from Python within **250 ms**,  
+  it must autonomously decelerate all joints to a halt.
+
+---
+
+### 💻 Real-Time Performance
+
+- **Tick Rate**  
+  Motion Planner on the Teensy must run at **≥ 1 kHz (1000 Hz)**.
+
+- **Step Generation**  
+  Step pulses must be generated using **hardware timers** (interrupt-driven), not the main loop.  
+  Allowed jitter:  
+  \[
+  < 1\ \mu s
+  \]
+
+- **Latency Budget**
+  - USB round-trip: **< 5 ms (average)**
+  - Wi-Fi telemetry: **< 50 ms**  
+    *(Acceptable for data only — forbidden for control loops)*
+
+---
+
+### 📐 Motion & Physics
+
+- **Payload Envelope**  
+  - 2.0 kg dynamic payload  
+  - Within a **400 mm radius**
+
+- **Velocity & Acceleration Limits**
+  - Max joint velocity: **60°/sec** (hard safety cap)
+  - Max acceleration:  
+    Determined by *slip threshold*  
+    \[
+    \text{Required torque} < 80\% \text{ of motor pull-out torque}
+    \]
+
+- **Motion Profile**
+  - **Phase 1:** Trapezoidal (infinite jerk acceptable)
+  - **Phase 2:** S-curve (finite jerk required for data validity)
+
+---
+
+## 3. Operational Boundaries
+
+Explicit behaviors the system **does not** support.
+
+- **No Collision Detection (Phase 1)**  
+  The robot assumes the workspace is empty.  
+  It will not stop upon impact unless encoder deviation triggers a **Stall Fault**.
+
+- **No Hot-Plugging**  
+  Motors must **not** be connected or disconnected while the **24V rail is live**.  
+  Doing so risks immediate driver destruction.
+
+- **No Waterproofing**  
+  The system is rated **IP20** — indoor / laboratory use only.
+
+---

@@ -1,21 +1,29 @@
-## 🟢 Phase 0 — Materials Checklist (Simulation & Planning Only)
+# 🟢 Phase 0 — Materials Checklist (Simulation & Planning Only)
 
-### Hardware
-- [ ] Laptop / desktop computer  
-- [ ] Notebook + pen (for sketches & derivations)  
+## Hardware
+- Laptop / desktop computer  
+- Notebook + pen (for sketches & derivations)  
 
-### Software
-- [ ] Python (3.10+)  
-- [ ] NumPy  
-- [ ] Matplotlib  
-- [ ] SciPy (for numerical IK)  
-- [ ] Jupyter Notebook or VS Code  
-- [ ] Git  
-- [ ] GitHub repository  
+✅ No physical hardware added — this is correct and intentional.
 
-### Optional / Nice to Have
-- [ ] MATLAB + Simulink (for cross-checking kinematics)  
-- [ ] LaTeX / Markdown editor (for documentation)  
+## Software
+- Python (3.10+)  
+- NumPy  
+- Matplotlib  
+- SciPy (for numerical IK / optimization)  
+- Jupyter Notebook or VS Code  
+- Git  
+- GitHub repository  
+
+➕ Added (required by architecture):  
+- PySerial (MCU protocol simulation)  
+- Gamepad / HID Python library (PS5 input simulation)  
+
+## Optional / Nice to Have
+- MATLAB + Simulink (for cross-checking kinematics)  
+- LaTeX / Markdown editor (for documentation)  
+
+---
 
 # Robotic Arm Project – Phase-by-Phase Materials List
 
@@ -29,19 +37,19 @@ This document lists all materials, components, and tools required for the roboti
 |------|---------|------|
 | Project notebook / digital documentation | 1 | For design sketches, calculations, and testing logs |
 | CAD software (Fusion 360 / SolidWorks / FreeCAD) | 1 | For link, joint, and gripper design |
-| Arduino Mega / ESP32 | 1 | Initial testing microcontroller |
-| Breadboard | 1 | Rapid prototyping for circuits |
-| Jumper wires | 20–30 | For temporary connections |
-| Test servos (SG90 or similar) | 2–3 | For proof-of-concept testing |
-| Sensors (rotary encoder, IMU) | 1–2 | To test motion feedback |
-| 3D printer / filament | 0.5–1 spool | For early mechanical prototypes |
-| Multimeter | 1 | Voltage, current, and continuity tests |
-| Basic hand tools | 1 set | Screwdrivers, pliers, hex keys |
+| ❌ Arduino Mega / ESP32 | — | Removed — Phase 0 is virtual-only |
+| ❌ Breadboard | — | Removed — no hardware prototyping in Phase 0 |
+| ❌ Jumper wires | — | Removed — hardware-gated |
+| ❌ Test servos (SG90 or similar) | — | Removed — architecture uses steppers only |
+| ❌ Sensors (rotary encoder, IMU) | — | Removed — simulated sensors only |
+| ❌ 3D printer / filament | — | Removed — no physical builds in Phase 0 |
+| Multimeter | 1 | Optional verification tool only |
+| Basic hand tools | 1 set | Optional, not required |
 
 **Mini-projects in Phase 0:**  
-- Test servo motor control via Arduino/ESP32.  
-- Prototype a single-joint linkage using 3D printed parts.  
-- Test basic sensor feedback (rotation/angle).  
+- Virtual single-joint dynamics simulation (stepper model).  
+- Virtual sensor feedback and logging validation.  
+- FK / IK validation in simulation.  
 
 ---
 
@@ -49,18 +57,17 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| Aluminum/PLA/ABS sheets or rods | As required | Arm links, base, brackets |
+| Aluminum / steel structural members | As required | Final arm links and brackets |
 | Screws, nuts, washers (M3, M4) | 50+ | For joints and mounts |
-| Bearings (ball or sleeve) | 4–12 | Joint smooth motion |
+| Bearings (ball or crossed roller) | 4–12 | Joint smooth motion |
 | Shaft collars | 4–6 | Motor to joint connection |
-| Base plate (metal or wood) | 1 | Stable foundation |
-| End-effector mounting plate | 1 | For gripper or tool |
-| 3D printer filament | 1–2 spools | PLA or ABS for link prototypes |
+| Base plate (metal) | 1 | Rigid, grounded |
+| End-effector mounting plate | 1 | Tool interface |
+| 3D printer filament | 1–2 spools | Optional — non-load-bearing parts only |
 
 **Mini-projects in Phase 1:**  
-- Build and test single-link joint assemblies.  
-- Verify link strength and fit tolerances.  
-- Test base stability with partial assembly.  
+- Dry-fit mechanical joints (no power).  
+- Verify link alignment and tolerances.  
 
 ---
 
@@ -68,16 +75,17 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| High-torque servo motors (MG996R or better) | 4–6 | Joints, torque ≥ required load |
-| Stepper motors (optional) | 1–2 | Base rotation / high-precision joints |
-| Motor brackets | 4–6 | Secure mounting |
-| Gears, pulleys, belts (optional) | As needed | For torque transmission |
-| Couplers | 2–4 | Motor shaft to joint interface |
+| ❌ High-torque servos | — | Removed — not used anywhere in Rev 5.2 |
+| NEMA 23 stepper motors | 2 | J1, J2 |
+| NEMA 17 stepper motors | 2 | J3, J4 |
+| NEMA 11 stepper motors | 2 | J5, J6 |
+| Gearboxes (planetary / worm) | 6 | Per joint spec |
+| Gravity assist spring | 1 | Mandatory for J3 |
+| Shaft couplers | 6 | Motor-to-gearbox |
 
 **Mini-projects in Phase 2:**  
-- Control single motor through Arduino/ESP32 with PWM.  
-- Test torque and rotation range for each motor.  
-- Calibrate speed and position response.  
+- Single-joint motion under load.  
+- Thermal and current envelope validation.  
 
 ---
 
@@ -85,19 +93,18 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| Arduino Mega or ESP32 | 1 | Main microcontroller |
-| Motor driver shields (L298N, TB6600, or similar) | 2–4 | Match motor type |
-| Power supply 12V 5A+ | 1 | Stable motor and electronics power |
-| Breadboard / PCB | 1–2 | Circuit prototyping |
-| Jumper wires | 50+ | Signal connections |
-| Capacitors, resistors, diodes | As required | Noise suppression, protection |
-| Limit switches | 4–6 | Homing and safety |
-| Sensors | 1–4 | Encoders, IMU, force sensors |
+| Teensy 4.1 | 1 | Motion core |
+| ESP32-C3 | 1 | Wi-Fi telemetry |
+| DM556T drivers | 2 | J1, J2 |
+| TMC2209 drivers | 4 | J3–J6 |
+| 24 V power supply (15 A) | 1 | Headroom required |
+| Physical E-stop (NC) | 1 | Logic-independent |
+| Safety relay | 1 | Cuts EN or 24 V |
+| Encoders (AS5600 / AS5048A) | 1–6 | Phase dependent |
 
 **Mini-projects in Phase 3:**  
-- Wire one joint with motor driver and sensor.  
-- Program PID control for joint.  
-- Test safety stops and feedback loops.  
+- Watchdog + heartbeat validation.  
+- E-stop dominance testing.  
 
 ---
 
@@ -105,16 +112,16 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| 22–26 AWG wires | As needed | Signal connections |
-| 14–18 AWG wires | As needed | Motor power lines |
-| Heat shrink tubing | 20–30 | Insulate connections |
-| Terminal blocks / connectors | As needed | Secure wiring |
-| USB cables | 1–2 | Programming boards |
-| Ferrules / crimp terminals | As needed | Reliable connections |
+| Shielded motor cables | As needed | Especially J1/J2 |
+| Shielded twisted-pair encoder cables | As needed | Mandatory |
+| Differential I²C converters | 2–3 | PCA9615 / LTC4311 |
+| Ferrite beads | 6–10 | EMI suppression |
+| Drag chains | 1–2 | Moving cables |
+| Heat shrink tubing | 20–30 | Insulation |
 
 **Mini-projects in Phase 4:**  
-- Wire and test a single joint from motor to microcontroller.  
-- Implement cable routing on partially assembled arm.  
+- EMI robustness testing.  
+- Encoder reliability verification.  
 
 ---
 
@@ -122,17 +129,13 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| Screwdrivers / hex keys | 1 set each | Mechanical assembly |
-| Pliers / wire cutters / strippers | 1 each | Wiring and assembly |
-| Soldering iron + solder | 1 | Permanent connections |
-| Calipers / ruler | 1 | Accurate measurements |
-| Drill + bits | 1 | Mounting holes |
-| Thread locker | 1 small bottle | Prevent loosening screws |
-| Safety gear | As required | Gloves, goggles |
-
-**Mini-projects in Phase 5:**  
-- Assemble full mechanical arm without electronics.  
-- Verify range of motion and link clearances.  
+| Screwdrivers / hex keys | 1 set | Mechanical assembly |
+| Wire strippers / cutters | 1 each | Wiring |
+| Soldering iron + solder | 1 | Permanent joints |
+| Calipers | 1 | Precision measurement |
+| Oscilloscope (≥50 MHz) | 1 | Step timing validation |
+| Bench power supply | 1 | Current-limited |
+| Safety gear | As required | Mandatory |
 
 ---
 
@@ -140,21 +143,12 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Notes |
 |------|------|
-| VS Code | IDE with PlatformIO for Arduino/ESP32 |
-| Arduino IDE | Optional, for firmware testing |
-| PlatformIO extension | For project management & libraries |
-| Python | For simulations and higher-level control |
-| MATLAB / Simulink | Optional for kinematics/control simulation |
-| Libraries | Servo, I2C, SPI, sensor-specific |
+| VS Code + PlatformIO | Firmware |
+| Python | Planning, logging, judgment |
+| HID / Gamepad libraries | PS5 controller |
+| NumPy / SciPy / Pandas | Metrics |
+| Matplotlib / Plotly | Visualization |
 
 **Mini-projects in Phase 6:**  
-- Develop individual joint control scripts.  
-- Integrate multiple joints for coordinated motion.  
-- Test kinematics calculations and feedback control.  
-
----
-
-**Notes:**  
-- Phase 0 ensures early testing reduces failures in later phases.  
-- Each phase’s mini-projects act as validation steps before full assembly.  
-- Quantities are approximate; adjust per number of joints, sensors, and prototypes.  
+- Trajectory validation and replay.  
+- Health verdict system implementation.

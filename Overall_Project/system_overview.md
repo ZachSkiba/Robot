@@ -1,191 +1,133 @@
-# System Overview
+# 🏗 System Overview (Rev 5.2)
 
 ## Purpose of This Document
+This document provides a technical, system-level view of the 6-DOF Robotic Arm Platform (Rev 5.2).
 
-This document provides a **technical, system-level view** of the robotic arm platform: what the system is made of, how the major components interact, and how capability evolves over time.
+Unlike the README.md, which explains the project's organization and vision, this document explains:
 
-Unlike the project `README.md`, which explains *why the project exists* and *how it is organized*, this document explains:
+- **The "Split-Brain" Architecture:** How non-real-time logic (Python) safely controls real-time hardware (Teensy).  
+- **The Data Lifecycle:** How motion commands flow down and telemetry flows up.  
+- **The Safety Layers:** Where authority resides when things go wrong.  
 
-* What the **system actually is**
-* How data, control, and hardware flow together
-* Where phase boundaries sit in the architecture
-* Which parts are stable vs. intentionally evolving
-
-This document should remain valid across phases, with updates only when the **architecture itself** changes.
+This document defines the invariant architecture that remains stable across all build phases.
 
 ---
 
 ## System at a Glance
+The system is a hybrid cyber-physical platform designed to separate high-level intelligence from low-level safety.
 
-At its core, the project is a **robotic manipulation platform** consisting of:
+- **The Brain (PC):** Infinite compute, non-real-time, runs complex Python/ML.  
+- **The Reflex (Embedded):** Limited compute, hard real-time, guarantees safety.  
+- **The Contract:** A strict communication protocol ensures the "Brain" cannot force the "Reflex" to violate physical laws.  
 
-* A multi‑DOF robotic arm
-* A layered control and planning stack
-* A unified data and experiment pipeline
-* A phase‑driven capability expansion model
-
-The arm is treated not as a one‑off machine, but as an **instrumented experimental system** where every motion produces data that can be analyzed, optimized, and improved over time.
+The arm is treated not as a peripheral, but as a semi-autonomous agent that accepts trajectory requests but retains the right to refuse them based on self-preservation logic.
 
 ---
 
-## High‑Level Architecture
+## High-Level Architecture: "The Split-Brain"
+The architecture is divided into four distinct domains of authority:
 
-The system is organized into four primary layers:
+### 1. Strategy Layer (The "Brain")
+- **Hardware:** PC / Laptop  
+- **Software:** Python (Custom Planner + Dashboard)  
+- **Role:**  
+  - Generates trajectories (Inverse Kinematics, Path Planning)  
+  - Visualizes telemetry in real-time  
+  - **Data Science Authority:** Decides if a motion is valid based on historical data
 
-1. **Physical Layer** – Mechanics, actuators, sensors, electronics
-2. **Control Layer** – Kinematics, dynamics, low‑level control
-3. **Planning & Optimization Layer** – Trajectories, constraints, performance objectives
-4. **Data & Learning Layer** – Logging, analysis, optimization, learning
+### 2. Bridge Layer (The "Nerve")
+- **Hardware:** ESP32-C3  
+- **Software:** PlatformIO (env: comms_bridge)  
+- **Role:**  
+  - Acts as a transparent telemetry bridge  
+  - Decouples logging traffic (Wi-Fi) from control traffic (USB)  
+  - Ensures data logging never blocks the motion loop
 
-Each layer exposes clear interfaces to the layers above and below it.
+### 3. Reflex Layer (The "Muscle")
+- **Hardware:** Teensy 4.1 (600 MHz)  
+- **Software:** PlatformIO (env: motion_core)  
+- **Role:**  
+  - Hard Real-Time Execution: Generates step pulses via hardware timers  
+  - Safety Enforcement: Checks limits, thermals, and "Keep Alive" heartbeats 1,000 times per second  
+  - Autonomy: Once a motion segment is buffered, the Teensy executes it independently of the PC
 
-```
-User / Experiments
-        ↓
-Planning & Optimization
-        ↓
-Control & Execution
-        ↓
-Hardware Abstraction
-        ↓
-Physical Robotic Arm
-        ↑
-   Telemetry & Logs
-```
-
----
-
-## Physical Layer
-
-### Responsibilities
-
-* Provide repeatable, safe, and measurable motion
-* Expose joint‑level state (position, velocity, effort)
-* Support incremental mechanical upgrades
-
-### Key Characteristics
-
-* Initial configuration targets **3 DOF**, expandable later
-* Modular joints and link design where possible
-* Clear electrical and communication standards
-* Safety mechanisms (limits, emergency stop, current limits)
-
-This layer is intentionally conservative: reliability and observability are prioritized over performance.
+### 4. Power Layer (The "Limit")
+- **Hardware:** 24V PSU, E-Stop, Drivers (DM556T/TMC2209), Capacitor Bank  
+- **Role:**  
+  - The physical baseline of truth  
+  - **Power-Dominant Safety:** The E-Stop cuts power physically, overriding all software layers
 
 ---
 
-## Control Layer
+## Data Flow Pipeline
+The system uses a **Dual-Path data model** to minimize latency while maximizing observability.
 
-### Responsibilities
+### Path A: Control (Downlink)
+- **Route:** Python → USB → Teensy Ring Buffer  
+- **Protocol:** Custom binary packet `<CommandID, Payload, Checksum>`  
+- **Constraint:** Must be deterministic. No heavy data payloads
 
-* Hardware abstraction (decouple software from specific motors/sensors)
-* Forward and inverse kinematics
-* Low‑level joint control (e.g., position / velocity / torque loops)
-* Enforcing safety constraints during execution
-
-### Design Intent
-
-* Classical control methods come first
-* Models and assumptions are explicit and documented
-* Control performance is measurable and logged
-
-This layer forms the **contract** between hardware and higher‑level intelligence.
+### Path B: Telemetry (Uplink)
+- **Route:** Teensy → UART → ESP32 → Wi-Fi → Python Dashboard  
+- **Content:** High-frequency state data (Position, Velocity, Error, Current)  
+- **Constraint:** Best-effort delivery. Dropped packets are acceptable; blocking motion is not
 
 ---
 
-## Planning & Optimization Layer
+## Safety Hierarchy (The "Veto" System)
+Safety is enforced hierarchically. A lower layer always overrides a higher layer:
 
-### Responsibilities
+1. **Physical Layer (Highest Authority)**  
+   - **Trigger:** E-Stop Button pressed  
+   - **Action:** 24V Power cut to drivers; motor torque vanishes instantly  
+   - **Software Override:** Impossible
 
-* Generate feasible joint‑space or task‑space trajectories
-* Respect kinematic, dynamic, and safety constraints
-* Evaluate execution quality using defined metrics
+2. **Reflex Layer (Firmware)**  
+   - **Trigger:** Watchdog timer expiry (Python crash), Joint Limit breach, or Tracking Error > Threshold  
+   - **Action:** Ramps down velocity to 0, disables driver EN pins
 
-### Evolution Across Phases
-
-* Early phases: deterministic trajectories and open‑loop execution
-* Mid phases: closed‑loop correction and optimization
-* Later phases: adaptive and learning‑augmented planning
-
-This layer is where performance improvements are most visible and quantifiable.
-
----
-
-## Data & Learning Layer
-
-### Responsibilities
-
-* Automatic logging of all executions
-* Experiment metadata capture
-* Offline analysis and visualization
-* Optimization and learning pipelines
-
-### Core Principle
-
-> Every motion is an experiment.
-
-No learning or optimization component is allowed to exist without:
-
-* A baseline comparison
-* Clear metrics
-* Reproducible evaluation
-
-Learning augments the system only after classical baselines are established.
+3. **Strategy Layer (Software)**  
+   - **Trigger:** Inverse Kinematics solver fails, or collision predicted  
+   - **Action:** Refuses to send the command packet
 
 ---
 
-## Phase Integration Model
+## Component Details (Rev 5.2 Specifics)
 
-Each phase activates or expands parts of the same underlying system rather than introducing disconnected subsystems.
+### 1. Motion Core (Teensy 4.1)
+- **Step Generation:** Uses hardware timer interrupts, not delay()  
+- **Buffering:** Maintains a circular buffer of ~500ms of motion to absorb Windows/Python scheduler jitter  
+- **Sensors:** Reads 6x AS5600 Encoders via I²C (Polled via DMA or non-blocking ISR)
 
-* **Phase 0**: Architecture, math, simulation, interfaces
-* **Phase 1**: Physical arm + safe control + full telemetry
-* **Phase 2**: Trajectory execution and optimization
-* **Phase 3**: Data‑driven correction and learning
+### 2. Comms Bridge (ESP32-C3)
+- **Isolation:** Physically separate chip to ensure Wi-Fi stack crashes do not freeze the robot  
+- **Power:** Powered by independent LDO to prevent RF noise from injecting into the Teensy's ADC rails
 
-Earlier layers are considered **stable contracts** as phases progress.
-
----
-
-## Stability vs. Flexibility
-
-### Expected to Remain Stable
-
-* Layered architecture
-* Data‑first philosophy
-* Phase‑driven development model
-
-### Expected to Evolve
-
-* Mechanical design details
-* Control strategies
-* Optimization and learning methods
-
-Architectural changes are deliberate and documented when they occur.
+### 3. Drivers & Actuators
+- **Base (J1-J2):** NEMA 23 + DM556T (Industrial, external)  
+- **Arm (J3-J6):** NEMA 17/11 + TMC2209 (Silent, UART-configurable)  
+- **Protection:** Every driver input has a 100µF Capacitor to absorb regenerative braking voltage spikes
 
 ---
 
-## Success Criteria for the System
+## Evolution Model: The "Mini-Project" Pipeline
+The system architecture is validated incrementally through Hardware-in-the-Loop (HIL) stages:
 
-At any point in the project, the system should:
+- **Mini-Project 1: Single Axis**  
+  Validates the Control Path (USB → Teensy → Driver)
 
-* Execute commanded motion safely
-* Log complete, structured data automatically
-* Allow performance comparison between approaches
-* Support extension without rewriting core components
+- **Mini-Project 2: Multi-Axis**  
+  Validates the Synchronization (Kinematics match Reality)
 
----
+- **Mini-Project 3: Teleop**  
+  Validates the Safety Hierarchy (Human input vs. Limits)
 
-## Relationship to Other Documents
-
-* `README.md` – Vision, motivation, and repository orientation
-* `goals.md` – Long‑term success criteria
-* `assumptions_and_constraints.md` – Design boundaries
-* `risks_and_unknowns.md` – Known technical risks
-* Phase `system_overview.md` files – Phase‑specific instantiations of this architecture
+- **Full Build:**  
+  Validates the Mechanical Structure (Torque/Gravity)
 
 ---
 
-## Guiding Statement
+## Guiding Principle
+> "The PC requests. The Teensy decides. The Hardware enforces."
 
-> **The system is not defined by what it can do today, but by how cleanly it can grow tomorrow.**
+This separation ensures that a bug in the Python script or a Windows update restart cannot cause physical damage to the robot or the operator.

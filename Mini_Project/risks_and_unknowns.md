@@ -1,65 +1,70 @@
 # Mini-Projects – Risks & Unknowns (Phase 0)
 
 ## **General Risks**
-- **Hardware damage:** Motors, sensors, or microcontroller could be damaged by overcurrent, incorrect wiring, or mechanical stress.  
-- **Electrical shorts:** Loose wires, exposed connections, or misconnected power could cause shorts.  
-- **Time overruns:** Spending too long optimizing or debugging can delay progression to Phase 1.  
-- **Overcomplication:** Adding ML, full-arm testing, or complex algorithms distracts from skill-building objectives.  
-- **Skill imbalance:** Focusing only on hardware or software may leave gaps in troubleshooting or understanding.
+- **Hardware damage:** Motors, drivers, sensors, or microcontrollers may fail due to overcurrent, mechanical stress, or miswiring.
+- **Electrical hazards:** Shorts or incorrect power supply connections can damage components or create fire risk.
+- **Time overruns:** Excessive debugging or optimization could delay Phase 1 hardware work.
+- **Scope creep:** Introducing ML, full-arm testing, or complex algorithms distracts from skill-focused objectives.
+- **Skill gaps:** Over-focusing on either hardware or software may leave blind spots in troubleshooting or integration.
+- **Data integrity risk:** Logging failures or misconfigured plots may produce misleading conclusions.
 
 ---
 
 ## **Mini-Project A – Single-Axis Smart Joint**
 **Risks:**  
-- PID tuning may initially cause oscillations or overshoot, potentially stressing the motor.  
-- Sensor readings may be noisy, leading to confusing plots.  
-- Incorrect wiring could damage the motor or microcontroller.  
-- 3D printed mounts or brackets may break under torque if not secured properly.
+- PID tuning can cause oscillation, overshoot, or motor stress.  
+- Sensor noise may complicate data interpretation.  
+- Miswiring could damage microcontroller, driver, or motor.  
+- Brackets or mounts may fail under torque if not secured.  
+- Stepper motors may skip steps if acceleration limits are exceeded.
 
 **Unknowns / Uncertainties:**  
-- Exact motor response characteristics (speed, torque curve, delay).  
-- Sensor latency or measurement noise.  
-- How the motor behaves under different load conditions.  
-- Real-time performance of Python logging scripts.
+- Motor-specific response (torque curve, lag, thermal behavior).  
+- Encoder latency, noise floor, or quantization effects.  
+- Real-time performance of Python logging for high-frequency joint motion.  
+- How software safety limits interact with physical system in unexpected scenarios.
 
 ---
 
 ## **Mini-Project B – Controller → Motor**
 **Risks:**  
-- Joystick commands may saturate motor response, causing jerky movement.  
-- Communication latency between controller and microcontroller may affect smoothness.  
-- Over-rotation or rapid motion could stress mechanical setup.  
-- Logging failures may result in incomplete trajectory data.
+- Joystick commands may generate sudden jerks, saturating motor or driver.  
+- Communication latency could degrade smoothness of human-in-the-loop motion.  
+- Over-rotation or rapid inputs could damage mounts or connectors.  
+- Logging failures may result in incomplete trajectories or misdiagnosed errors.  
 
 **Unknowns / Uncertainties:**  
-- Maximum achievable smoothness for human-in-the-loop control.  
-- How the motor responds to rapid or non-linear joystick inputs.  
-- Bluetooth/USB controller latency or compatibility issues.
+- Max achievable smoothness given controller, microcontroller, and motor hardware.  
+- Motor response to rapid, non-linear, or repeated joystick inputs.  
+- Latency and compatibility variability of PS5 controller via USB/Bluetooth.  
+- Safety system interaction under continuous or conflicting commands.
 
 ---
 
 ## **Mini-Project C (Optional) – 2-Link Python Simulation**
 **Risks:**  
-- Poorly implemented FK/IK algorithms could give incorrect visualizations.  
-- Over-reliance on simulation may give misleading intuition about hardware performance.  
+- Incorrect FK/IK implementation may produce misleading motion visualization.  
+- Over-reliance on simulation could give false confidence for hardware behavior.  
 
 **Unknowns / Uncertainties:**  
-- Exact mapping from Python simulation to real hardware (timing, torque, backlash).  
-- Potential numerical instabilities in IK solutions at edge-of-reach positions.  
+- Translation of Python simulation to real hardware: torque, backlash, timing, and limits.  
+- Numerical instabilities at edge-of-reach positions or singularities in IK.  
+- Real-world limits (motor torque, thermal effects, joint friction) not captured in simulation.
 
 ---
 
 ## **Mitigation Strategies**
-- Keep **currents and voltages within datasheet limits**.  
-- Test one component at a time; never connect full system before verifying subsystems.  
-- Stop mini-projects immediately once objectives are achieved.  
-- Use logging and plotting to verify behavior instead of guessing.  
-- Keep spare wires, sensors, and motor components for safe replacement.  
-- Document all observations to reduce unknowns for Phase 1.  
+- Enforce **datasheet limits** for current, voltage, and torque.  
+- Test each subsystem independently before full system execution.  
+- Stop mini-projects immediately once objectives are met; avoid endless optimization.  
+- Use logging, plots, and repeatable scripts to verify behavior quantitatively.  
+- Maintain spare wires, sensors, and motor components.  
+- Document all findings to reduce unknowns and support Phase 1.  
+- Include software safety checks: soft stops, acceleration/velocity limits, simulated or real E-stop override.  
 
 ---
 
 **Notes:**  
-- These risks and unknowns are strictly scoped to **Phase 0 / mini-projects**.  
-- Purpose: make hardware/software interactions predictable, safe, and understandable.  
-- Mini-projects are designed to reveal these unknowns early and safely, reducing risk in full arm assembly.  
+- Risks and unknowns are scoped **strictly to Phase 0 / mini-projects**.  
+- Purpose: reveal unknowns early, minimize hardware/software surprises, and build predictable, safe systems.  
+- Early identification of these factors ensures Phase 1 full-arm integration is **low-risk and reproducible**.

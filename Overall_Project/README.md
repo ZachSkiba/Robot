@@ -1,152 +1,93 @@
-# Robotic Arm Project
+# 🤖 6-DOF Robotic Arm Platform (Rev 5.2)
 
 ## Overview
+This project is a high-fidelity engineering initiative to design, build, and govern a safety-critical robotic arm platform.
 
-This project is a long‑term, modular effort to design, build, and improve a **robotic arm platform** that evolves from classical robotics foundations into **data‑driven optimization and learning**, and eventually toward **autonomous manipulation**.
+Unlike typical hobbyist builds, this system treats hardware as an industrial platform. It utilizes a **"Split-Brain" Architecture (Rev 5.2)** where real-time safety guarantees (Teensy 4.1) are decoupled from high-level trajectory planning (Python/PC), linked by a strict data contract.
 
-The intent is not to build a single demo, but to create a **scalable engineering system** that can grow in capability over months and years while remaining understandable, measurable, and resume‑credible at every stage.
-
-The robotic arm is treated as a **platform**:
-
-* Hardware, software, and data pipelines are designed once and reused
-* Each phase adds capability without discarding prior work
-* Progress is measured quantitatively, not anecdotally
+The intent is not just to make motors move, but to create a scalable engineering system that enforces **ME/DS parity**—where mechanical limits and data science verification hold equal authority.
 
 ---
 
-## High‑Level Objectives
-
-* Design and build a **multi‑DOF robotic arm** with safe, repeatable motion
-* Establish a **clean kinematic and control foundation** before adding learning
-* Log all motion data automatically to enable optimization and ML
-* Incrementally improve performance using:
-
-  * Trajectory optimization
-  * Data‑driven error correction
-  * Learning‑based control
-* Maintain a codebase and documentation suitable for:
-
-  * Internships (short‑term)
-  * Research or industry roles (long‑term)
+## High-Level Objectives
+- **Provable Safety:** The robot must intuitively halt if trajectory limits, thermal thresholds, or heartbeat signals are violated.
+- **Split-Brain Control:** Decouple the "Brain" (Python Strategy) from the "Reflex" (Teensy Real-Time Execution).
+- **Hardware-in-the-Loop (HIL):** Validate the "Vertical Stack" via gated Mini-Projects before full assembly.
+- **Data-Driven Governance:** Log all motion data to specific schemas; ME cannot increase speed/load unless DS verifies the data proves it is safe.
+- **Resume-Grade Artifacts:** Produce reusable libraries, distinct engineering gates, and quantitative performance reports.
 
 ---
 
 ## Guiding Principles
-
-* **Structure before sophistication**: classical control and modeling come first
-* **Data everywhere**: every motion is an experiment
-* **Incremental intelligence**: learning augments control, not replaces it
-* **Modularity**: hardware and software are designed to scale
-* **Explainability**: improvements must be measurable and explainable
+- **Safety Dominance:** Hardware E-Stops and firmware watchdogs override all software logic.
+- **Data Before Motion:** We do not move until we can measure. Every motion is an experiment.
+- **ME/DS Parity:** Mechanical feasibility and Data Science truth are equal partners.
+- **Fail Fast, Fail Cheap:** Validate critical risks (I²C noise, jitter, heat) in Mini-Projects first.
+- **Modularity:** Hardware and software are designed to scale from 1 axis to 6 axes without rewriting core logic.
 
 ---
 
 ## Project Scope (High Level)
 
 ### In Scope
-
-* Robotic arm mechanics (initially 3 DOF, expandable)
-* Kinematics, trajectory planning, and execution
-* Automatic telemetry and experiment logging
-* Optimization and learning on real hardware
-* Clear evaluation metrics and comparisons
+- **6-DOF Mechanics:** NEMA 23 Base, NEMA 17 Arm, printed planetary gearboxes.
+- **Split-Brain Firmware:** PlatformIO project with distinct environments for Motion Core (Teensy) and Comms Bridge (ESP32).
+- **Telemetry Pipeline:** Real-time logging of position, velocity, and error metrics via Wi-Fi/USB.
+- **Teleoperation:** Human-in-the-loop control via PS5 controller for data collection.
+- **Safety Architecture:** Power-dominant E-Stop, Watchdogs, and Heartbeat enforcement.
 
 ### Out of Scope (for now)
-
-* Full humanoid manipulation
-* Real‑time mobile autonomy
-* Heavy reliance on black‑box ML without baselines
-
----
-
-## Project Phases (Conceptual)
-
-This repository is organized into **phases**, each representing a stable milestone.
-
-* **Phase 0** – Architecture, assumptions, math, and simulation
-* **Phase 1** – Physical arm build with safe control and telemetry
-* **Phase 2** – Trajectory execution and optimization
-* **Phase 3** – Data‑driven error correction and learning
-* **Later Phases** – Advanced learning, perception, autonomy (future)
-
-Each phase:
-
-* Has its own folder
-* Has clear goals, risks, and deliverables
-* Builds directly on the previous phase
+- Full humanoid manipulation
+- Real-time mobile autonomy
+- Computer Vision (until Phase 5+)
 
 ---
 
-## Repository Structure
+## Project Phases (Rev 5.2 Execution)
+Each phase represents a gated milestone:
 
-```
-ROBOTS/
-├── Overall_Project/            # Project‑level vision & direction
-│   ├── README.md               # Overall project README (this file)
-│   ├── goals.md                # Long‑term goals across all phases
-│   ├── assumptions_and_constraints.md
-│   ├── system_overview.md
-│   ├── risks_and_unknowns.md
-│   └── task_split.md
-│
-├── Phase0-Plan/                    # Phase‑specific execution
-│   ├── README.md               # Overall project README (this file)
-│   ├── goals.md                # Long‑term goals across all phases
-│   ├── assumptions_and_constraints.md
-│   ├── system_overview.md
-│   ├── risks_and_unknowns.md
-│   └── task_split.md
-│
-├── phase_1/                    # (Created later)
-├── phase_2/
-└── phase_3/
-```
-
-**Rule of thumb**:
-
-* Root files define *why* and *where*
-* Phase folders define *what* and *how*
+- **Phase 0 (Virtual):** Architecture, Python simulation, and data schemas.
+- **Mini-Project 1:** Single-Axis control, noise validation (Ferrites/Caps), and steady-state error analysis.
+- **Mini-Project 2:** Multi-axis coordination and virtual model validation.
+- **Mini-Project 3:** Governance system, safety logic, and "Judgment" implementation.
+- **Phase 4 (Heavy Metal):** Physical assembly of the full 6-DOF arm (unlocked only after MP1-3 pass).
+- **Phase 5 (Research):** Advanced PID, S-Curve profiling, and closed-loop optimization.
 
 ---
 
 ## Roles & Collaboration Philosophy
+This project uses a **"Tension Model"** for collaboration:
 
-This project is intentionally designed for **continuous collaboration**.
+- **Mechanical Engineering (ME):** Owns Feasibility. Responsible for wiring, CAD, firmware, and physical safety. Can stop the project if hardware is at risk.
+- **Data Science (DS):** Owns Truth. Responsible for logging, signal analysis, and acceptance testing. Has blocking power if data shows instability.
 
-* Mechanical design, control logic, optimization, and learning overlap by design
-* No phase isolates one contributor to a single discipline
-* All major decisions are documented and reviewed jointly
-
-The goal is shared system ownership, not task silos.
+The goal is shared system ownership through explicit contracts, not task silos.
 
 ---
 
 ## What Makes This Project Valuable
+- Demonstrates Systems Engineering and Cyber-Physical design.
+- Shows progression from Theory → HIL Validation → Production Hardware.
+- Produces artifacts interviewers can reason about:
+  - Architecture Diagrams (Split-Brain)
+  - Quantitative Performance Reports
+  - Safety Analysis Documents
 
-* Demonstrates **systems‑level engineering**, not just coding or CAD
-* Shows progression from theory → hardware → data → learning
-* Produces artifacts interviewers can reason about:
-
-  * Plots
-  * Metrics
-  * Comparisons
-  * Design tradeoffs
-
-This repository is meant to tell a clear technical story.
+This document tells a clear technical story of engineering rigor.
 
 ---
 
 ## Current Status
+- **Architecture:** Locked (Rev 5.2)  
+- **Procurement:** Cart 1 (Mini-Project Kit) defined  
+- **Phase:** Mini-Project 1 (Setup)  
 
-* Project structure established
-* Phase 0 planning and documentation in progress
-
-See `phase_0/README.md` for current execution details.
+Detailed implementation, experiments, and iteration live inside the Mini-Project and Phase folders.
 
 ---
 
-## Notes
+## Critical Rules
+- **Capacitor Rule:** 100µF per driver  
+- **Heartbeat Rule:** 100ms timeout  
 
-This README is intentionally stable and high‑level. Detailed implementation, experiments, and iteration live inside the phase folders.
-
-Changes here should be rare and deliberate.
+These are non-negotiable architectural constraints.
