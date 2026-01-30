@@ -26,11 +26,7 @@ Master the code stack, single-motor control, differential sensing, and the PID l
 | Proto | 1 | Already have | Breadboard Starter Kit | $0 | Rapid wiring without soldering |
 | Cables | 2 | [Micro-USB](https://www.amazon.com/FEMORO-Transfer-Charging-Smartphone-Bluetooth/dp/B0D2KZQR8T/ref=sr_1_3?crid=2ROI3OOQLG9FX&dib=eyJ2IjoiMSJ9.2ODqAvSnCFLkB1v4odzbS_f6_ucs3aGaapp2cRpe1VWH0EWGGqIQe15X1LUDH6FamTUqftsW_gmXOvAeDhkcJ2uEXoaV7AId9Ma-oh_pPXALB0VIHzWiyXwiYUHsgkuBfqorNjovQyvBwFksYIf_AS-xXxnh9G9KbShDJO-wmO1xrvBrYAfypNBDE7gv5X7cSNjxLMTjlxXd6SRkI0UYEKjum5wPYBVXblV2kZiEMWY.bXBHCFpqjfUf2E8aGExeRFvM2XBjjXy80eWriwmOEj0&dib_tag=se&keywords=micro+usb+data+cable&qid=1769757547&sprefix=micro+usb%2Caps%2C139&sr=8-3) -> [USB-C](https://www.amazon.com/USB-Cable-10Gbps-Transfer-Controller/dp/B09WKCT26M/ref=sr_1_10?crid=2QZO0TJ6O8BRI&dib=eyJ2IjoiMSJ9.1Mw8uEz4B45I0APtqWBdrbxnyyNI8pPBZfyqaWoWmyBnMGOumRWOW069hW34U1CRdq8nQWLZzzQfmp2jMj7WBErrJsAOD99GirIeMIy_NZ-KVfJlCPuX_GtDtT9XTz3o7tkrxmKOp-2RkaajRBzJe7u7XfqHvhK9JTx4B6Qv20z6LFWEIw2Q3TwlQ6JWWwAiEZZs3K3wNI4U8YB9hdkQi5lc67yl-t-0NDTcaYnqffU.xK5iwYBntz_p26eiLgEIlONZGjJ-N0gMss93R6A_SeY&dib_tag=se&keywords=usbc%2Bdata%2Bcable&qid=1769757603&sprefix=usbc%2Bdata%2Bcable%2Caps%2C143&sr=8-10&th=1) Probably have| USB Cable Pack | $5.69 + 8.99 | Micro-USB to USB-A(Teensy) & USB-C to USB-A (ESP32) **DATA CABLES**  |
 
----https://www.amazon.com/20-Pieces-1-5KE30CA-DO-201AD-Bidirectional/dp/B079KKK1CC/ref=sr_1_1?crid=28V7RSWJM4YI2&dib=eyJ2IjoiMSJ9.j8DtBuTObqAXSSPD0FlSSlmIkoPdg1nfR0-UtvgjEdb6bYvUUOmNr2QhoZUf6en1wbe4ne6cb_KU3LijHH_6JXKwfU1zHNs1ZCJVyxRZCuN0u-KAA8eQibEZSFhkcrsl7PeBvN7wOV5PY___h7RXPJj_OGrAjF3R5xq3SBu7ZAeGd61JOdkgRlo9wjAqAPqhDgRIbD4h2-V20poTqC_W-4DXNX7Wu3OjvqLlv-xGfMYEhJ8R_0Cm1fnTwLSjvimkZnCmzuBwevEMQRLcs3pE-XDyunPcKkmJMvpSERleCKk.RBQmixy3U_-K1QcBvHmZl9AwD0HvQvQZuNqfOtNfc5Y&dib_tag=se&keywords=Chanzon+TVS+Diodes+1.5KE30CA+1500W+30V+DO-201AD+%28DO-27%29+Bidirectional+Channel+1500+Watt+30+Volt&nsdOptOutParam=true&qid=1769758779&s=industrial&sprefix=chanzon+tvs+diodes+1.5ke30ca+1500w+30v+do-201ad+do-27+bidirectional+channel+1500+watt+30+volt%2Cindustrial%2C109&sr=1-1
 
-https://www.amazon.com/RGEF500-PolySwitch-Resettable-Switch-Polyfuse/dp/B07YZ9S6PL/ref=sr_1_1?crid=3820HOMGI7BUS&dib=eyJ2IjoiMSJ9.worSx0jvoQeG-i_wFLuzyTwH2utk-620VNGoJ4Xa3xIkb8vil6p_nIwxD4_TuPiSLK7SFr7g2JeU0WovyGn41QyrOGmoBIz8FXzcqUTv_xyUVnIgqxtKbjQFDxefOHo4R5qbuX4eXNlwnixzQ5G9qr8pMDlL88CmZoGWsqEtJOELRaamTi-bH1yekBINwvukuvkEzQz2iV6v0MxmezxLFZRwIQ-Af6f6h89GN-h0v06SuQGUpVE-1NmNd7lxyi2x.iKdSzNwsLKLTy0oaYIPkVePPGbMPwYeZvsGoHWs8bLw&dib_tag=se&keywords=polyfuse+3+a&qid=1769758679&s=industrial&sprefix=polyfuse+3+a%2Cindustrial%2C96&sr=1-1
-
-https://www.amazon.com/JESSINIE-Absorption-Protection-Electromagnetic-Anti-Interference/dp/B0BG2BGJYZ/ref=sr_1_1?crid=23NOSQYTWFS84&dib=eyJ2IjoiMSJ9.aTN7eS3-GBkhrg8yMGE82ZqSp3_V98_0YgllB3V-fMoixvxOflY5sEI_sQYo6fjJwdtddyxODS6fku5HFhBu_LjUannp3LAKpVaR1DMMFxaM7vU9hNxqMq7le_-ep5lHPRbW4Z57PLoLWBq9wZoVrw.74ijqBofkuZKb4jB6csRK_AKhVRj6vajvdJ1xkEieDk&dib_tag=se&keywords=RC+snubber+kit+assorted+for+relays+motors&qid=1769484842&sprefix=rc+snubber+kit+assorted+for+relays+motors%2Caps%2C135&sr=8-1
 
 
 ## 🛒 Cart 2: The “Heavy Metal” Kit (Buy Later)
@@ -45,9 +41,9 @@ Build the physical robot and full mechanical structure.
 | Item | Qty | Status | Product Name (Search Key) | Est. Price | Why |
 |----|----:|----|----|----:|----|
 | Big Motors | 2 | — | NEMA 23 Stepper 3.0 Nm | $78 | High torque for Base & Shoulder |
-| Big Drivers | 2 | — | DM556T Stepper Driver | $70 | Industrial drivers for NEMA 23 |
-| Small Motors | 2 | — | NEMA 11 Stepper Motor | $60 | Wrist roll & gripper |
-| Encoders | 3 | **UPDATED** | AS5600 Encoder (White PCB) | $16 | Feedback for remaining joints |
+| Big Drivers | 2 | — | DM556T Stepper Driver | $38 | Industrial drivers for NEMA 23 |
+| Small Motors | 2 | — | NEMA 11 Stepper Motor | $30 | Wrist roll & gripper |
+| Encoders | 3 | **UPDATED** | AS5600 Encoder (White PCB) | $8.99 | Feedback for remaining joints |
 | Noise Fix | 8 | **NEW** | PCA9615 Differential Breakout | $30 | 2 per joint (MCU + motor side) |
 | Safety | 1 | **NEW** | 24V 40A Automotive Relay | $5 | Handles high-current E-Stop cut |
 | Logic | 1 | **NEW** | 4-Channel Level Shifter | $6 | Required for full 6-axis system |
