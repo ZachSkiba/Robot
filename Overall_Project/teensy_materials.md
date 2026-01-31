@@ -41,26 +41,17 @@ Master the code stack, single-motor control, differential sensing, and the PID l
 **Objective:**  
 Build the physical robot and full mechanical structure.
 
-**Estimated Total:** **~$378**
+**Estimated Total:** **~$152**
 
 > **Note:** Gears are listed as filament + grease since they are 3D printed.
 
 | Item | Qty | Status | Product Name (Search Key) | Est. Price | Why |
 |----|----:|----|----|----:|----|
-| Big Motors | 2 | — | NEMA 23 Stepper 3.0 Nm | $78 | High torque for Base & Shoulder |
-| Big Drivers | 2 | — | DM556T Stepper Driver | $38 | Industrial drivers for NEMA 23 |
-| Small Motors | 2 | — | NEMA 11 Stepper Motor | $30 | Wrist roll & gripper |
-| Encoders | 3 | **UPDATED** | AS5600 Encoder (White PCB) | $8.99 | Feedback for remaining joints |
-| Noise Fix | 8 | **NEW** | PCA9615 Differential Breakout | $30 | 2 per joint (MCU + motor side) |
-| Safety | 1 | **NEW** | 24V 40A Automotive Relay | $5 | Handles high-current E-Stop cut |
-| Logic | 1 | **NEW** | 4-Channel Level Shifter | $6 | Required for full 6-axis system |
-| Bearings | 20 | **NEW** | 608ZZ Ball Bearings | $12 | **CRITICAL**: Supports printed gears |
-| Couplers | 2 | **NEW** | 5mm → 8mm Rigid Coupler | $10 | Connects NEMA 23 to gearbox |
-| Gears | 1 | — | Black PETG Filament (1 kg) | $25 | Printed gear material |
-| Lube | 1 | — | White Lithium Grease | $8 | Required for plastic gears |
-| Hardware | 1 | — | M3 / M4 / M5 Screw Kit | $18 | Mechanical assembly |
-| Springs | 1 | — | Extension Spring Kit | $12 | Gravity assist for Joint 3 |
-| Wiring | 1 | — | Shielded 4-Core Wire | $15 | Stepper motor cabling |
+| Big Motors | 2 | [NEMA 23](https://www.amazon.com/Torque-Stepper-Motor-425oz-Router/dp/B00PNEPW4C/ref=sr_1_4?crid=3VJT53QTGCUA6&dib=eyJ2IjoiMSJ9.ZsbeGlyAFyyDRJIaRc6SsWXG7dIHl1MXc80xkF4aDRdZNajYrz0_r5pHYvv4EwhkwNpqxhwfzsct09JS6LQGbD8_fU3chGaAwG2VIQz2Jk7KW7htlF3niM19_EPfmiBrzzL-CQu6nm0nYev4Fv1hndaI9qFeI_nwkxh0Ztt7uKRSl2sX5v8EJl6tSOM90acNgxg-BvUS-84L0Cy42aNAqtf6PK0EwLu_g_ZDmCu-OFU.TQ-rHYSrhUr_N7vacHwcAMZF3HisbZko6XiHV2OB_rQ&dib_tag=se&keywords=nema+23&qid=1769581424&sprefix=nema+23%2Caps%2C170&sr=8-4) | NEMA 23 Stepper 3.0 Nm | $80 | High torque for Base & Shoulder |
+| Big Drivers | 2 | [DM556](https://www.amazon.com/Tofelf-Stepper-Upgraded-Subdivision-Controller/dp/B0CFY5WFDV/ref=sr_1_8?crid=1VYX3J00DL5YW&dib=eyJ2IjoiMSJ9.CqOxqAY9UWY9vpCdh0rjh5bUaCxBtH1s2SN8OcwLDRVgTdo83NlYWiUqg7CSRfxl0GilLt4lBjslZRaGC3RXIueGu8j8xa3PGDCwk-GVaawi_F4FR2d4Yi3gYOBCXVdjMQKXtcY79jto-Vt2UjSm4RjOEJYkBwIKxuG881GLaG5Z0LYY-MGzDXVPAjy6RGwyqXm4-wHffsm9JUzNgLmtqspk8VJFKohgVv7wVcV0MJx8AwtiKxWZRJ-ZNHOvAEoqlnbg3K4KOX_l2hExWHGxFDEwmwLXz78oAlMOBMPsKEY.G2K-1chl1KqZM1_LBRHIczX1bvicPteugDUxMICnxb8&dib_tag=se&keywords=Dm556&qid=1769838009&sprefix=dm556%2Caps%2C142&sr=8-8&th=1) | DM556T Stepper Driver | $32.99 | Industrial drivers for NEMA 23 |
+| Small Motors | 2 | [NEMA 11](https://www.amazon.com/YEJMKJ-Stepper-11-33oz%C2%B7-Bipolar-28x31mm/dp/B0FHHSVXQ7/ref=sr_1_2_sspa?crid=JCJC1180CRF0&dib=eyJ2IjoiMSJ9.z1WLtIvfYctBZ75FQYw5BsqW_spMsRaViRv7p6DPuo3ME-l5k6HltAeMcXOOmIlzSSByo52xRUbFC0P4eo-3x7HPjR08-jWio73XYfgSUA-bxokX7bcBn2UI3UBRKPGS90OFRC4oaMPaVUwOdgt9KEqpjcHpQgznSRhivkTkP9Qwc9BtnnOrcVrM_OYw4S8YGIufdFc4pviq4QfJ5O-BLgjCKrmUHz6t_MZUjaZ4h3k.7Nnx_JvqIczyug2hBpLkMwF8jranpwXJVJZ5pErTjqE&dib_tag=se&keywords=nema+11&qid=1769580856&sprefix=nema+11%2Caps%2C123&sr=8-2-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1) | NEMA 11 Stepper Motor | $31 | Wrist roll & gripper |
+| Encoders | 3 | [AS5600](https://www.amazon.com/Magnetic-Encoder-Induction-Measurement-Precision/dp/B094F8H591/ref=sr_1_2?crid=2REKRIB2S5ICH&dib=eyJ2IjoiMSJ9.KU86RXp8YElcySlagfOPY62nhMsMke5U3rsuf74uD4P2rlAM7KG4KnS5Kcq9dnvj2Uwiqc3lcisx4S-mpVRByGtr1IaRrpdQ07WQlnI_moOVdehBqLSTQcwg-TVPC-cQaMK8IW9lgx8oM_R54_aIUHubz7805GtzlBZdPYCf2seKIXznkIHuEZ7C_XQ-DQsk-5mBrB14hhhf67I49_ohLnFIv8c9mfcvBAqTs4frotQ.Ej9n5QsWii6u7dLkvD4_WVCcxP1ZdeUMklC0uCaLvEk&dib_tag=se&keywords=AS5600%2BEncoder&qid=1769754150&sprefix=as5600%2Bencoder%2Caps%2C122&sr=8-2&th=1) | AS5600 Encoder (White PCB) | $8.99 | Feedback for remaining joints |
+| Lube | 1 | [Grease](https://www.amazon.com/Lucas-Oil-10533-Lithium-Grease/dp/B004X70LZA/ref=sr_1_5?crid=3UAKOIN62P5K&dib=eyJ2IjoiMSJ9.fLuQDol9bz0IcIaCp2DpSjHKJ1PPYySJMUUeGraxfVQ2zHLwcKhY8ZUnB7GIxlkh7NBI0A6uGGafV1NWlL-VIsaOama_3FtlVrP2QsCf6JeoS87mQhUm9XB8GhyK4NUQe6rlHtUYtz76lx-Z1hnQn4Xhad-pWo8kZdZBExtUmwRGnPWzTRBjW0Ac_O20YJPGYUKrMmtc_HLLkIoh8O0KnZPg8sj1fwPfwyl-5mDApTuUZD756bcmQe1Go63nFzSd60Xo8GeTL78VyIuYWzI3q7SPmhixn8RJDfKAkhRozEE.gcHzQ9M0BVVVYa-5xYpjszGzKBQtTvANLQQXPDc6yJ4&dib_tag=se&keywords=White%2BLithium%2BGrease&qid=1769837642&sprefix=white%2Blithium%2Bgrease%2Caps%2C131&sr=8-5&th=1) | White Lithium Grease | $6 | Required for plastic gears |
 
 ---
 
@@ -68,9 +59,9 @@ Build the physical robot and full mechanical structure.
 
 | Phase | Estimated Cost |
 |----|----:|
-| Cart 1 — Electronics / Brain | ~$213 |
-| Cart 2 — Mechanics / Structure | ~$378 |
-| **Total Project Cost** | **~$591** |
+| Cart 1 — Electronics / Brain | ~$336 |
+| Cart 2 — Mechanics / Structure | ~$152 |
+| **Total Project Cost** | **~$488** |
 
 ---
 
