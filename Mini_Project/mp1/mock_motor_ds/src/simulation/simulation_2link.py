@@ -159,106 +159,107 @@ def path_heart(num_points=200):
 # 🔧 SMOOTH JOINT TRAJECTORY GENERATOR
 # ============================================================
 
-def generate_smooth_joint_trajectory(path_x, path_y, cartesian_speed, dt, 
+def generate_smooth_joint_trajectory(path_x, path_y, cartesian_speed, dt,
                                      max_joint_vel, max_joint_accel):
     """
-    Convert Cartesian path to smooth joint-space trajectories.
-    
-    Process:
-    1. Convert Cartesian waypoints to joint angles
-    2. Calculate time allocation based on Cartesian speed
-    3. Apply velocity/acceleration smoothing in joint space
-    
-    Returns: time_points, j1_positions, j1_velocities, j2_positions, j2_velocities
+    Real-world Cartesian-based trajectory generator.
+
+    Key idea:
+    - Time is allocated in CARTESIAN space (constant end-effector speed)
+    - IK is solved at each time step
+    - Joint velocities are limited AFTER IK
+    - Acceleration limits are enforced incrementally
+
+    Returns:
+    time_points,
+    j1_positions, j1_velocities,
+    j2_positions, j2_velocities
     """
-    
-    # Step 1: Convert all waypoints to joint angles
-    joint1_waypoints = []
-    joint2_waypoints = []
-    valid_indices = []
-    
-    for i, (x, y) in enumerate(zip(path_x, path_y)):
-        j1, j2 = inverse_kinematics(x, y)
-        if j1 is not None:
-            joint1_waypoints.append(np.degrees(j1))
-            joint2_waypoints.append(np.degrees(j2))
-            valid_indices.append(i)
-    
-    if len(joint1_waypoints) < 2:
-        raise ValueError("Path has insufficient valid waypoints")
-    
-    joint1_waypoints = np.array(joint1_waypoints)
-    joint2_waypoints = np.array(joint2_waypoints)
-    
-    # Step 2: Calculate distances and time allocation
-    path_x_valid = path_x[valid_indices]
-    path_y_valid = path_y[valid_indices]
-    
-    cartesian_distances = np.sqrt(
-        np.diff(path_x_valid)**2 + np.diff(path_y_valid)**2
-    )
-    total_distance = np.sum(cartesian_distances)
+
+    # --------------------------------------------------------
+    # 1. Compute Cartesian arc-length and timing
+    # --------------------------------------------------------
+    dx = np.diff(path_x)
+    dy = np.diff(path_y)
+    segment_lengths = np.sqrt(dx**2 + dy**2)
+
+    total_distance = np.sum(segment_lengths)
     total_time = total_distance / cartesian_speed
-    
-    # Cumulative time at each waypoint (proportional to distance)
-    cumulative_distances = np.concatenate([[0], np.cumsum(cartesian_distances)])
-    waypoint_times = cumulative_distances / total_distance * total_time
-    
-    # Step 3: Generate dense timeline
-    num_samples = int(total_time / dt)
-    time_points = np.linspace(0, total_time, num_samples)
-    
-    # Step 4: Interpolate joint positions
-    j1_positions_raw = np.interp(time_points, waypoint_times, joint1_waypoints)
-    j2_positions_raw = np.interp(time_points, waypoint_times, joint2_waypoints)
-    
-    # Step 5: Compute velocities and apply smoothing
-    j1_positions = [j1_positions_raw[0]]
-    j2_positions = [j2_positions_raw[0]]
-    j1_velocities = [0.0]
-    j2_velocities = [0.0]
-    
+
+    cumulative_dist = np.concatenate([[0.0], np.cumsum(segment_lengths)])
+    waypoint_times = cumulative_dist / cumulative_dist[-1] * total_time
+
+    # Dense control timeline
+    time_points = np.arange(0.0, total_time, dt)
+
+    # --------------------------------------------------------
+    # 2. Interpolate Cartesian position vs time
+    # --------------------------------------------------------
+    x_traj = np.interp(time_points, waypoint_times, path_x)
+    y_traj = np.interp(time_points, waypoint_times, path_y)
+
+    # --------------------------------------------------------
+    # 3. Inverse kinematics at EACH timestep
+    # --------------------------------------------------------
+    j1_pos = np.zeros_like(time_points)
+    j2_pos = np.zeros_like(time_points)
+
+    for i, (x, y) in enumerate(zip(x_traj, y_traj)):
+        t1, t2 = inverse_kinematics(x, y)
+        if t1 is None:
+            raise RuntimeError("IK failure during trajectory generation")
+
+        j1_pos[i] = np.degrees(t1)
+        j2_pos[i] = np.degrees(t2)
+
+    # --------------------------------------------------------
+    # 4. Velocity estimation (finite difference)
+    # --------------------------------------------------------
+    j1_vel_raw = np.gradient(j1_pos, dt)
+    j2_vel_raw = np.gradient(j2_pos, dt)
+
+    # --------------------------------------------------------
+    # 5. Apply velocity limits
+    # --------------------------------------------------------
+    j1_vel_limited = np.clip(j1_vel_raw, -max_joint_vel, max_joint_vel)
+    j2_vel_limited = np.clip(j2_vel_raw, -max_joint_vel, max_joint_vel)
+
+    # --------------------------------------------------------
+    # 6. Enforce acceleration limits (incremental)
+    # --------------------------------------------------------
+    j1_vel = np.zeros_like(j1_vel_limited)
+    j2_vel = np.zeros_like(j2_vel_limited)
+
     for i in range(1, len(time_points)):
-        # Desired position change
-        delta_j1_desired = j1_positions_raw[i] - j1_positions[-1]
-        delta_j2_desired = j2_positions_raw[i] - j2_positions[-1]
-        
-        # Desired velocity
-        vel_j1_desired = delta_j1_desired / dt
-        vel_j2_desired = delta_j2_desired / dt
-        
-        # Apply acceleration limits
-        vel_change_j1 = vel_j1_desired - j1_velocities[-1]
-        vel_change_j2 = vel_j2_desired - j2_velocities[-1]
-        
-        max_vel_change = max_joint_accel * dt
-        
-        if abs(vel_change_j1) > max_vel_change:
-            vel_j1_new = j1_velocities[-1] + max_vel_change * np.sign(vel_change_j1)
-        else:
-            vel_j1_new = vel_j1_desired
-            
-        if abs(vel_change_j2) > max_vel_change:
-            vel_j2_new = j2_velocities[-1] + max_vel_change * np.sign(vel_change_j2)
-        else:
-            vel_j2_new = vel_j2_desired
-        
-        # Apply velocity limits
-        vel_j1_new = np.clip(vel_j1_new, -max_joint_vel, max_joint_vel)
-        vel_j2_new = np.clip(vel_j2_new, -max_joint_vel, max_joint_vel)
-        
-        # Update position based on constrained velocity
-        pos_j1_new = j1_positions[-1] + vel_j1_new * dt
-        pos_j2_new = j2_positions[-1] + vel_j2_new * dt
-        
-        j1_positions.append(pos_j1_new)
-        j2_positions.append(pos_j2_new)
-        j1_velocities.append(vel_j1_new)
-        j2_velocities.append(vel_j2_new)
-    
-    return (time_points, 
-            np.array(j1_positions), np.array(j1_velocities),
-            np.array(j2_positions), np.array(j2_velocities))
+        dv1 = j1_vel_limited[i] - j1_vel[i-1]
+        dv2 = j2_vel_limited[i] - j2_vel[i-1]
+
+        max_dv = max_joint_accel * dt
+
+        dv1 = np.clip(dv1, -max_dv, max_dv)
+        dv2 = np.clip(dv2, -max_dv, max_dv)
+
+        j1_vel[i] = j1_vel[i-1] + dv1
+        j2_vel[i] = j2_vel[i-1] + dv2
+
+    # --------------------------------------------------------
+    # 7. Re-integrate position from constrained velocity
+    # --------------------------------------------------------
+    j1_pos_smooth = np.zeros_like(j1_pos)
+    j2_pos_smooth = np.zeros_like(j2_pos)
+
+    j1_pos_smooth[0] = j1_pos[0]
+    j2_pos_smooth[0] = j2_pos[0]
+
+    for i in range(1, len(time_points)):
+        j1_pos_smooth[i] = j1_pos_smooth[i-1] + j1_vel[i] * dt
+        j2_pos_smooth[i] = j2_pos_smooth[i-1] + j2_vel[i] * dt
+
+    return (
+        time_points,
+        j1_pos_smooth, j1_vel,
+        j2_pos_smooth, j2_vel
+    )
 
 # ============================================================
 # ▶️ SIMULATION RUNNER
