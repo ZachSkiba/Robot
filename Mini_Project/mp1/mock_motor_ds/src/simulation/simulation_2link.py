@@ -38,6 +38,12 @@ DT = 1.0 / HZ
 MAX_SPEED_DEG = 1080.0  # deg/s per joint
 MAX_ACCEL_DEG = 4000.0  # deg/s^2 per joint
 
+# Default "home" position (like real robots)
+# This is where the robot starts before every path
+# Using a central position within typical workspace (most paths are x=5-28, y=0-18)
+# This position: J1 ≈ 33.7°, J2 ≈ 0° (safe, centered configuration)
+HOME_POSITION_CARTESIAN = (25.0, 8.0)  # (25, 8) cm - central workspace position
+
 # ============================================================
 # 🧠 KINEMATICS ENGINE
 # ============================================================
@@ -128,6 +134,25 @@ def path_via_points(num_points=150):
     t = np.linspace(0, len(waypoints_x)-1, num_points)
     x = np.interp(t, np.arange(len(waypoints_x)), waypoints_x)
     y = np.interp(t, np.arange(len(waypoints_y)), waypoints_y)
+    return x, y
+
+def path_heart(num_points=200):
+    """Heart-shaped path"""
+    t = np.linspace(0, 2*np.pi, num_points)
+    
+    # Standard parametric heart equations
+    heart_x = 16 * np.sin(t)**3
+    heart_y = 13*np.cos(t) - 5*np.cos(2*t) - 2*np.cos(3*t) - np.cos(4*t)
+    
+    # Scale to fit workspace (robot reach = 30 cm)
+    # Creates ~8cm heart centered at (15, 10)
+    scale = 4.0
+    center_x = 15.0
+    center_y = 10.0
+    
+    x = center_x + scale * heart_x / 16.0
+    y = center_y + scale * heart_y / 17.0
+    
     return x, y
 
 # ============================================================
@@ -255,35 +280,56 @@ def run_digital_twin_simulation(path_function=path_straight_line,
     print(f"🏃 Cartesian Speed: {cartesian_speed} cm/s")
     print(f"⚙️  Control Rate: {HZ} Hz")
     
-    # 1. Generate Cartesian path
+    # 1. Initialize motors at HOME position (like real robots)
+    home_j1, home_j2 = inverse_kinematics(*HOME_POSITION_CARTESIAN)
+    if home_j1 is None:
+        print("❌ Invalid HOME position!")
+        return
+    
+    motor1 = MockMotor(max_velocity=MAX_SPEED_DEG, max_accel=MAX_ACCEL_DEG)
+    motor2 = MockMotor(max_velocity=MAX_SPEED_DEG, max_accel=MAX_ACCEL_DEG)
+    
+    # Set motors to home position
+    motor1.actual_pos = np.degrees(home_j1)
+    motor2.actual_pos = np.degrees(home_j2)
+    
+    home_x, home_y = HOME_POSITION_CARTESIAN
+    print(f"🏠 Home Position: ({home_x:.1f}, {home_y:.1f}) cm | J1: {np.degrees(home_j1):.1f}° J2: {np.degrees(home_j2):.1f}°")
+    
+    # 2. Generate Cartesian path
     path_x, path_y = path_function(num_points=path_resolution)
     
-    # 2. Convert to smooth joint trajectories
+    # 3. Add move-to-start segment (from HOME to first waypoint)
+    start_x, start_y = path_x[0], path_y[0]
+    
+    # Generate straight line from home to path start
+    move_to_start_points = 50
+    approach_x = np.linspace(home_x, start_x, move_to_start_points)
+    approach_y = np.linspace(home_y, start_y, move_to_start_points)
+    
+    # Prepend approach path to main path
+    full_path_x = np.concatenate([approach_x, path_x])
+    full_path_y = np.concatenate([approach_y, path_y])
+    
+    print(f"📍 Path Start: ({start_x:.1f}, {start_y:.1f}) cm")
+    
+    # 4. Convert to smooth joint trajectories
     (times, 
      j1_pos, j1_vel, 
      j2_pos, j2_vel) = generate_smooth_joint_trajectory(
-        path_x, path_y, 
+        full_path_x, full_path_y, 
         cartesian_speed, 
         DT,
         MAX_SPEED_DEG * 0.8,  # Safety margin
         MAX_ACCEL_DEG
     )
     
-    print(f"⏱️  Trajectory Duration: {times[-1]:.2f} seconds ({len(times)} frames)")
+    print(f"⏱️  Total Duration: {times[-1]:.2f} seconds ({len(times)} frames)")
+    print(f"🦾 Executing: Home → Start → Path → End")
     
-    # 3. Initialize motors
-    motor1 = MockMotor(max_velocity=MAX_SPEED_DEG, max_accel=MAX_ACCEL_DEG)
-    motor2 = MockMotor(max_velocity=MAX_SPEED_DEG, max_accel=MAX_ACCEL_DEG)
-    
-    # Set initial positions
-    motor1.actual_pos = j1_pos[0]
-    motor2.actual_pos = j2_pos[0]
-    
-    # 4. Execute trajectory
+    # 5. Execute trajectory
     log_data = []
     command_id = 1
-    
-    print(f"🦾 Executing smooth trajectory...")
     
     for i in range(len(times)):
         # Target from smooth trajectory
@@ -373,7 +419,8 @@ if __name__ == "__main__":
         'path_square': (18.0, 200),          # Medium-fast, corners need resolution
         'path_zigzag': (12.0, 150),          # Slower for sharp turns
         'path_letter_s': (12.0, 200),        # Slower, complex curves need resolution
-        'path_via_points': (15.0, 150)       # Medium speed, smooth interpolation
+        'path_via_points': (15.0, 150),      # Medium speed, smooth interpolation
+        'path_heart': (10.0, 250)            # Slow, very detailed curves
     }
     
     # Display menu
