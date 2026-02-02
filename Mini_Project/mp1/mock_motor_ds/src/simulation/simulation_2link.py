@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import re
 from mock_motor import MockMotor
+from scipy.interpolate import CubicSpline
 
 # ============================================================
 # 📂 PATH SETUP
@@ -61,6 +62,7 @@ def inverse_kinematics(x, y):
     theta2 = np.arccos(cos_theta2) 
     theta1 = np.arctan2(y, x) - np.arctan2(L2 * np.sin(theta2), L1 + L2 * np.cos(theta2))
     return theta1, theta2
+
 
 # ============================================================
 # 🎨 PATH DEFINITIONS (EASILY SWAPPABLE)
@@ -159,107 +161,162 @@ def path_heart(num_points=200):
 # 🔧 SMOOTH JOINT TRAJECTORY GENERATOR
 # ============================================================
 
-def generate_smooth_joint_trajectory(path_x, path_y, cartesian_speed, dt,
+def generate_smooth_joint_trajectory(path_x, path_y, cartesian_speed, dt, 
                                      max_joint_vel, max_joint_accel):
     """
-    Real-world Cartesian-based trajectory generator.
-
-    Key idea:
-    - Time is allocated in CARTESIAN space (constant end-effector speed)
-    - IK is solved at each time step
-    - Joint velocities are limited AFTER IK
-    - Acceleration limits are enforced incrementally
-
-    Returns:
-    time_points,
-    j1_positions, j1_velocities,
-    j2_positions, j2_velocities
+    Generates an EXACT straight-line trajectory with Trapezoidal Velocity Profiling.
+    
+    INTELLIGENT CORNER HANDLING:
+    - Analyzes the path for sharp corners (> 45 degrees).
+    - Breaks the path into "segments" at these corners.
+    - Decelerates to a full STOP at sharp corners to ensure 0 error.
+    - Maintains constant speed through smooth curves (like circles).
+    - Interpolates strictly in Cartesian space (no "banana" joint curves).
     """
 
-    # --------------------------------------------------------
-    # 1. Compute Cartesian arc-length and timing
-    # --------------------------------------------------------
+    # 1. Analyze Geometry to find "Corners"
+    # ---------------------------------------------------------
+    # Calculate vectors between every waypoint
     dx = np.diff(path_x)
     dy = np.diff(path_y)
-    segment_lengths = np.sqrt(dx**2 + dy**2)
+    distances = np.sqrt(dx**2 + dy**2)
+    
+    # Calculate heading angle for each tiny segment
+    headings = np.arctan2(dy, dx)
+    
+    # Calculate change in heading between segments
+    # (Wrap differences to -pi...pi)
+    angle_diffs = np.diff(headings)
+    angle_diffs = (angle_diffs + np.pi) % (2 * np.pi) - np.pi
+    
+    # Identify indices where a "Sharp Turn" happens
+    # Threshold: 45 degrees (approx 0.78 rad). 
+    # We look for turns significantly sharper than a circle approximation.
+    corner_threshold_rad = np.deg2rad(45.0)
+    
+    # "split_indices" will be the indices of waypoints where we MUST stop
+    # We shift by +1 because diff reduces array size by 1
+    sharp_turn_indices = np.where(np.abs(angle_diffs) > corner_threshold_rad)[0] + 1
+    
+    # Create list of segments (start_idx, end_idx)
+    segment_indices = [0] + list(sharp_turn_indices) + [len(path_x) - 1]
+    
+    # 2. Process Each Segment Individually
+    # ---------------------------------------------------------
+    all_time = []
+    all_j1 = []
+    all_j2 = []
+    all_j1_vel = []
+    all_j2_vel = []
+    
+    current_time_offset = 0.0
+    last_j1_pos = None
+    last_j2_pos = None
 
-    total_distance = np.sum(segment_lengths)
-    total_time = total_distance / cartesian_speed
+    # Cartesian Acceleration Limit (cm/s^2)
+    # Higher = Snappier stops, Lower = Smoother stops
+    ACCEL_CARTESIAN = 50.0 
 
-    cumulative_dist = np.concatenate([[0.0], np.cumsum(segment_lengths)])
-    waypoint_times = cumulative_dist / cumulative_dist[-1] * total_time
+    for i in range(len(segment_indices) - 1):
+        # Extract the waypoints for this segment
+        start_idx = segment_indices[i]
+        end_idx = segment_indices[i+1] + 1 # +1 for inclusive slicing
+        
+        seg_x = path_x[start_idx:end_idx]
+        seg_y = path_y[start_idx:end_idx]
+        
+        # Calculate arc length along this segment
+        seg_dx = np.diff(seg_x)
+        seg_dy = np.diff(seg_y)
+        seg_dists = np.sqrt(seg_dx**2 + seg_dy**2)
+        seg_cum_dist = np.concatenate(([0], np.cumsum(seg_dists)))
+        total_seg_dist = seg_cum_dist[-1]
+        
+        if total_seg_dist < 0.001:
+            continue # Skip tiny segments
 
-    # Dense control timeline
-    time_points = np.arange(0.0, total_time, dt)
+        # --- Trapezoidal Profile Generation ---
+        # Calculate time needed for acceleration phase
+        t_accel = cartesian_speed / ACCEL_CARTESIAN
+        d_accel = 0.5 * ACCEL_CARTESIAN * t_accel**2
+        
+        # Check if segment is too short to reach full speed (Triangle profile)
+        if total_seg_dist < 2 * d_accel:
+            d_accel = total_seg_dist / 2.0
+            t_accel = np.sqrt(2 * d_accel / ACCEL_CARTESIAN)
+            t_cruise = 0.0
+        else:
+            d_cruise = total_seg_dist - 2 * d_accel
+            t_cruise = d_cruise / cartesian_speed
+            
+        t_decel = t_accel
+        total_seg_time = t_accel + t_cruise + t_decel
+        
+        # Generate time steps for this segment
+        num_steps = int(np.ceil(total_seg_time / dt))
+        seg_times = np.linspace(0, total_seg_time, num_steps)
+        
+        # Calculate distance at each time step (s(t))
+        dist_at_t = np.zeros_like(seg_times)
+        for k, t in enumerate(seg_times):
+            if t <= t_accel:
+                # Accelerating
+                dist_at_t[k] = 0.5 * ACCEL_CARTESIAN * t**2
+            elif t <= (t_accel + t_cruise):
+                # Cruising
+                dist_at_t[k] = d_accel + cartesian_speed * (t - t_accel)
+            else:
+                # Decelerating
+                t_d = t - t_accel - t_cruise
+                dist_at_t[k] = (d_accel + (t_cruise * cartesian_speed)) + \
+                               (cartesian_speed * t_d) - \
+                               (0.5 * ACCEL_CARTESIAN * t_d**2)
+        
+        # Clip to ensure we don't overshoot length
+        dist_at_t = np.clip(dist_at_t, 0, total_seg_dist)
+        
+        # --- Cartesian Interpolation ---
+        # Map distance s(t) -> x(t), y(t) linearly
+        # This guarantees EXACT straight lines between waypoints
+        dense_x = np.interp(dist_at_t, seg_cum_dist, seg_x)
+        dense_y = np.interp(dist_at_t, seg_cum_dist, seg_y)
+        
+        # --- Inverse Kinematics ---
+        seg_j1 = []
+        seg_j2 = []
+        
+        for x, y in zip(dense_x, dense_y):
+            t1, t2 = inverse_kinematics(x, y)
+            if t1 is None:
+                # Keep last valid or 0
+                seg_j1.append(seg_j1[-1] if seg_j1 else (last_j1_pos if last_j1_pos else 0))
+                seg_j2.append(seg_j2[-1] if seg_j2 else (last_j2_pos if last_j2_pos else 0))
+            else:
+                seg_j1.append(np.degrees(t1))
+                seg_j2.append(np.degrees(t2))
+        
+        # Compute Velocity (Finite Difference)
+        seg_j1 = np.array(seg_j1)
+        seg_j2 = np.array(seg_j2)
+        
+        seg_v1 = np.gradient(seg_j1, dt)
+        seg_v2 = np.gradient(seg_j2, dt)
+        
+        # Append to global lists
+        all_time.extend(seg_times + current_time_offset)
+        all_j1.extend(seg_j1)
+        all_j2.extend(seg_j2)
+        all_j1_vel.extend(seg_v1)
+        all_j2_vel.extend(seg_v2)
+        
+        # Update trackers
+        current_time_offset += total_seg_time
+        last_j1_pos = seg_j1[-1]
+        last_j2_pos = seg_j2[-1]
 
-    # --------------------------------------------------------
-    # 2. Interpolate Cartesian position vs time
-    # --------------------------------------------------------
-    x_traj = np.interp(time_points, waypoint_times, path_x)
-    y_traj = np.interp(time_points, waypoint_times, path_y)
-
-    # --------------------------------------------------------
-    # 3. Inverse kinematics at EACH timestep
-    # --------------------------------------------------------
-    j1_pos = np.zeros_like(time_points)
-    j2_pos = np.zeros_like(time_points)
-
-    for i, (x, y) in enumerate(zip(x_traj, y_traj)):
-        t1, t2 = inverse_kinematics(x, y)
-        if t1 is None:
-            raise RuntimeError("IK failure during trajectory generation")
-
-        j1_pos[i] = np.degrees(t1)
-        j2_pos[i] = np.degrees(t2)
-
-    # --------------------------------------------------------
-    # 4. Velocity estimation (finite difference)
-    # --------------------------------------------------------
-    j1_vel_raw = np.gradient(j1_pos, dt)
-    j2_vel_raw = np.gradient(j2_pos, dt)
-
-    # --------------------------------------------------------
-    # 5. Apply velocity limits
-    # --------------------------------------------------------
-    j1_vel_limited = np.clip(j1_vel_raw, -max_joint_vel, max_joint_vel)
-    j2_vel_limited = np.clip(j2_vel_raw, -max_joint_vel, max_joint_vel)
-
-    # --------------------------------------------------------
-    # 6. Enforce acceleration limits (incremental)
-    # --------------------------------------------------------
-    j1_vel = np.zeros_like(j1_vel_limited)
-    j2_vel = np.zeros_like(j2_vel_limited)
-
-    for i in range(1, len(time_points)):
-        dv1 = j1_vel_limited[i] - j1_vel[i-1]
-        dv2 = j2_vel_limited[i] - j2_vel[i-1]
-
-        max_dv = max_joint_accel * dt
-
-        dv1 = np.clip(dv1, -max_dv, max_dv)
-        dv2 = np.clip(dv2, -max_dv, max_dv)
-
-        j1_vel[i] = j1_vel[i-1] + dv1
-        j2_vel[i] = j2_vel[i-1] + dv2
-
-    # --------------------------------------------------------
-    # 7. Re-integrate position from constrained velocity
-    # --------------------------------------------------------
-    j1_pos_smooth = np.zeros_like(j1_pos)
-    j2_pos_smooth = np.zeros_like(j2_pos)
-
-    j1_pos_smooth[0] = j1_pos[0]
-    j2_pos_smooth[0] = j2_pos[0]
-
-    for i in range(1, len(time_points)):
-        j1_pos_smooth[i] = j1_pos_smooth[i-1] + j1_vel[i] * dt
-        j2_pos_smooth[i] = j2_pos_smooth[i-1] + j2_vel[i] * dt
-
-    return (
-        time_points,
-        j1_pos_smooth, j1_vel,
-        j2_pos_smooth, j2_vel
-    )
+    return (np.array(all_time), 
+            np.array(all_j1), np.array(all_j1_vel),
+            np.array(all_j2), np.array(all_j2_vel))
 
 # ============================================================
 # ▶️ SIMULATION RUNNER
@@ -418,7 +475,7 @@ if __name__ == "__main__":
         'path_diagonal': (20.0, 100),        # Fast, simple path
         'path_circle': (15.0, 200),          # Medium speed, high resolution for curves
         'path_square': (18.0, 200),          # Medium-fast, corners need resolution
-        'path_zigzag': (12.0, 150),          # Slower for sharp turns
+        'path_zigzag': (20.0, 150),          # Slower for sharp turns
         'path_letter_s': (12.0, 200),        # Slower, complex curves need resolution
         'path_via_points': (15.0, 150),      # Medium speed, smooth interpolation
         'path_heart': (10.0, 250)            # Slow, very detailed curves
