@@ -1,4 +1,4 @@
-- Decide what to buy and what we hve to geminis and check all compatability
-- Update overall plan and phase 0
+- Tell dad what to buy
 - Start simulations
+    - can we have a play button, make more realistic, less error??
 - Start mini project
