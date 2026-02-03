@@ -7,7 +7,7 @@
 **Objective:**  
 Master the code stack, single-motor control, differential sensing, and the PID loop.
 
-**Estimated Total:** **$335.92**
+**Estimated Total:** **$363.88**
 
 | Item | Qty | Status | Product Name (Search Key) | Est. Price | Why |
 |----|----:|----|----|----:|----|
@@ -32,7 +32,7 @@ Master the code stack, single-motor control, differential sensing, and the PID l
 | Common ground terminal block | 1 | — | [MILAPEAK Screw Terminal Strip](https://www.amazon.com/Positions-Terminal-Pre-Insulated-Barrier-MILAPEAK/dp/B08ZXH6768/ref=sr_1_1_sspa?crid=3TTK9MDCNCLLI&dib=eyJ2IjoiMSJ9.FZsMJ_t8Sg6Zupp5h7WN_d-S2iqFUq7rhpmw40qGFe1c_WVOHZR6EWykBHzH79D2yQlIapZE44xKaHiMM5lGuyaclOVj7Ekt9t7sLyuyq8Y22NCZsI4d5Z0zu1Zt1uZP0YaS4AcpURIxupiNCQGJfCAyf5jRG9npGMJZgN_RlRyv_sug1E43j0neMCKzleLn-LwgL9P3NUrzYFf-MA0E2SMWUhPrMW1PCr6s9iOakD0.ELuptvWPbqsAM-OFGvTu0MS5NptZbK02pldK2VptiUM&dib_tag=se&keywords=Common%2Bground%2Bterminal%2Bblock&qid=1769800140&sprefix=common%2Bground%2Bterminal%2Bblock%2B%2Caps%2C154&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1) | $11.89 | Star grounding; twisting fails |
 | Limit switches | 3–6 | — | [HiLetgo Micro Limit Switch KW12-3](https://www.amazon.com/HiLetgo-KW12-3-Roller-Switch-Normally/dp/B07X142VGC/ref=sr_1_1_sspa?crid=19JUW1HH6NSUM&dib=eyJ2IjoiMSJ9.XLGu29kbYpH9SKLYunoRN9LRBbnEZj3rLLG1_Pp01_xh2BV5FSZEP_R4gasClheSawvd5GKqNBMd99SzycQLZNtnJGGhacGUWEsrxRiV6dzTbcW8y7Pr--ak5wgKGNW_d1CqwaR1pDydzK91HcyoRHI4SttIpCDsAG7ilGbiclf0PCqqnb5xOVU7kMaEAh_xgxIXl_fuVyM1m-tGOmD9ZLsRCzrmcHLB6qkT6mmwnpY.nGMYIsrb1nRjlquTPMiLtRhmsxtg1PPDNHUsZhBv0pU&dib_tag=se&keywords=Micro+Limit+Switch&qid=1769483765&sprefix=micro+limit+switch%2Caps%2C139&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1) | $5.99 | Homing impossible without them |
 | Soldering Iron + solder | 1 | — | [60W Temperature-Controlled Soldering Kit](https://www.amazon.com/Soldering-Kit-Temperature-Desoldering-Electronics/dp/B07S61WT16/ref=sr_1_6?crid=259GIKPB7YLBG&dib=eyJ2IjoiMSJ9.tFdkLQDnESC_xqc4CNJkOb3GOnwIGYHWix_P8SaqVGxvRnM4HMw70vjWcdBrQF4Pn5WdACscemwrTOYrFfToMgfDC3gbyxHiwh42WIxmEyPh7OfD3pxEft30ZPU36DKZE16lgH1VcKanordx1s3oKfsPc6uRZ0P72HqmvEjrRu8iEJaplZGUC-PgWcLNXbpqpaN4ZS_YvSxqR3bS431Zg7vDgJed3Y2EXB-RulL5pyqmBVm0UsZO6qM_CEWuJMZztspN0crQqxNevNZNoUs2MkpbzWlLp6DEbzc2IWamI50.vGjcXXyC8-gGgcQrDZbqFEaKpMnutD2ODMVnDA_Mntk&dib_tag=se&keywords=soldering%2Biron%2Bkit&qid=1769798301&sprefix=soldering%2Biron%2Caps%2C201&sr=8-6&th=1) | $23.99 | Crimps alone are fantasy; fixes inevitable |
-| Lube | 1 | [Grease](https://www.amazon.com/Lucas-Oil-10533-Lithium-Grease/dp/B004X70LZA/ref=sr_1_5?crid=3UAKOIN62P5K&dib=eyJ2IjoiMSJ9.fLuQDol9bz0IcIaCp2DpSjHKJ1PPYySJMUUeGraxfVQ2zHLwcKhY8ZUnB7GIxlkh7NBI0A6uGGafV1NWlL-VIsaOama_3FtlVrP2QsCf6JeoS87mQhUm9XB8GhyK4NUQe6rlHtUYtz76lx-Z1hnQn4Xhad-pWo8kZdZBExtUmwRGnPWzTRBjW0Ac_O20YJPGYUKrMmtc_HLLkIoh8O0KnZPg8sj1fwPfwyl-5mDApTuUZD756bcmQe1Go63nFzSd60Xo8GeTL78VyIuYWzI3q7SPmhixn8RJDfKAkhRozEE.gcHzQ9M0BVVVYa-5xYpjszGzKBQtTvANLQQXPDc6yJ4&dib_tag=se&keywords=White%2BLithium%2BGrease&qid=1769837642&sprefix=white%2Blithium%2Bgrease%2Caps%2C131&sr=8-5&th=1) | White Lithium Grease | $6 | Required for plastic gears |
+| Lube | 1 | [Grease](https://www.amazon.com/Lucas-Oil-10533-Lithium-Grease/dp/B004X70LZA/ref=sr_1_5?crid=3UAKOIN62P5K&dib=eyJ2IjoiMSJ9.fLuQDol9bz0IcIaCp2DpSjHKJ1PPYySJMUUeGraxfVQ2zHLwcKhY8ZUnB7GIxlkh7NBI0A6uGGafV1NWlL-VIsaOama_3FtlVrP2QsCf6JeoS87mQhUm9XB8GhyK4NUQe6rlHtUYtz76lx-Z1hnQn4Xhad-pWo8kZdZBExtUmwRGnPWzTRBjW0Ac_O20YJPGYUKrMmtc_HLLkIoh8O0KnZPg8sj1fwPfwyl-5mDApTuUZD756bcmQe1Go63nFzSd60Xo8GeTL78VyIuYWzI3q7SPmhixn8RJDfKAkhRozEE.gcHzQ9M0BVVVYa-5xYpjszGzKBQtTvANLQQXPDc6yJ4&dib_tag=se&keywords=White%2BLithium%2BGrease&qid=1769837642&sprefix=white%2Blithium%2Bgrease%2Caps%2C131&sr=8-5&th=1) | White Lithium Grease | $5.99 | Required for plastic gears |
 | Ceramic Capacitor Kit | 1 | — | [BOJACK Capacitor Multilayer Monolithic Assortment](https://www.amazon.com/BOJACK-Capacitor-Multilayer-Monolithic-Assortment/dp/B085RDTCCV/ref=sr_1_6?crid=314C6OA9645LL&dib=eyJ2IjoiMSJ9.mT_Deb4CobqCb1WizUwoMeVk-4tcBeAXVLQXF5l_-JbX8aGwF_gwo8tpGToXuZ1TvTOr1s4H8WiKRZf5NDpsTN-WyE2QwosDNvkliGs0-hntnt4xvkW-7eEIVgyX2IgEh9aa41O_tukAZpMf_wt-xCLU6-nT-AoOC0IAx0fbEM2a6NRG7oLU1HOdP9zo8xX5x1AziqDBoN9xiHbu04IVnVgKe4pBGpaWMpo9nZdOTQY.pWrFyWGBtqhuKu9zhV-_HPeZLYxf94fbxCiynRqqO5s) | $9.99 | Ceramic MLCC, wide range of values, for decoupling and filtering |
 | Electrolytic Capacitor Kit | 1 | — | [Electrolytic Assortment 0.1µF–1000µF](https://www.amazon.com/Electrolytic-Assortment-0-1uF-1000uF-Transparent-Electronics/dp/B0F1V24SG9/ref=sr_1_4?crid=GV6Y786J797N&dib=eyJ2IjoiMSJ9.OMAhckewDdw7ify-8AoPOi1AJUsox1c_YO0bdmqzjR2sD-xlpA9Y-ccX2O0yB8uOD8ox7ogujJqWncrUQIPYd379TwDFKetyTlh3V78_piuJVYXHq9Wg2AjRf1h3Irg2mwAAVuHrfWPbdGNgTeYCh2sGdDbVNzvo_ui8CnBdF7gDZ6Fgtah0Sb36fm5zekEqHVOf_irUfK7dtyVZne6ZQjK_hDY0odumuOwmss7Je_w.dQ7FYqfsSTAInkWmPgbY2seYBkmftrsxq37ivTKDdKo) | $12.99 | Radial electrolytics, 0.1µF–1000µF, 50V, general-purpose filtering |
 | Electrolytic Capacitor | 1 | — | [Electrolytic Capacitors 100µF 50V](https://www.amazon.com/ALLECIN-Electrolytic-Capacitor-0-32x0-47in-Capacitors/dp/B0CMQ8XQ4N/ref=sr_1_1_sspa?crid=L8WLWBYVLAX5&dib=eyJ2IjoiMSJ9.ylS09CkL5h-DjfqseJuShOaSEeYghk1RKyAJko0NrJqnE_dt4we8hTraYKhrpUIq0hJz2ad2nOSkiFLN1QmkDlBTX2JU9KVTntCnCW8bXOWTTPuk1_SiU6xGQEcdyKToj2-h-OPo4HZmdbsW4cnXZZRRxDqi95uKFt0qxznScsGy_JZzpJioDNN7lpEb-I8y275COayObJCmIr8FhzRyObO2IKOSpYnM0sAatkdcbvs.bmAdEhpRmgpEiEkkpZhDHkfqKhgR0ePNfsrTjz1ZFjI) | $5.99 | Saftey and Filter |
@@ -44,7 +44,7 @@ Master the code stack, single-motor control, differential sensing, and the PID l
 **Objective:**  
 Build the physical robot and full mechanical structure.
 
-**Estimated Total:** **~$152**
+**Estimated Total:** **~$153**
 
 > **Note:** Gears are listed as filament + grease since they are 3D printed.
 
@@ -61,9 +61,9 @@ Build the physical robot and full mechanical structure.
 
 | Phase | Estimated Cost |
 |----|----:|
-| Cart 1 — Electronics / Brain | ~$336 |
-| Cart 2 — Mechanics / Structure | ~$152 |
-| **Total Project Cost** | **~$488** |
+| Cart 1 — Electronics / Brain | ~$364 |
+| Cart 2 — Mechanics / Structure | ~$153 |
+| **Total Project Cost** | **~$517** |
 
 ---
 
