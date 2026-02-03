@@ -402,3 +402,378 @@ If you want, next we can:
 
 
 Just say the word.
+
+
+# Production-Grade 6-DOF Robotics Stack (Final, Locked)
+
+
+This document defines a **free, advanced, production-grade robotics stack** suitable for a university or early-professional 6-DOF robot arm.  
+This is **not** Arduino-demo robotics. This is a real system with correct separation of concerns, deterministic control, and reproducible tooling.
+
+
+---
+
+
+## FINAL SYSTEM ARCHITECTURE (LOCKED)
+
+
+**Design goal:**  
+Maximum performance and reliability without paid RTOS, industrial EtherCAT hardware, or proprietary tooling.
+
+
+### High-Level Split (Non-Negotiable)
+
+
+| Layer | Runs Where | Purpose |
+|-----|-----------|--------|
+| Hard real-time motor control | Teensy 4.1 | Step timing, encoder reads, PID |
+| Supervisory logic | Host PC (Linux) | Trajectories, kinematics, planning |
+| Firmware build | PlatformIO | Deterministic builds, CI-friendly |
+| High-level code | Python + ROS2 | IK, UI, logging |
+| Dev environment | Local VS Code + Dev Containers | Reproducibility |
+
+
+### Absolute Rules
+
+
+- **Python never closes a control loop**
+- **Teensy never plans trajectories**
+
+
+This separation is what prevents instability, jitter, and runaway failures.
+
+
+---
+
+
+## WHAT YOU STILL NEED (CRITICAL)
+
+
+### 1. Operating System (MANDATORY)
+
+
+**Ubuntu 22.04 LTS (bare metal or dual boot)**
+
+
+Do **not** attempt to run this stack on Windows or macOS if you care about reliability.
+
+
+**Why Ubuntu:**
+- Native USB access
+- ROS2 Humble support
+- Docker works correctly
+- PlatformIO is stable
+
+
+**Reality check:**  
+If you stay on Windows/macOS, you will lose hours to USB passthrough and driver issues. No exceptions.
+
+
+---
+
+
+### 2. Communication Protocol (LOCK THIS IN)
+
+
+#### ❌ USB Serial (final system)
+#### ✅ Ethernet (ESP32 bridge or USB CDC → TCP)
+
+
+USB is acceptable for bring-up only.  
+Ethernet is far more stable for a 6-DOF robot.
+
+
+#### Final Protocol
+
+
+- **Transport:** TCP/IP  
+- **Encoding:** Flat binary packets (NOT JSON)  
+- **Command rate:** 250–500 Hz  
+
+
+**PC → Teensy (Command Packet):**
+
+[HEADER][SEQ][q_des[6]][qd_des[6]][flags][CRC]
+
+
+
+**Teensy → PC (State Packet):**
+
+[HEADER][SEQ][q[6]][qd[6]][torque_est[6]][faults][CRC]
+
+
+
+**Why binary:**
+- Deterministic timing
+- No parsing jitter
+- Lower latency
+- Predictable bandwidth
+
+
+---
+
+
+### 3. Control Loop Timing (REALISTIC)
+
+
+**Teensy 4.1 @ 600 MHz**
+
+
+| Task | Rate |
+|----|----|
+| Encoder read | 10 kHz |
+| PID (per joint) | 5 kHz |
+| Step generation | Hardware timers |
+| Safety checks | 5 kHz |
+| Communications | 1 kHz |
+
+
+This is well within Teensy limits and correctly avoids ROS on the MCU.
+
+
+---
+
+
+### 4. Encoder Architecture (IMPORTANT FIX)
+
+
+**AS5600 over I²C will fail if scaled naïvely.**
+
+
+#### Problems
+- I²C is not deterministic
+- Shared bus with 6 encoders = noise and timing collapse
+
+
+#### Required Changes
+- Dedicated I²C bus per **2 encoders**
+- Clock ≤ 400 kHz
+- Twisted pairs (already planned)
+- Shield grounded at **one end only**
+
+
+#### Better Alternative (Still Free)
+- **SPI absolute encoders (AS5047P)**
+- One bus, chip-select per joint
+
+
+If you stay with AS5600:
+> Treat I²C as a *sensor*, not a timing reference.
+
+
+---
+
+
+### 5. Stepper Strategy (Choose One)
+
+
+#### Option A — Position-Controlled Steppers
+- TMC2209
+- Closed-loop via encoder
+- PID on position
+
+
+**Pros:** acceptable for student arm  
+**Cons:** no true torque control
+
+
+#### Option B — External Drivers (Recommended for High Load)
+- DM556
+- Step/Dir only
+- Encoder feedback still read by Teensy
+
+
+**Pros:** cleaner power, less EMI  
+**Rule:** Use DM556 for **Base + Shoulder (NEMA 23)**
+
+
+---
+
+
+### 6. Safety System (CRITICAL GAP)
+
+
+You are close, but one element is missing.
+
+
+#### Required Safety Layers
+
+
+| Layer | Action |
+|----|----|
+| E-Stop | Cuts 24V motor power |
+| Firmware watchdog | Disables all enables |
+| Encoder sanity check | Detects runaway |
+| Soft limits | Prevents self-collision |
+| Hard limits | Physical limit switches |
+
+
+#### Missing Item (Add This)
+- **Safety relay with feedback contacts**
+- Teensy must verify relay is *open* before motion
+
+
+Without feedback, the E-Stop is blind.
+
+
+---
+
+
+## SOFTWARE SETUP — STEP BY STEP
+
+
+### STEP 1 — GitHub Repository Structure (FINAL)
+
+
+
+robot-arm/
+├── firmware/ # PlatformIO (Teensy)
+│ ├── platformio.ini
+│ └── src/
+│ └── main.cpp
+├── ros_ws/ # ROS2 workspace
+│ └── src/
+│ └── arm_control/
+├── devcontainer/
+│ └── devcontainer.json
+├── requirements.txt
+├── docker/
+│ └── Dockerfile
+└── README.md
+
+
+
+---
+
+
+### STEP 2 — PlatformIO (MCU)
+
+
+#### Install
+```bash
+sudo apt install python3-pip
+pip install platformio
+platformio.ini
+[env:teensy41]
+platform = teensy
+board = teensy41
+framework = arduino
+build_flags =
+  -O3
+  -DUSB_SERIAL
+lib_deps =
+  teensyduino
+
+PlatformIO provides:
+
+Deterministic builds
+
+Version pinning
+
+CI compatibility
+
+Reproducible firmware
+
+STEP 3 — ROS2 + Python (Host)
+ROS2 Humble
+sudo apt install ros-humble-desktop
+Python Dependencies (requirements.txt)
+numpy==1.26.4
+scipy
+pyserial
+pyyaml
+matplotlib
+ROS Nodes
+
+trajectory_node
+
+kinematics_node
+
+hardware_interface_node
+
+STEP 4 — Dev Container (FINAL)
+{
+  "name": "Robotics Arm",
+  "image": "ros:humble",
+  "runArgs": [
+    "--net=host",
+    "--device=/dev/ttyACM0"
+  ],
+  "postCreateCommand": "pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "platformio.platformio-ide",
+        "ms-iot.vscode-ros"
+      ]
+    }
+  }
+}
+
+Provides:
+
+ROS2
+
+Python
+
+PlatformIO
+
+USB access
+
+STEP 5 — GitHub Workflow
+Rules
+
+Firmware and ROS code live in one repo
+
+CI builds firmware (no flashing)
+
+Dev container defines the environment
+
+Daily Workflow
+
+git pull
+
+Open VS Code
+
+Reopen in container
+
+Flash Teensy
+
+Run ROS nodes
+
+LIMITATIONS (HONEST)
+Limitation	Workaround
+No hard real-time	MCU handles timing
+No true torque sensing	Encoder + current model
+I²C noise	Bus isolation, clock limits
+No certified safety	Physical E-Stop + limits
+No EtherCAT	Cost and licensing
+
+This is the ceiling without industrial hardware.
+
+FINAL JUDGMENT
+
+This stack is:
+
+Correctly layered
+
+Industry-aligned
+
+Free
+
+Scalable
+
+Safe if built properly
+
+You are building a real robot, not a demo.
+
+NEXT (Pick One)
+
+Exact PID math and tuning method
+
+Binary protocol spec (byte-level)
+
+ROS2 hardware interface design
+
+Encoder noise filtering strategy
