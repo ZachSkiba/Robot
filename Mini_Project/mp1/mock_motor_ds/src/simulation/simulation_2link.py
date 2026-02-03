@@ -66,13 +66,32 @@ def forward_kinematics(theta_base, theta_shoulder, theta_elbow):
     
     return x, y, z
 
+# Global variable to track the previous base angle
+last_base_angle_rad = 0.0
+
 def inverse_kinematics(x, y, z):
     """
     Computes (base, shoulder, elbow) angles from (x, y, z).
+    Includes logic to allow continuous rotation beyond 360 degrees.
     """
-    # 1. Base Angle (Theta 0)
-    theta_base = np.arctan2(y, x)
+    global last_base_angle_rad
+
+    # 1. Base Angle (Theta 0) with unwrap logic
+    current_base = np.arctan2(y, x)
     
+    # Calculate the difference between new angle and previous angle
+    diff = current_base - last_base_angle_rad
+    
+    # Normalize the difference to be between -pi and +pi
+    # This prevents the "snap" when crossing the +/- 180 boundary
+    while diff > np.pi:
+        diff -= 2 * np.pi
+    while diff < -np.pi:
+        diff += 2 * np.pi
+        
+    theta_base = last_base_angle_rad + diff
+    last_base_angle_rad = theta_base # Update global tracker
+
     # 2. Convert to Planar Problem (r, z)
     r_target = np.sqrt(x**2 + y**2)
     z_target = z - L_BASE
@@ -85,10 +104,7 @@ def inverse_kinematics(x, y, z):
     # 3. Solve Planar IK (Shoulder, Elbow)
     cos_theta2 = (r_target**2 + z_target**2 - L1**2 - L2**2) / (2 * L1 * L2)
     cos_theta2 = np.clip(cos_theta2, -1.0, 1.0)
-    theta_elbow = np.arccos(cos_theta2) # Elbow down solution usually preferred? Let's use positive
-    
-    # Adjust for elbow up/down preference (Negative usually means "elbow up" in standard DH)
-    # Let's try positive for now, or flip if your robot acts weird.
+    theta_elbow = np.arccos(cos_theta2) 
     
     k1 = L1 + L2 * np.cos(theta_elbow)
     k2 = L2 * np.sin(theta_elbow)
@@ -100,6 +116,20 @@ def inverse_kinematics(x, y, z):
 # 🎨 3D PATH DEFINITIONS
 # ============================================================
 # Note: I updated these to return X, Y, AND Z
+
+def path_360_spin(num_points=400):
+    """Rotates the arm in a full 360 degree circle at fixed reach"""
+    # Go from 0 to 2*pi (360 degrees)
+    theta = np.linspace(0, 2 * np.pi, num_points)
+    
+    radius = 15.0
+    z_height = 15.0
+    
+    x = radius * np.cos(theta)
+    y = radius * np.sin(theta)
+    z = np.full_like(x, z_height)
+    
+    return x, y, z
 
 def path_pick_and_place(num_points=300):
     """Simulates picking up an object and moving it"""
@@ -397,6 +427,9 @@ def enforce_max_reach(x_arr, y_arr, z_arr):
 
 def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolution=200):
     
+    global last_base_angle_rad
+    last_base_angle_rad = 0.0
+
     print(f"🎨 3D Path: {path_function.__name__}")
     print(f"🏃 Speed: {cartesian_speed} cm/s")
     
@@ -500,6 +533,7 @@ if __name__ == "__main__":
         'path_drawing_square': (15.0, 200),
         'path_3d_spiral':      (12.0, 300),
         'path_drawing_cube':   (12.0, 350),
+        'path_360_spin':       (20.0, 400),
         'path_letter_s_3d':    (10.0, 250),
         'path_heart_3d':       (10.0, 300)
     }
