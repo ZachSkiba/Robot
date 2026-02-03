@@ -777,3 +777,414 @@ Binary protocol spec (byte-level)
 ROS2 hardware interface design
 
 Encoder noise filtering strategy
+
+Encoder noise filtering strategy
+# FINAL TECHNICAL LOCK-IN  
+## Control, Protocol, ROS2 Interface, and Encoder Filtering  
+*(This removes remaining ambiguity. After this, you are executing—not designing.)*
+
+
+---
+
+
+## 1. CONTROL LAW + TUNING METHOD (BEST PRACTICE, NOT GUESSWORK)
+
+
+You are **not** doing torque control.  
+You are doing **position-controlled steppers with encoder feedback**.
+
+
+### Control Structure (Per Joint)
+
+
+This is the correct structure:
+
+
+
+q_des(t) ──► [ Trajectory Interpolator ]
+│
+▼
+e = q_des - q_meas
+│
+▼
+PID (Position)
+│
+▼
+v_cmd / step_rate
+│
+▼
+Step Generator
+
+
+
+You do **NOT** close the loop on step count.  
+You close it on **measured joint angle**.
+
+
+---
+
+
+### PID Equation (Discrete, Fixed-Rate)
+
+
+Control loop rate: **5 kHz**
+
+
+Let:
+- `e[k] = q_des[k] - q_meas[k]`
+- `dt = 0.0002 s`
+
+
+
+P = Kp * e[k]
+
+I = I_prev + Ki * e[k] * dt
+I = clamp(I, -Imax, +Imax)
+
+D = Kd * (e[k] - e[k-1]) / dt
+
+u[k] = P + I + D
+
+
+
+Where:
+- `u[k]` → desired joint velocity
+- Velocity is converted to step frequency
+
+
+---
+
+
+### BEST TUNING METHOD (LOCKED)
+
+
+**Method: Frequency-Separated Manual Tuning (Industrial Standard)**  
+This beats Ziegler–Nichols for motion systems.
+
+
+#### Step 1 — Disable I and D
+
+Ki = 0
+Kd = 0
+
+
+
+Increase `Kp` until:
+- Joint reaches position quickly
+- Slight oscillation appears
+
+
+Then **reduce Kp by 20–30%**
+
+
+---
+
+
+#### Step 2 — Add D (Damping)
+Increase `Kd` until:
+- Oscillation disappears
+- No audible buzzing
+- No overshoot on step input
+
+
+Rule:
+> D damps motion; it should never dominate P.
+
+
+---
+
+
+#### Step 3 — Add I (Bias Removal)
+Increase `Ki` slowly until:
+- Steady-state error goes to zero
+- No slow oscillation
+
+
+Clamp integral aggressively.
+
+
+
+Imax ≈ 10–20% of max command
+
+
+
+---
+
+
+### Safety Constraints (MANDATORY)
+
+
+- Output saturation
+- Integral anti-windup
+- Velocity limit
+- Acceleration limit
+
+
+If you skip these, the arm *will* crash.
+
+
+---
+
+
+## 2. BINARY PROTOCOL (BYTE-LEVEL, FINAL)
+
+
+Human-readable protocols are for debugging only.  
+This is the **final protocol**.
+
+
+### Endianness
+- **Little-endian**
+- Fixed-size packets only
+
+
+---
+
+
+### PC → MCU (Command Packet)
+
+
+| Field | Type | Bytes |
+|----|----|----|
+| Header | `uint16` | 2 |
+| Sequence | `uint16` | 2 |
+| q_des[6] | `float32` | 24 |
+| qd_des[6] | `float32` | 24 |
+| Mode Flags | `uint16` | 2 |
+| CRC32 | `uint32` | 4 |
+| **Total** | | **58 bytes** |
+
+
+
+HEADER = 0xA55A
+
+
+
+---
+
+
+### MCU → PC (State Packet)
+
+
+| Field | Type | Bytes |
+|----|----|----|
+| Header | `uint16` | 2 |
+| Sequence | `uint16` | 2 |
+| q[6] | `float32` | 24 |
+| qd[6] | `float32` | 24 |
+| torque_est[6] | `float32` | 24 |
+| Fault Flags | `uint16` | 2 |
+| CRC32 | `uint32` | 4 |
+| **Total** | | **82 bytes** |
+
+
+---
+
+
+### Timing Rules
+
+
+- Command timeout: **20 ms**
+- On timeout:
+  - Disable all motor enables
+  - Require explicit re-arm
+
+
+No exceptions.
+
+
+---
+
+
+## 3. ROS2 HARDWARE INTERFACE (CORRECT WAY)
+
+
+You **do not** stream PWM or steps from ROS.  
+ROS talks in **joint space** only.
+
+
+### Architecture
+
+
+
+ROS2 Control
+│
+▼
+hardware_interface_node
+│ (binary protocol)
+▼
+Teensy MCU
+
+
+
+---
+
+
+### ROS2 Interfaces
+
+
+#### Command Interfaces
+- `position`
+- `velocity`
+
+
+#### State Interfaces
+- `position`
+- `velocity`
+- `effort` (estimated)
+
+
+---
+
+
+### Update Rates
+
+
+| Layer | Rate |
+|----|----|
+| ROS2 controllers | 100–250 Hz |
+| PC → MCU stream | 250–500 Hz |
+| MCU control loop | 5 kHz |
+
+
+ROS never assumes real-time guarantees.
+
+
+---
+
+
+### Why This Works
+
+
+- ROS handles planning and coordination
+- MCU guarantees timing and safety
+- DDS chatter never touches motor loops
+
+
+This is exactly how `ros2_control` was designed to be used.
+
+
+---
+
+
+## 4. ENCODER NOISE FILTERING (REALISTIC, SAFE)
+
+
+Encoders are **sensors**, not truth.
+
+
+### AS5600 Reality
+- I²C jitter
+- Magnetic noise
+- Quantization steps
+
+
+You **must filter**, but **not delay** excessively.
+
+
+---
+
+
+### Filtering Strategy (LOCKED)
+
+
+#### Step 1 — Oversample
+- Read encoder at **10 kHz**
+- Control loop at **5 kHz**
+
+
+---
+
+
+#### Step 2 — First-Order IIR (Low-Pass)
+
+
+This is optimal for your use case.
+
+
+
+θ_filt[k] = α * θ_raw[k] + (1 - α) * θ_filt[k-1]
+
+
+
+Choose:
+
+α = 0.2 – 0.3
+
+
+
+This gives:
+- Noise suppression
+- <1 ms delay
+
+
+---
+
+
+#### Step 3 — Velocity via Filtered Difference
+
+
+
+ω[k] = (θ_filt[k] - θ_filt[k-1]) / dt
+
+
+
+Do **not** differentiate raw encoder data.
+
+
+---
+
+
+### Sanity Checks (MANDATORY)
+
+
+- Max delta per sample
+- Jump detection
+- Encoder disconnect detection
+
+
+If violated:
+- Disable joint
+- Raise fault flag
+- Require reset
+
+
+---
+
+
+## FINAL SYSTEM STATE (YOU ARE HERE)
+
+
+You now have:
+
+
+- Deterministic control laws
+- Proper tuning methodology
+- Binary protocol with CRC
+- ROS2 integration without abuse
+- Encoder filtering that works in the real world
+
+
+This is no longer a “student project” architecture.  
+It is a **correct robotics control system** built with free tools.
+
+
+---
+
+
+## NEXT (ONLY AFTER BUILD)
+
+
+When you are physically wired and powered:
+
+
+1. Single-joint bring-up checklist  
+2. PID tuning worksheet (per joint)  
+3. Fault injection tests  
+4. First full-arm motion plan  
+
+
+Do **not** skip steps.
+
+
+If you want the **single-joint bring-up procedure**, say so.
