@@ -73,10 +73,13 @@ def forward_kinematics(theta_base, theta_shoulder, theta_elbow):
 last_base_angle_rad = 0.0
 
 def inverse_kinematics(x, y, z):
-    """Computes (base, shoulder, elbow) angles from (x, y, z)."""
+    """
+    Computes (base, shoulder, elbow) angles.
+    Includes 'Elbow Up' logic to prevent floor collisions.
+    """
     global last_base_angle_rad
 
-    # 1. Base Angle (Theta 0) with unwrap logic
+    # --- 1. Base Angle (Theta 0) ---
     current_base = np.arctan2(y, x)
     diff = current_base - last_base_angle_rad
     while diff > np.pi: diff -= 2 * np.pi
@@ -84,24 +87,49 @@ def inverse_kinematics(x, y, z):
     theta_base = last_base_angle_rad + diff
     last_base_angle_rad = theta_base 
 
-    # 2. Convert to Planar Problem (r, z)
+    # --- 2. Planar Problem (r, z) ---
     r_target = np.sqrt(x**2 + y**2)
-    z_target = z - L_BASE
-    
+    z_target = z - L_BASE # Height relative to shoulder pivot
+
     # Check reach
     dist = np.sqrt(r_target**2 + z_target**2)
     if dist > (L1 + L2) or dist == 0: 
         return None, None, None 
-        
-    # 3. Solve Planar IK (Shoulder, Elbow)
+
+    # --- 3. Solve Planar IK (Select Best Configuration) ---
+    # Law of Cosines for the Elbow Angle magnitude
     cos_theta2 = (r_target**2 + z_target**2 - L1**2 - L2**2) / (2 * L1 * L2)
     cos_theta2 = np.clip(cos_theta2, -1.0, 1.0)
-    theta_elbow = np.arccos(cos_theta2) 
     
-    k1 = L1 + L2 * np.cos(theta_elbow)
-    k2 = L2 * np.sin(theta_elbow)
-    theta_shoulder = np.arctan2(z_target, r_target) - np.arctan2(k2, k1)
+    # We have TWO possible elbow angles: +acos and -acos
+    # One creates an "Elbow Down" pose, one is "Elbow Up"
+    candidates = [np.arccos(cos_theta2), -np.arccos(cos_theta2)]
     
+    best_solution = None
+    max_elbow_height = -999.0
+
+    for theta_el_cand in candidates:
+        # Calculate matching shoulder angle for this elbow angle
+        k1 = L1 + L2 * np.cos(theta_el_cand)
+        k2 = L2 * np.sin(theta_el_cand)
+        theta_sh_cand = np.arctan2(z_target, r_target) - np.arctan2(k2, k1)
+        
+        # Calculate where the Elbow joint is physically located in Z space
+        # Z_elbow = Base_Height + L1 * sin(shoulder_angle)
+        elbow_z_height = L_BASE + L1 * np.sin(theta_sh_cand)
+
+        # We prefer the solution with the HIGHEST elbow position (Elbow Up)
+        if elbow_z_height > max_elbow_height:
+            max_elbow_height = elbow_z_height
+            best_solution = (theta_sh_cand, theta_el_cand)
+
+    # Safety Check: If even the "highest" solution puts the elbow underground
+    if max_elbow_height < 0.0:
+        # In a real robot, we would throw an error or clamp. 
+        # Here we return None to indicate "Unsafe Path"
+        return None, None, None
+
+    theta_shoulder, theta_elbow = best_solution
     return theta_base, theta_shoulder, theta_elbow
 
 def calculate_gravity_torques(theta_shoulder, theta_elbow):
@@ -392,18 +420,33 @@ def generate_smooth_joint_trajectory_3d(path_x, path_y, path_z, cartesian_speed,
             np.array(j_cmds[1]), np.array(j_vels[1]), 
             np.array(j_cmds[2]), np.array(j_vels[2]))
 
-def enforce_max_reach(x_arr, y_arr, z_arr):
-    """Clamps points outside reach."""
+def enforce_constraints(x_arr, y_arr, z_arr):
+    """
+    1. Clamps points outside max reach.
+    2. Clamps points below the ground (Z < 0).
+    """
+    # --- Floor Constraint ---
+    # Ensure the end-effector never touches the table
+    # We add a 0.5cm safety buffer
+    min_z = 0.5 
+    mask_floor = z_arr < min_z
+    if np.any(mask_floor):
+        print(f"⚠️  WARNING: {np.sum(mask_floor)} points were underground. Clamping to Z={min_z}.")
+        z_arr[mask_floor] = min_z
+
+    # --- Reach Constraint ---
     z_shifted = z_arr - L_BASE
     dist = np.sqrt(x_arr**2 + y_arr**2 + z_shifted**2)
-    mask = dist > MAX_REACH
-    if np.any(mask):
-        print(f"⚠️  WARNING: {np.sum(mask)} points exceeded max reach. Clamping.")
-        scale = MAX_REACH / dist[mask]
-        x_arr[mask] *= scale
-        y_arr[mask] *= scale
-        z_shifted[mask] *= scale
-        z_arr[mask] = z_shifted[mask] + L_BASE
+    mask_reach = dist > MAX_REACH
+    
+    if np.any(mask_reach):
+        print(f"⚠️  WARNING: {np.sum(mask_reach)} points exceeded max reach. Clamping.")
+        scale = MAX_REACH / dist[mask_reach]
+        x_arr[mask_reach] *= scale
+        y_arr[mask_reach] *= scale
+        z_shifted[mask_reach] *= scale
+        z_arr[mask_reach] = z_shifted[mask_reach] + L_BASE
+        
     return x_arr, y_arr, z_arr
 
 # ============================================================
@@ -417,6 +460,28 @@ def quantize_angle(angle_deg, bit_depth):
     step_count = round((angle_deg / 360.0) * steps)
     # Convert back to degrees
     return (step_count / steps) * 360.0
+
+
+def apply_structural_deflection(real_x, real_y, real_z, torque_shoulder, torque_elbow):
+    """
+    Simulates the physical bending of the aluminum tubes under load.
+    The heavier the load (torque), the more the arm droops.
+    """
+    # STIFFNESS CONSTANT: How 'floppy' is your arm?
+    # 0.02 means 10Nm of torque causes 2mm of sag.
+    # Cheap 3D printed arms might be 0.1 (very floppy).
+    MATERIAL_STIFFNESS_K = 0.03 
+    
+    # Calculate total load acting to bend the arm down
+    total_load_torque = abs(torque_shoulder) + abs(torque_elbow)
+    
+    # Hooke's Law approximation for a cantilever beam
+    # The sag is always in the negative Z direction (gravity)
+    sag_z = -(total_load_torque * MATERIAL_STIFFNESS_K)
+    
+    # The sag also slightly reduces the reach (X/Y) as it curls down, 
+    # but Z is the dominant error.
+    return real_x, real_y, real_z + sag_z
 
 # ============================================================
 # ▶️ SIMULATION RUNNER (DYNAMICS ENABLED)
@@ -463,7 +528,7 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     full_y = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[1], start_xyz[1], num_approach), path_y])
     full_z = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[2], start_xyz[2], num_approach), path_z])
     
-    full_x, full_y, full_z = enforce_max_reach(full_x, full_y, full_z)
+    full_x, full_y, full_z = enforce_constraints(full_x, full_y, full_z)
 
     # 4. Generate Smooth Trajectory
     (times, 
@@ -512,6 +577,7 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
         # --- D. Logging ---
         real_rads = [np.radians(d) for d in real_degs]
         rx, ry, rz = forward_kinematics(*real_rads)
+        rx, ry, rz = apply_structural_deflection(rx, ry, rz, torque_s, torque_e)
         tx, ty, tz = forward_kinematics(*[np.radians(t) for t in targets])
         error = np.sqrt((tx-rx)**2 + (ty-ry)**2 + (tz-rz)**2)
         
@@ -523,8 +589,8 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
             "base_deg": round(real_degs[0], 2),
             "shoulder_deg": round(real_degs[1], 2),
             "elbow_deg": round(real_degs[2], 2),
-            "torque_shoulder": round(torque_s, 2),
-            "torque_elbow": round(torque_e, 2),
+            "torque_shoulder": round(motor_shoulder.last_torque_usage, 2),
+            "torque_elbow": round(motor_elbow.last_torque_usage, 2),
             "limit_shoulder": round(motor_shoulder.max_torque_output, 2),
             "limit_elbow": round(motor_elbow.max_torque_output, 2)
         })

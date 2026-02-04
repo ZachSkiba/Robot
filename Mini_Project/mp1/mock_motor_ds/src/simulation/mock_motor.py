@@ -9,11 +9,11 @@ import re
 
 # Step / Resolution
 MOTOR_STEP_ANGLE = 1.8
-MICROSTEPS = 32         # Updated to 32 (Standard for smooth motion with DM556T)
+MICROSTEPS = 32         
 EFFECTIVE_STEP = MOTOR_STEP_ANGLE / MICROSTEPS  # 0.05625 deg/step
 
 # NEMA 23 / 17 Physical Limits (At the Motor Shaft, before Gears)
-MOTOR_MAX_VELOCITY_SHAFT = 3600.0  # deg/s (600 RPM - typical torque drop-off point)
+MOTOR_MAX_VELOCITY_SHAFT = 3600.0  # deg/s (600 RPM)
 MOTOR_MAX_ACCEL_SHAFT = 6000.0     # deg/s^2
 
 # Encoder Simulation
@@ -21,27 +21,19 @@ ENCODER_RES = 0.088
 ENCODER_NOISE = 0.05
 
 # ============================================================
-# 🔧 MOTOR MODEL (CLASS)
+# 🔧 MOTOR MODEL (CLASS - Now with FRICTION)
 # ============================================================
 
 class MockMotor:
     def __init__(self, name="Generic", gear_ratio=1.0, max_torque_nm=3.0, 
                  max_velocity=None, max_accel=None):
         """
-        Universal MockMotor.
-        
-        Args:
-            name (str): ID for logging (e.g. "Shoulder")
-            gear_ratio (float): Input rotations per 1 output rotation (e.g. 20.0)
-            max_torque_nm (float): Holding torque of the RAW MOTOR (not gearbox output)
-            max_velocity (float): Optional override for legacy tests
-            max_accel (float): Optional override for legacy tests
+        Universal MockMotor with Internal Friction & Efficiency.
         """
         self.name = name
         self.gear_ratio = gear_ratio
         
-        # Physics Limits (Calculated at the JOINT output)
-        # If legacy values are provided, use them; otherwise calculate from Gear Ratio
+        # 1. Physics Limits (Calculated at the JOINT output)
         if max_velocity:
             self.max_velocity = max_velocity
         else:
@@ -52,46 +44,74 @@ class MockMotor:
         else:
             self.max_accel = MOTOR_MAX_ACCEL_SHAFT / gear_ratio
 
-        # Torque: Output = Motor * Ratio * Efficiency (approx 0.85 for planetary)
-        self.max_torque_output = max_torque_nm * gear_ratio * 0.85
+        # 2. Torque Limits & Efficiency
+        # Real planetary gears lose ~15% power to heat/noise
+        self.efficiency = 0.85 
+        
+        # We calculate the max output torque considering this loss immediately
+        self.max_torque_output = max_torque_nm * gear_ratio * self.efficiency
+
+        # 3. Friction Constants (The "Gunk" Factors)
+        # Stiction: Force needed just to START moving (static friction)
+        self.stiction_nm = 0.2 * gear_ratio  # Scales with gears
+        # Viscous: Drag that increases with speed (like moving through honey)
+        self.viscous_coeff = 0.002 * gear_ratio 
 
         # State
         self.actual_pos = 0.0
         self.current_velocity = 0.0
         self.failed = False
         self.fail_reason = ""
+        self.last_torque_usage = 0.0  # For logging
 
     def update(self, target_pos, target_velocity, dt, external_load_torque=0.0):
         """
-        Updates motor physics state.
-        
-        Args:
-            target_pos (float): Where we want to be
-            target_velocity (float): Feed-forward velocity (from profile)
-            dt (float): Time step in seconds
-            external_load_torque (float): Gravity/Dynamic load in Nm (New Feature)
-        
-        Returns:
-            float: Simulated Encoder Reading (with noise)
+        Updates motor physics with Friction calculations.
         """
         # 1. Failure Check (The "Gravity Killer")
         if self.failed:
             return self.actual_pos
 
-        if abs(external_load_torque) > self.max_torque_output:
-            self.failed = True
-            self.fail_reason = f"STALL: Load {external_load_torque:.2f}Nm > Max {self.max_torque_output:.2f}Nm"
-            print(f"🚨 {self.name} CRITICAL FAILURE: {self.fail_reason}")
-            # We don't return here immediately so we can return the last known position below
+        # --- NEW: FRICTION PHYSICS ------------------------------------------
+        # Direction opposes movement
+        direction = np.sign(self.current_velocity) 
+        if direction == 0: direction = np.sign(target_velocity) # Start-up logic
 
-        # 2. Distance Calculation
+        # A. Friction Calculation
+        # Stiction (Constant drag) + Viscous (Speed dependent drag)
+        friction_torque = (self.stiction_nm * direction) + \
+                          (self.viscous_coeff * self.current_velocity)
+        
+        # B. Total Required Torque
+        # Motor must overcome: External Load (Gravity) + Internal Friction
+        # And we divide by efficiency because the motor works harder than the output shows
+        total_required_torque = (external_load_torque + friction_torque) / self.efficiency
+        
+        # Save for analysis
+        self.last_torque_usage = total_required_torque 
+        # --------------------------------------------------------------------
+
+        # 2. STALL CHECK (Now uses the REAL total load)
+        if abs(total_required_torque) > self.max_torque_output:
+            self.failed = True
+            self.fail_reason = (f"STALL: Req {abs(total_required_torque):.2f}Nm "
+                                f"> Max {self.max_torque_output:.2f}Nm "
+                                f"(Load: {external_load_torque:.2f} + Fric: {friction_torque:.2f})")
+            print(f"🚨 {self.name} CRITICAL FAILURE: {self.fail_reason}")
+            
+            # REALISM UPGRADE: When a stepper stalls, it doesn't just hold position.
+            # If gravity is strong, it slips backward.
+            slip_speed = -np.sign(external_load_torque) * 20.0 * dt
+            self.actual_pos += slip_speed
+            return self.actual_pos
+
+        # 3. Distance Calculation
         dist_to_go = target_pos - self.actual_pos
 
-        # 3. Velocity Logic (P-Control + Profile Feed-Forward)
-        # We limit the speed based on the Motor's Physical Max (considering gears)
+        # 4. Velocity Logic (P-Control + Profile Feed-Forward)
         desired_vel = np.sign(dist_to_go) * min(abs(target_velocity), abs(dist_to_go/dt), self.max_velocity)
 
-        # 4. Acceleration Logic (Inertia)
+        # 5. Acceleration Logic (Inertia)
         vel_diff = desired_vel - self.current_velocity
         max_vel_change = self.max_accel * dt
         
@@ -100,15 +120,13 @@ class MockMotor:
         else:
             self.current_velocity = desired_vel
 
-        # 5. Hard Clamp to Max Velocity
+        # 6. Hard Clamp to Max Velocity
         self.current_velocity = np.clip(self.current_velocity, -self.max_velocity, self.max_velocity)
 
-        # 6. Update Position
-        if not self.failed:
-            self.actual_pos += self.current_velocity * dt
+        # 7. Update Position
+        self.actual_pos += self.current_velocity * dt
 
-        # 7. Encoder Simulation (Quantization + Noise)
-        # We simulate the steps, then the encoder reading that steps
+        # 8. Encoder Simulation
         physical_pos = round(self.actual_pos / EFFECTIVE_STEP) * EFFECTIVE_STEP
         sensor_reading = round(physical_pos / ENCODER_RES) * ENCODER_RES
         sensor_reading += np.random.normal(0, ENCODER_NOISE)
@@ -116,13 +134,13 @@ class MockMotor:
         return sensor_reading
 
 # ============================================================
-# ▶️ TRAPEZOIDAL PROFILE GENERATOR (Preserved)
+# ▶️ TRAPEZOIDAL PROFILE GENERATOR (Unchanged)
 # ============================================================
 
 def generate_trapezoidal_profile(target_pos, commanded_speed, dt):
     """Generates a trapezoidal velocity profile to reach target_pos."""
     max_vel = commanded_speed
-    accel_time = max_vel / MOTOR_MAX_ACCEL_SHAFT # Use global default for profile generation
+    accel_time = max_vel / MOTOR_MAX_ACCEL_SHAFT 
     accel_dist = 0.5 * MOTOR_MAX_ACCEL_SHAFT * accel_time**2  
 
     if accel_dist * 2 > target_pos:  # Triangular profile
@@ -165,7 +183,6 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     BASE_LOG_DIR = os.path.normpath(os.path.join(script_dir, "..", "..", "logs"))
 
-    # Ensure logs directory exists (even if running standalone)
     if not os.path.exists(BASE_LOG_DIR):
         os.makedirs(BASE_LOG_DIR, exist_ok=True)
 
@@ -196,15 +213,12 @@ if __name__ == "__main__":
         TARGET_POS = 720
         HOLD_TIME = 2.0
 
-        print(f"   Testing NEMA 23 Motor Model (No Load)...")
+        print(f"   Testing NEMA 23 Motor Model (With Friction)...")
 
         for speed in SPEEDS:
-            # We initialize a 'Test' motor. 
-            # We set gear_ratio=1.0 for this test to observe raw shaft speed behavior.
-            motor = MockMotor(name="TestMotor", gear_ratio=1.0, max_torque_nm=3.0)
+            # Note: We now use gear_ratio=20.0 to see the effect of multiplied friction
+            motor = MockMotor(name="ShoulderJoint", gear_ratio=20.0, max_torque_nm=3.0)
             
-            # NOTE: We cap the command speed for the profile generator, 
-            # but the motor class will also enforce its own physical limits.
             time_points, target_positions, target_velocities = generate_trapezoidal_profile(TARGET_POS, speed, dt)
 
             hold_steps = int(HOLD_TIME / dt)
@@ -215,8 +229,11 @@ if __name__ == "__main__":
             data_log = []
 
             for t, target_pos, target_vel in zip(time_points, target_positions, target_velocities):
-                # We pass external_load_torque=0.0 because this is a simple bench test
-                actual = motor.update(target_pos, target_vel, dt, external_load_torque=0.0)
+                # We simulate a "Gravity Wave" load to see if it stalls
+                # Load oscillates between -50 Nm and +50 Nm
+                simulated_gravity_load = 50.0 * np.sin(t * 2.0) 
+                
+                actual = motor.update(target_pos, target_vel, dt, external_load_torque=simulated_gravity_load)
                 
                 data_log.append({
                     "timestamp_ms": int(t*1000),
@@ -224,6 +241,8 @@ if __name__ == "__main__":
                     "actual_pos": round(actual, 3),
                     "error": round(target_pos-actual, 3),
                     "velocity_cmd": speed,
+                    "torque_load": round(simulated_gravity_load, 2),
+                    "torque_total_req": round(motor.last_torque_usage, 2), # LOGGING TOTAL LOAD
                     "hz": HZ
                 })
 
