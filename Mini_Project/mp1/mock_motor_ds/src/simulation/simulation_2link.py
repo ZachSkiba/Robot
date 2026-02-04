@@ -54,6 +54,8 @@ M_WRIST_ASSEMBLY = 0.6 # kg (Wrist P + Wrist R + Gripper - Heavy!)
 # X=20, Y=0, Z=20 (Centered in front of robot, mid-height)
 HOME_POSITION_CARTESIAN = (20.0, 0.0, 20.0) 
 
+SENSOR_BIT_DEPTH = 12  # Set to 12 for AS5600, change to 14 later
+
 # ============================================================
 # 🧠 PHYSICS ENGINE (KINEMATICS + DYNAMICS)
 # ============================================================
@@ -380,6 +382,18 @@ def enforce_max_reach(x_arr, y_arr, z_arr):
     return x_arr, y_arr, z_arr
 
 # ============================================================
+# CALCULATE STEPPING OF ENCODER
+# ============================================================
+
+def quantize_angle(angle_deg, bit_depth):
+    """Simulates the 'stepping' of a digital encoder."""
+    steps = 2 ** bit_depth
+    # Convert angle to a discrete "step" (0 to 4095 for 12-bit)
+    step_count = round((angle_deg / 360.0) * steps)
+    # Convert back to degrees
+    return (step_count / steps) * 360.0
+
+# ============================================================
 # ▶️ SIMULATION RUNNER (DYNAMICS ENABLED)
 # ============================================================
 
@@ -449,14 +463,19 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
         torque_s, torque_e = calculate_gravity_torques(rad_sh, rad_el)
         
         # --- B. Update Motors with Load ---
-        # Base motor rotates around vertical axis -> Gravity torque is ~0 (just friction/inertia)
-        pos_base = motor_base.update(targets[0], vel_cmds[0], DT, external_load_torque=0.0)
+        # 1. Calculate the "Physics" (Infinite resolution float values)
+        pos_base_phys = motor_base.update(targets[0], vel_cmds[0], DT, external_load_torque=0.0)
+        pos_sh_phys   = motor_shoulder.update(targets[1], vel_cmds[1], DT, external_load_torque=torque_s)
+        pos_el_phys   = motor_elbow.update(targets[2], vel_cmds[2], DT, external_load_torque=torque_e)
         
-        # Shoulder and Elbow fight gravity
-        pos_sh = motor_shoulder.update(targets[1], vel_cmds[1], DT, external_load_torque=torque_s)
-        pos_el = motor_elbow.update(targets[2], vel_cmds[2], DT, external_load_torque=torque_e)
-        
+        # 2. Simulate the Sensor (Crunch it down to 12-bit or 14-bit)
+        # This is what your code will actually "see" and log
+        pos_base = quantize_angle(pos_base_phys, SENSOR_BIT_DEPTH)
+        pos_sh   = quantize_angle(pos_sh_phys,   SENSOR_BIT_DEPTH)
+        pos_el   = quantize_angle(pos_el_phys,   SENSOR_BIT_DEPTH)
+
         real_degs = [pos_base, pos_sh, pos_el]
+        
 
         # --- C. Failure Check ---
         if motor_shoulder.failed or motor_elbow.failed:
