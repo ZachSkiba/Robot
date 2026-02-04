@@ -129,3 +129,77 @@ Other Linux distributions = possible but require extra maintenance and troublesh
 Windows-only = fine for coding and light simulation, but not reliable for hardware communication, Gazebo simulation, or real-time PID loops.
 
 ✅ If you want professional, reproducible robotics setup, Ubuntu is the safest bet.
+
+es — that’s actually a very practical approach. You can start with a virtual setup for all your development and simulations, then switch to a proper dual-boot Ubuntu installation later for hardware bring-up. Here’s how to plan it:
+
+Phase 1 — Start on a Virtual System
+
+Setup:
+
+Install Ubuntu 22.04 LTS inside a VM (VirtualBox or VMware) on your Windows machine.
+
+Install Python, ROS2, Gazebo (Fortress/Classic if needed), PlatformIO, Docker inside the VM.
+
+Use this for:
+
+Writing and testing Python scripts for motion planning.
+
+Running MATLAB → Python simulations.
+
+Building and debugging ROS2 nodes.
+
+Simulating the 6‑DOF arm in Gazebo (expect slower 3D rendering).
+
+No hardware needed yet — everything is software-only.
+
+Advantages:
+
+No risk to your Windows system.
+
+Both partners can use the same VM image to ensure identical environments.
+
+You can push/pull code using Git safely.
+
+Phase 2 — Switch to Dual-Boot Ubuntu
+
+When to switch:
+
+Once you have real hardware: Teensy 4.1, encoders, motors, and drivers.
+
+Once you need full-speed Gazebo, or need real-time MCU communication.
+
+What changes:
+
+Move all your VM setup scripts/configs to native Ubuntu.
+
+Verify USB access and PlatformIO can flash the Teensy.
+
+Full GPU access → smooth Gazebo simulation.
+
+ROS2 nodes can now communicate deterministically with the MCU.
+
+Transition tips:
+
+Keep your VM as a backup — you can always test scripts there before running on real hardware.
+
+Use Git to migrate all code, configs, and URDFs.
+
+Reinstall Docker and VS Code extensions in native Ubuntu — container configs usually transfer with minor changes.
+
+Keep the Python venv or recreate it with the same versions to ensure consistency.
+
+✅ Bottom Line
+
+Start in a VM now — low-risk, fast start, both partners can code and simulate.
+
+Switch to dual-boot when you want full Gazebo performance or to connect and control the actual arm.
+
+This workflow lets you develop 80% of the software stack before hardware arrives, so the hardware bring-up is just verification and tuning.
+
+If you want, I can create a step-by-step plan for your exact workflow, showing:
+
+What to do in the VM.
+
+What to migrate for dual-boot.
+
+How to ensure ROS2 + Gazebo + PlatformIO + MATLAB + Docker all work seamlessly.
