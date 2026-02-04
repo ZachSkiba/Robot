@@ -68,6 +68,13 @@ HOME_POSITION_CARTESIAN = (20.0, 0.0, 20.0)
 
 SENSOR_BIT_DEPTH = 14  # High precision sensors
 
+# STIFFNESS CONSTANT
+    # 0.03 = Aluminum Tube
+    # 0.15 = Heavy Duty 3D Printed PETG (Box Section, 4+ Walls)
+    # 0.50 = Poorly designed 3D Print (Solid stick or low infill)
+    
+MATERIAL_STIFFNESS_K = 0.15
+
 # ============================================================
 # 🧠 PHYSICS ENGINE (KINEMATICS + DYNAMICS)
 # ============================================================
@@ -477,10 +484,6 @@ def apply_structural_deflection(real_x, real_y, real_z, torque_shoulder, torque_
     Simulates the physical bending of the aluminum tubes under load.
     The heavier the load (torque), the more the arm droops.
     """
-    # STIFFNESS CONSTANT: How 'floppy' is your arm?
-    # 0.02 means 10Nm of torque causes 2mm of sag.
-    # Cheap 3D printed arms might be 0.1 (very floppy).
-    MATERIAL_STIFFNESS_K = 0.03 
     
     # Calculate total load acting to bend the arm down
     total_load_torque = abs(torque_shoulder) + abs(torque_elbow)
@@ -505,21 +508,11 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     print(f"🎨 3D Path: {path_function.__name__}")
     
     # ==========================================
-    # 🔧 UPDATED MOTOR CONFIGURATION
+    # 🔧 MOTOR CONFIG
     # ==========================================
-    
-    # 1. BASE: Nema 17 (Turntable)
-    # 5:1 is fine here for rotation, as it doesn't fight gravity directly.
     motor_base = MockMotor("Base (Nema 17)", gear_ratio=5.0, max_torque_nm=0.45)
-    
-    # 2. SHOULDER: Nema 23 (The Heavy Lifter)
-    # With 3kg at the tip, the shoulder sees huge leverage. 
-    # Keep this at 20:1 (or even 30:1 if you have a high-ratio gearbox).
     motor_shoulder = MockMotor("Shoulder (Nema 23)", gear_ratio=20.0, max_torque_nm=1.2)
-    
-    # 3. ELBOW : Upgrade Elbow to Nema 23 (Same as Shoulder)
     motor_elbow = MockMotor("Elbow (Nema 23)", gear_ratio=20.0, max_torque_nm=1.2)
-    
     motors = [motor_base, motor_shoulder, motor_elbow]
     
     # Set Home Position
@@ -541,65 +534,136 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     num_approach = 50
     full_x = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[0], start_xyz[0], num_approach), path_x])
     full_y = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[1], start_xyz[1], num_approach), path_y])
+    
+    # THIS IS THE "PURE" TARGET (We want to hit this)
     full_z = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[2], start_xyz[2], num_approach), path_z])
     
     full_x, full_y, full_z = enforce_constraints(full_x, full_y, full_z)
 
-    # 4. Generate Smooth Trajectory
+    # =========================================================
+    # 🆕 STEP 3.5: EXACT MODEL-BASED GRAVITY COMPENSATION
+    # =========================================================
+    print("⚖️  Calculating Exact Gravity Compensation...")
+    
+    # full_z    = The "Perfect" line we want to draw visually.
+    # command_z = The "Distorted" line we feed the motors to fight gravity.
+    command_z = np.copy(full_z)
+    
+    for k in range(len(full_x)):
+        # 1. Get the angles for the DESIRED position
+        # We ask: "If we were perfectly at the target, what would the angles be?"
+        base_a, sh_a, el_a = inverse_kinematics(full_x[k], full_y[k], full_z[k])
+        
+        if sh_a is None: continue # Skip unreachable points
+            
+        # 2. Ask the Physics Engine: "How much torque is needed to hold this?"
+        # We use the EXACT same function the simulation uses.
+        t_shoulder, t_elbow = calculate_gravity_torques(sh_a, el_a)
+        
+        # 3. Calculate the Sag exactly as the simulation does
+        # The simulation uses: sag = -(total_torque * K)
+        total_load = abs(t_shoulder) + abs(t_elbow)
+        expected_sag = total_load * MATERIAL_STIFFNESS_K
+        
+        # 4. Offset the Command
+        # If physics will droop 1.8cm, we aim 1.8cm higher.
+        command_z[k] += expected_sag
+
+
+    # =========================================================
+    # 🆕 FIX: PRE-TENSION THE ARM (Eliminate Start Droop)
+    # =========================================================
+    print("💪 Pre-tensioning motors to compensated home...")
+    start_base, start_sh, start_el = inverse_kinematics(full_x[0], full_y[0], command_z[0])
+    
+    if start_sh is not None:
+        motors[0].actual_pos = np.degrees(start_base)
+        motors[1].actual_pos = np.degrees(start_sh)
+        motors[2].actual_pos = np.degrees(start_el)
+    
+    # 4. Generate Trajectory using the COMPENSATED Command
     (times, 
      j0_p, j0_v, 
      j1_p, j1_v, 
-     j2_p, j2_v) = generate_smooth_joint_trajectory_3d(full_x, full_y, full_z, cartesian_speed, DT)
+     j2_p, j2_v) = generate_smooth_joint_trajectory_3d(full_x, full_y, command_z, cartesian_speed, DT)
     
     print(f"⏱️  Duration: {times[-1]:.2f}s ({len(times)} steps)")
     
-    # 5. Execute Loop with DYNAMICS
+    # 5. Execute Loop
     log_data = []
     
     for i in range(len(times)):
+        # These targets are "Compensated" (High)
         targets = [j0_p[i], j1_p[i], j2_p[i]]
         vel_cmds = [j0_v[i], j1_v[i], j2_v[i]]
         
-        # --- A. Calculate Gravity Load ---
-        # We need the CURRENT motor positions (radians) to calculate the leverage
+        # --- A. Gravity Load ---
         rad_sh = np.radians(motor_shoulder.actual_pos)
         rad_el = np.radians(motor_elbow.actual_pos)
-        
         torque_s, torque_e = calculate_gravity_torques(rad_sh, rad_el)
         
-        # --- B. Update Motors with Load ---
-        # 1. Calculate the "Physics" (Infinite resolution float values)
-        pos_base_phys = motor_base.update(targets[0], vel_cmds[0], DT, external_load_torque=0.0)
-        pos_sh_phys   = motor_shoulder.update(targets[1], vel_cmds[1], DT, external_load_torque=torque_s)
-        pos_el_phys   = motor_elbow.update(targets[2], vel_cmds[2], DT, external_load_torque=torque_e)
+        # --- B. Update Motors ---
+        pos_base_phys = motor_base.update(targets[0], vel_cmds[0], DT, 0.0)
+        pos_sh_phys   = motor_shoulder.update(targets[1], vel_cmds[1], DT, torque_s)
+        pos_el_phys   = motor_elbow.update(targets[2], vel_cmds[2], DT, torque_e)
         
-        # 2. Simulate the Sensor (Crunch it down to 12-bit or 14-bit)
-        # This is what your code will actually "see" and log
+        # Quantize Sensors
         pos_base = quantize_angle(pos_base_phys, SENSOR_BIT_DEPTH)
         pos_sh   = quantize_angle(pos_sh_phys,   SENSOR_BIT_DEPTH)
         pos_el   = quantize_angle(pos_el_phys,   SENSOR_BIT_DEPTH)
-
         real_degs = [pos_base, pos_sh, pos_el]
         
-
         # --- C. Failure Check ---
         if motor_shoulder.failed or motor_elbow.failed:
-            print(f"💥 CRITICAL HARDWARE FAILURE at t={times[i]:.2f}s")
-            print(f"   Shoulder Status: {'FAILED' if motor_shoulder.failed else 'OK'} ({motor_shoulder.fail_reason})")
-            print(f"   Elbow Status:    {'FAILED' if motor_elbow.failed else 'OK'} ({motor_elbow.fail_reason})")
+            print(f"💥 FAILURE at t={times[i]:.2f}s")
             break
             
-        # --- D. Logging ---
+        # --- D. Logging (THE TRUTH CHECK) ---
+        # 1. Where is the robot physically?
         real_rads = [np.radians(d) for d in real_degs]
         rx, ry, rz = forward_kinematics(*real_rads)
+        
+        # 2. Apply Physics (Gravity pulls the real robot DOWN)
+        # This simulates the PETG bending
         rx, ry, rz = apply_structural_deflection(rx, ry, rz, torque_s, torque_e)
-        tx, ty, tz = forward_kinematics(*[np.radians(t) for t in targets])
-        error = np.sqrt((tx-rx)**2 + (ty-ry)**2 + (tz-rz)**2)
+        
+        # 3. RECOVER THE ORIGINAL TARGET
+        # 'targets' contains the "Sky High" compensated angles.
+        # To find the true visual target, we must subtract the EXACT same sag
+        # amount that we added in Step 3.5.
+        
+        # A. Get commanded angles in radians
+        cmd_rad_sh = np.radians(targets[1])
+        cmd_rad_el = np.radians(targets[2])
+        
+        # B. Calculate the torque required to hold this compensated position
+        # (This mirrors the logic in Step 3.5)
+        cmd_t_shoulder, cmd_t_elbow = calculate_gravity_torques(cmd_rad_sh, cmd_rad_el)
+        
+        # C. Calculate the sag offset derived from that torque
+        cmd_total_load = abs(cmd_t_shoulder) + abs(cmd_t_elbow)
+        calculated_sag_offset = cmd_total_load * MATERIAL_STIFFNESS_K
+        
+        # D. Get the Cartesian coordinates of the "Sky High" command
+        tx_cmd, ty_cmd, tz_cmd = forward_kinematics(*[np.radians(t) for t in targets])
+        
+        # E. True Target = SkyHigh Command - Calculated Sag
+        # This brings the green line down to the intended drawing plane.
+        true_target_z = tz_cmd - calculated_sag_offset
+
+        # 4. Calculate Error (True Goal vs Real Position)
+        error = np.sqrt((tx_cmd - rx)**2 + (ty_cmd - ry)**2 + (true_target_z - rz)**2)
         
         log_data.append({
             "timestamp_ms": int(times[i] * 1000),
-            "target_x": round(tx, 3), "target_y": round(ty, 3), "target_z": round(tz, 3),
-            "real_x": round(rx, 3), "real_y": round(ry, 3), "real_z": round(rz, 3),
+            
+            "target_x": round(tx_cmd, 3),        
+            "target_y": round(ty_cmd, 3),        
+            "target_z": round(true_target_z, 3), 
+            
+            "real_x": round(rx, 3),
+            "real_y": round(ry, 3),
+            "real_z": round(rz, 3),
             "error": round(error, 4),
             "base_deg": round(real_degs[0], 2),
             "shoulder_deg": round(real_degs[1], 2),
@@ -612,10 +676,10 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
             "limit_base": round(motor_base.max_torque_output, 2),   
         })
         
-    # Save Log
     filename = os.path.join(RUN_LOG_DIR, "arm_dynamics_log.csv")
     pd.DataFrame(log_data).to_csv(filename, index=False)
     print(f"✅ Data saved to: {filename}")
+    
     
     # Quick Stats
     if log_data:
