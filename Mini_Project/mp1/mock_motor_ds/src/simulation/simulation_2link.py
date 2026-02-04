@@ -54,7 +54,7 @@ M_WRIST_ASSEMBLY = 0.6 # kg (Wrist P + Wrist R + Gripper - Heavy!)
 # X=20, Y=0, Z=20 (Centered in front of robot, mid-height)
 HOME_POSITION_CARTESIAN = (20.0, 0.0, 20.0) 
 
-SENSOR_BIT_DEPTH = 12  # Set to 12 for AS5600, change to 14 later
+SENSOR_BIT_DEPTH = 14  # Set to 12 for AS5600, change to 14 later
 
 # ============================================================
 # 🧠 PHYSICS ENGINE (KINEMATICS + DYNAMICS)
@@ -262,6 +262,31 @@ def path_drawing_cube(num_points=300):
         y.extend(np.linspace(p1[1], p2[1], points_per_leg))
         z.extend(np.linspace(p1[2], p2[2], points_per_leg))
     return np.array(x), np.array(y), np.array(z)
+
+def path_random_micro_movements(num_points=500):
+    """Tiny 2mm movements + jitter to test resolution limits."""
+    # Center position
+    cx, cy, cz = 25.0, 0.0, 15.0
+    
+    # 1. Create a very slow, tiny spiral (Radius = 0.2 cm)
+    # This is small enough that 12-bit sensors will struggle to track it smoothly
+    t = np.linspace(0, 6*np.pi, num_points)
+    radius = 0.2 
+    
+    base_x = cx + radius * np.cos(t)
+    base_y = cy + radius * np.sin(t)
+    base_z = cz + np.linspace(0, 0.5, num_points) # Rise 0.5cm
+
+    # 2. Add random "micro-jitter" (0.02 cm)
+    # This tests if the sensor can detect sub-millimeter vibration
+    np.random.seed(42) # Fixed seed so 12-bit vs 14-bit runs are identical
+    noise = 0.02
+    
+    x = base_x + np.random.uniform(-noise, noise, num_points)
+    y = base_y + np.random.uniform(-noise, noise, num_points)
+    z = base_z + np.random.uniform(-noise, noise, num_points)
+    
+    return x, y, z
 
 # ============================================================
 # 🔧 3D TRAJECTORY GENERATOR (Smooth Motion)
@@ -540,7 +565,8 @@ if __name__ == "__main__":
         'path_drawing_cube':   (12.0, 350),
         'path_360_spin':       (20.0, 400),
         'path_letter_s_3d':    (10.0, 250),
-        'path_heart_3d':       (10.0, 300)
+        'path_heart_3d':       (10.0, 300),
+        'path_random_micro_movements': (2.0, 500)
     }
 
     # 3. Display Menu
