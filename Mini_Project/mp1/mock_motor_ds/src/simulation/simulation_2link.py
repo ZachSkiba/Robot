@@ -27,10 +27,10 @@ os.makedirs(RUN_LOG_DIR, exist_ok=True)
 print(f"\n📂 Logging 3D Digital Twin to: {RUN_LOG_DIR}\n")
 
 # ============================================================
-# ⚙️ HARDWARE CONFIG (RESEARCH EDITION)
+# ⚙️ HARDWARE CONFIG (HEAVY LIFT 3D PRINTED EDITION)
 # ============================================================
 # Robot Geometry
-L_BASE = 10.0   # cm (Height of the base pivot above the table - NEMA 23 stack is tall)
+L_BASE = 10.0   # cm
 L1 = 20.0       # cm (Shoulder to Elbow)
 L2 = 20.0       # cm (Elbow to Wrist)
 MAX_REACH = L1 + L2 - 0.1
@@ -42,19 +42,31 @@ DT = 1.0 / HZ
 # 🏗️ DYNAMICS CONSTANTS (MASS & GRAVITY)
 G = 9.81  # m/s^2
 
-# Link 1 (Shoulder) lifts: Link 1 Structure + Elbow Motor
-M_LINK1 = 0.4          # kg (Aluminum Tube + Brackets)
-M_ELBOW_MOTOR = 0.5    # kg (NEMA 17 + Planetary Gearbox)
+# Link 1 (Shoulder)
+# 3D printed walls are often heavier than thin aluminum tubes due to infill.
+M_LINK1 = 0.5          # kg (3D Printed Structure + Belt/Pulleys)
 
-# Link 2 (Elbow) lifts: Link 2 Structure + Wrist/Gripper Assembly
-M_LINK2 = 0.3          # kg (Tube)
-M_WRIST_ASSEMBLY = 0.6 # kg (Wrist P + Wrist R + Gripper - Heavy!)
+# M_ELBOW_MOTOR is set to 0.0 because you moved it to the shoulder pivot.
+# It no longer acts as a weight at the end of Link 1.
+M_ELBOW_MOTOR = 0.0    # kg (Remote Actuation - Motor sits on Base)
 
-# Default Home (Safe, centered position in 3D space)
-# X=20, Y=0, Z=20 (Centered in front of robot, mid-height)
+# Link 2 (Elbow)
+M_LINK2 = 0.4          # kg (3D Printed Tube/Structure)
+
+# --- THE TIP MASS CALCULATION ---
+# 1. Payload:          2.0 kg
+# 2. Future Nema 17:   0.4 kg (Wrist Pitch)
+# 3. Future Nema 11:   0.2 kg (Wrist Roll)
+# 4. Future Nema 11:   0.2 kg (Gripper)
+# 5. Plastic Housing:  0.2 kg
+# -----------------------------
+# TOTAL TIP MASS:      3.0 kg
+M_WRIST_ASSEMBLY = 3.0 # kg (Huge weight for a Nema 17!)
+
+# Default Home
 HOME_POSITION_CARTESIAN = (20.0, 0.0, 20.0) 
 
-SENSOR_BIT_DEPTH = 14  # Set to 12 for AS5600, change to 14 later
+SENSOR_BIT_DEPTH = 14  # High precision sensors
 
 # ============================================================
 # 🧠 PHYSICS ENGINE (KINEMATICS + DYNAMICS)
@@ -135,40 +147,38 @@ def inverse_kinematics(x, y, z):
 def calculate_gravity_torques(theta_shoulder, theta_elbow):
     """
     Calculates the torque (Nm) required to hold the arm against gravity.
-    Angles in Radians. 0 rad = Horizontal. Positive = Up.
+    UPDATED: Elbow motor is now at the shoulder pivot (Remote Actuation).
     """
-    # Lengths in Meters for Torque Calculation
+    # Lengths in Meters
     l1_m = L1 / 100.0
     l2_m = L2 / 100.0
     
     # Global angle of forearm relative to horizon
     global_angle_elbow = theta_shoulder + theta_elbow
     
-    # --- 1. Forces on ELBOW Joint (J3) ---
-    # Lift Link 2 (assumed COM at 1/2 length) + Wrist/Payload (at full length)
+    # --- 1. Forces on ELBOW Joint (Unchanged) ---
+    # The belt transfers torque, so the load calculation at the elbow joint is the same.
     torque_elbow = (
         (M_LINK2 * G * (l2_m/2) * np.cos(global_angle_elbow)) + 
         (M_WRIST_ASSEMBLY * G * l2_m * np.cos(global_angle_elbow))
     )
     
-    # --- 2. Forces on SHOULDER Joint (J2) ---
-    # Lift Link 1 (COM at 1/2) + Elbow Motor (at L1) + The whole Forearm load
+    # --- 2. Forces on SHOULDER Joint (MAJOR CHANGE) ---
+    # PREVIOUSLY: We added (M_ELBOW_MOTOR * G * l1_m...)
+    # NOW: The motor is at the pivot (distance = 0), so it adds NO torque load.
     
-    # Torque from Link 1 Mass
+    # Torque from Link 1 Mass (The aluminum tube itself)
     t_link1 = M_LINK1 * G * (l1_m/2) * np.cos(theta_shoulder)
     
-    # Torque from Elbow Motor Mass (Point mass at end of L1)
-    t_elbow_motor = M_ELBOW_MOTOR * G * l1_m * np.cos(theta_shoulder)
-    
-    # Torque from Forearm Mass (Link 2 + Wrist) acting on Shoulder lever arm
-    # Horizontal distance from shoulder pivot
+    # Torque from Link 2 + Wrist acting on Shoulder lever arm
     dist_link2_com = l1_m * np.cos(theta_shoulder) + (l2_m/2) * np.cos(global_angle_elbow)
     dist_wrist_com = l1_m * np.cos(theta_shoulder) + l2_m * np.cos(global_angle_elbow)
     
     t_link2_on_shoulder = M_LINK2 * G * dist_link2_com
     t_wrist_on_shoulder = M_WRIST_ASSEMBLY * G * dist_wrist_com
     
-    torque_shoulder = t_link1 + t_elbow_motor + t_link2_on_shoulder + t_wrist_on_shoulder
+    # REMOVED: t_elbow_motor (It is now 0 torque impact)
+    torque_shoulder = t_link1 + t_link2_on_shoulder + t_wrist_on_shoulder
     
     return torque_shoulder, torque_elbow
 
@@ -493,17 +503,25 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     last_base_angle_rad = 0.0
 
     print(f"🎨 3D Path: {path_function.__name__}")
-    print(f"🏃 Speed: {cartesian_speed} cm/s")
     
-    # 1. Initialize Motors with RESEARCH GRADE specs
-    # Base: NEMA 23 (3.0Nm) + 10:1 Gearbox
-    motor_base = MockMotor("Base", gear_ratio=10.0, max_torque_nm=3.0)
+    # ==========================================
+    # 🔧 UPDATED MOTOR CONFIGURATION
+    # ==========================================
     
-    # Shoulder: NEMA 23 (3.0Nm) + 20:1 Gearbox
-    motor_shoulder = MockMotor("Shoulder", gear_ratio=20.0, max_torque_nm=3.0)
+    # 1. BASE: Nema 17 (Turntable)
+    # 5:1 is fine here for rotation, as it doesn't fight gravity directly.
+    motor_base = MockMotor("Base (Nema 17)", gear_ratio=5.0, max_torque_nm=0.45)
     
-    # Elbow: NEMA 17 (0.5Nm) + 25:1 Gearbox
-    motor_elbow = MockMotor("Elbow", gear_ratio=25.0, max_torque_nm=0.5)
+    # 2. SHOULDER: Nema 23 (The Heavy Lifter)
+    # With 3kg at the tip, the shoulder sees huge leverage. 
+    # Keep this at 20:1 (or even 30:1 if you have a high-ratio gearbox).
+    motor_shoulder = MockMotor("Shoulder (Nema 23)", gear_ratio=20.0, max_torque_nm=3.0)
+    
+    # 3. ELBOW: Nema 17 (Remote Actuated)
+    # UPDATED: Changed from 3.0 to 20.0
+    # WHY: 3kg load * 20cm arm = ~6Nm of gravity torque.
+    # Nema 17 (0.45Nm) * 20 ratio = 9.0Nm output. (Safe with ~1.5x margin)
+    motor_elbow = MockMotor("Elbow (Nema 17)", gear_ratio=20.0, max_torque_nm=0.45)
     
     motors = [motor_base, motor_shoulder, motor_elbow]
     
@@ -592,7 +610,9 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
             "torque_shoulder": round(motor_shoulder.last_torque_usage, 2),
             "torque_elbow": round(motor_elbow.last_torque_usage, 2),
             "limit_shoulder": round(motor_shoulder.max_torque_output, 2),
-            "limit_elbow": round(motor_elbow.max_torque_output, 2)
+            "limit_elbow": round(motor_elbow.max_torque_output, 2),
+            "torque_base": round(motor_base.last_torque_usage, 2),
+            "limit_base": round(motor_base.max_torque_output, 2),   
         })
         
     # Save Log

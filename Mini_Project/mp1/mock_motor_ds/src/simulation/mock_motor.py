@@ -45,17 +45,19 @@ class MockMotor:
             self.max_accel = MOTOR_MAX_ACCEL_SHAFT / gear_ratio
 
         # 2. Torque Limits & Efficiency
-        # Real planetary gears lose ~15% power to heat/noise
-        self.efficiency = 0.85 
+        # UPDATED: Belts are more efficient (90%) than cheap gearboxes (85%)
+        self.efficiency = 0.90 
         
         # We calculate the max output torque considering this loss immediately
         self.max_torque_output = max_torque_nm * gear_ratio * self.efficiency
 
         # 3. Friction Constants (The "Gunk" Factors)
-        # Stiction: Force needed just to START moving (static friction)
-        self.stiction_nm = 0.2 * gear_ratio  # Scales with gears
-        # Viscous: Drag that increases with speed (like moving through honey)
-        self.viscous_coeff = 0.002 * gear_ratio 
+        # UPDATED: Lowered stiction from 0.2 to 0.02. 
+        # 0.2 was like a rusty gearbox. 0.02 is a smooth belt drive.
+        self.stiction_nm = 0.02 * gear_ratio  
+        
+        # UPDATED: Slightly higher viscous drag for belts at speed
+        self.viscous_coeff = 0.0001 * gear_ratio
 
         # State
         self.actual_pos = 0.0
@@ -230,8 +232,8 @@ if __name__ == "__main__":
 
             for t, target_pos, target_vel in zip(time_points, target_positions, target_velocities):
                 # We simulate a "Gravity Wave" load to see if it stalls
-                # Load oscillates between -50 Nm and +50 Nm
-                simulated_gravity_load = 50.0 * np.sin(t * 2.0) 
+                # Load oscillates between -15 Nm and +15 Nm
+                simulated_gravity_load = 15.0 * np.sin(t * 2.0)
                 
                 actual = motor.update(target_pos, target_vel, dt, external_load_torque=simulated_gravity_load)
                 
