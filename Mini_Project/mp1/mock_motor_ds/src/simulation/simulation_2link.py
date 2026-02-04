@@ -515,13 +515,10 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     # 2. SHOULDER: Nema 23 (The Heavy Lifter)
     # With 3kg at the tip, the shoulder sees huge leverage. 
     # Keep this at 20:1 (or even 30:1 if you have a high-ratio gearbox).
-    motor_shoulder = MockMotor("Shoulder (Nema 23)", gear_ratio=20.0, max_torque_nm=3.0)
+    motor_shoulder = MockMotor("Shoulder (Nema 23)", gear_ratio=20.0, max_torque_nm=1.2)
     
-    # 3. ELBOW: Nema 17 (Remote Actuated)
-    # UPDATED: Changed from 3.0 to 20.0
-    # WHY: 3kg load * 20cm arm = ~6Nm of gravity torque.
-    # Nema 17 (0.45Nm) * 20 ratio = 9.0Nm output. (Safe with ~1.5x margin)
-    motor_elbow = MockMotor("Elbow (Nema 17)", gear_ratio=20.0, max_torque_nm=0.45)
+    # 3. ELBOW : Upgrade Elbow to Nema 23 (Same as Shoulder)
+    motor_elbow = MockMotor("Elbow (Nema 23)", gear_ratio=20.0, max_torque_nm=1.2)
     
     motors = [motor_base, motor_shoulder, motor_elbow]
     
