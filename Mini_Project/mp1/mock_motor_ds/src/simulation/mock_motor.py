@@ -26,12 +26,13 @@ ENCODER_NOISE = 0.05
 
 class MockMotor:
     def __init__(self, name="Generic", gear_ratio=1.0, max_torque_nm=3.0, 
-                 max_velocity=None, max_accel=None):
+                 max_velocity=None, max_accel=None, belt_stiffness=800):
         """
         Universal MockMotor with Internal Friction & Efficiency.
         """
         self.name = name
         self.gear_ratio = gear_ratio
+        self.belt_stiffness = belt_stiffness
         
         # 1. Physics Limits (Calculated at the JOINT output)
         if max_velocity:
@@ -56,10 +57,16 @@ class MockMotor:
         # 0.2 was like a rusty gearbox. 0.02 is a smooth belt drive.
         self.stiction_nm = 0.02 * gear_ratio  
         
-        # UPDATED: Slightly higher viscous drag for belts at speed
-        self.viscous_coeff = 0.0001 * gear_ratio
+        # NEW: Increase damping by 50x-100x to simulate grease/belt losses
+        # This acts as a "shock absorber" for the 3kg weight
+        self.viscous_coeff = 0.01 * gear_ratio
+
+        # --- BELT PHYSICS SETUP ---
+        self.current_belt_stretch = 0.0       # Degrees
+        # -------------------------------
 
         # State
+        self.motor_angle_deg = 0.0
         self.actual_pos = 0.0
         self.current_velocity = 0.0
         self.failed = False
@@ -68,72 +75,91 @@ class MockMotor:
 
     def update(self, target_pos, target_velocity, dt, external_load_torque=0.0):
         """
-        Updates motor physics with Friction calculations.
+        Updates motor physics including Inertia, Friction, and Belt Stretch.
+        Returns the TRUE physical position of the arm link.
         """
-        # 1. Failure Check (The "Gravity Killer")
+        # 1. Failure Check (Gravity Slip)
         if self.failed:
-            return self.actual_pos
-
-        # --- NEW: FRICTION PHYSICS ------------------------------------------
-        # Direction opposes movement
-        direction = np.sign(self.current_velocity) 
-        if direction == 0: direction = np.sign(target_velocity) # Start-up logic
-
-        # A. Friction Calculation
-        # Stiction (Constant drag) + Viscous (Speed dependent drag)
-        friction_torque = (self.stiction_nm * direction) + \
-                          (self.viscous_coeff * self.current_velocity)
-        
-        # B. Total Required Torque
-        # Motor must overcome: External Load (Gravity) + Internal Friction
-        # And we divide by efficiency because the motor works harder than the output shows
-        total_required_torque = (external_load_torque + friction_torque) / self.efficiency
-        
-        # Save for analysis
-        self.last_torque_usage = total_required_torque 
-        # --------------------------------------------------------------------
-
-        # 2. STALL CHECK (Now uses the REAL total load)
-        if abs(total_required_torque) > self.max_torque_output:
-            self.failed = True
-            self.fail_reason = (f"STALL: Req {abs(total_required_torque):.2f}Nm "
-                                f"> Max {self.max_torque_output:.2f}Nm "
-                                f"(Load: {external_load_torque:.2f} + Fric: {friction_torque:.2f})")
-            print(f"🚨 {self.name} CRITICAL FAILURE: {self.fail_reason}")
-            
-            # REALISM UPGRADE: When a stepper stalls, it doesn't just hold position.
-            # If gravity is strong, it slips backward.
+            # If stalled, gravity pulls the arm down rapidly
             slip_speed = -np.sign(external_load_torque) * 20.0 * dt
             self.actual_pos += slip_speed
             return self.actual_pos
 
-        # 3. Distance Calculation
-        dist_to_go = target_pos - self.actual_pos
-
-        # 4. Velocity Logic (P-Control + Profile Feed-Forward)
+        # ==========================================
+        # A. KINEMATICS (Motion Profiling)
+        # ==========================================
+        # Calculate how the MOTOR SHAFT wants to move (ignoring stretch for now)
+        
+        # Distance to target (in motor space)
+        dist_to_go = target_pos - self.motor_angle_deg
+        
+        # Desired Velocity: Try to match target speed, but slow down if close to target
         desired_vel = np.sign(dist_to_go) * min(abs(target_velocity), abs(dist_to_go/dt), self.max_velocity)
 
-        # 5. Acceleration Logic (Inertia)
+        # Acceleration Limit: We cannot change velocity instantly
         vel_diff = desired_vel - self.current_velocity
         max_vel_change = self.max_accel * dt
         
+        actual_accel = 0.0
         if abs(vel_diff) > max_vel_change:
-            self.current_velocity += max_vel_change * np.sign(vel_diff)
+            actual_accel = np.sign(vel_diff) * self.max_accel
+            self.current_velocity += actual_accel * dt
         else:
+            actual_accel = vel_diff / dt
             self.current_velocity = desired_vel
 
-        # 6. Hard Clamp to Max Velocity
-        self.current_velocity = np.clip(self.current_velocity, -self.max_velocity, self.max_velocity)
+        # Update INTERNAL MOTOR Angle (The hard steel shaft position)
+        self.motor_angle_deg += self.current_velocity * dt
 
-        # 7. Update Position
-        self.actual_pos += self.current_velocity * dt
+        # ==========================================
+        # B. DYNAMICS (Torques)
+        # ==========================================
+        # 1. Inertial Torque (Force needed to spin the rotor)
+        # We must convert degrees/s^2 to radians/s^2 for correct Newton-meters
+        accel_radians = np.radians(actual_accel) 
+        # 0.002 kg m^2 is a reasonable estimate for Rotor + Gearbox + Belt inertia
+        torque_inertial = accel_radians * 0.002
 
-        # 8. Encoder Simulation
-        physical_pos = round(self.actual_pos / EFFECTIVE_STEP) * EFFECTIVE_STEP
-        sensor_reading = round(physical_pos / ENCODER_RES) * ENCODER_RES
-        sensor_reading += np.random.normal(0, ENCODER_NOISE)
+        # 2. Friction Torque
+        # Direction opposes movement
+        direction = np.sign(self.current_velocity) if self.current_velocity != 0 else np.sign(desired_vel)
+        torque_friction = (self.stiction_nm * direction) + \
+                          (self.viscous_coeff * self.current_velocity)
 
-        return sensor_reading
+        # 3. Total Required Torque
+        # Load + Friction + Inertia
+        # We divide by efficiency because the motor works harder than the output shows
+        total_required_torque = (external_load_torque + torque_friction + torque_inertial) / self.efficiency
+        
+        self.last_torque_usage = total_required_torque
+
+        # ==========================================
+        # C. STALL CHECK
+        # ==========================================
+        if abs(total_required_torque) > self.max_torque_output:
+            self.failed = True
+            self.fail_reason = (f"Over Torque: {total_required_torque:.2f} Nm > {self.max_torque_output:.2f} Nm")
+            print(f"🔥 {self.name} STALLED: {self.fail_reason}")
+            return self.actual_pos
+
+        # ==========================================
+        # D. COMPLIANCE (Belt Stretch)
+        # ==========================================
+        # Hooke's Law: F = kx  =>  x = F / k
+        # The motor pulls the belt, the belt stretches.
+        stretch_radians = total_required_torque / self.belt_stiffness
+        self.current_belt_stretch = np.degrees(stretch_radians)
+
+        # ==========================================
+        # E. REAL JOINT POSITION
+        # ==========================================
+        # The arm is where the motor is MINUS the stretch (lag)
+        # If gravity pulls down (positive torque), the arm lags behind (negative position relative to motor)
+        self.actual_pos = self.motor_angle_deg - self.current_belt_stretch
+
+        # Return the TRUE physical position 
+        # (The simulation loop handles the sensor quantization/noise)
+        return self.actual_pos
 
 # ============================================================
 # ▶️ TRAPEZOIDAL PROFILE GENERATOR (Unchanged)
@@ -240,11 +266,13 @@ if __name__ == "__main__":
                 data_log.append({
                     "timestamp_ms": int(t*1000),
                     "target_pos": round(target_pos, 3),
-                    "actual_pos": round(actual, 3),
-                    "error": round(target_pos-actual, 3),
+                    "sensor_pos": round(actual, 3),  
+                    "real_arm_pos": round(motor.actual_pos, 3), 
+                    "belt_stretch": round(motor.current_belt_stretch, 4), 
+                    "error": round(target_pos - motor.actual_pos, 3),    
                     "velocity_cmd": speed,
                     "torque_load": round(simulated_gravity_load, 2),
-                    "torque_total_req": round(motor.last_torque_usage, 2), # LOGGING TOTAL LOAD
+                    "torque_total_req": round(motor.last_torque_usage, 2),
                     "hz": HZ
                 })
 

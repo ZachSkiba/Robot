@@ -39,7 +39,7 @@ MAX_REACH = L1 + L2 - 0.1
 HZ = 1000
 DT = 1.0 / HZ 
 
-# 🏗️ DYNAMICS CONSTANTS (MASS & GRAVITY)
+# 🏗️ DYNAMICS CONSTFANTS (MASS & GRAVITY)
 G = 9.81  # m/s^2
 
 # Link 1 (Shoulder)
@@ -74,6 +74,12 @@ SENSOR_BIT_DEPTH = 14  # High precision sensors
     # 0.50 = Poorly designed 3D Print (Solid stick or low infill)
     
 MATERIAL_STIFFNESS_K = 0.15
+
+# --- NEW: BELT STIFFNESS (Nm/rad) ---
+# Defines how "stretchy" the timing belts are.
+# 300.0 = Loose/Long belts (Visible lag)
+# 1000.0 = Properly tensioned GT2 belts
+BELT_STIFFNESS_NM_RAD = 800.0
 
 # ============================================================
 # 🧠 PHYSICS ENGINE (KINEMATICS + DYNAMICS)
@@ -333,6 +339,22 @@ def path_random_micro_movements(num_points=500):
     
     return x, y, z
 
+def path_stress_test_max_reach(num_points=400):
+    """Extends to absolute limit (39.5cm) to test Stall Torque."""
+    # 1. Extend from home (20cm) to Max Reach (39.5cm)
+    # We go out to X=39.5, Y=0, Z=20.
+    # Z=20 (Shoulder height) creates the MAXIMUM gravity moment arm.
+    x_out = np.linspace(20.0, 39.5, num_points // 2)
+    y_out = np.zeros_like(x_out)
+    z_out = np.full_like(x_out, 20.0) 
+    
+    # 2. Retract back
+    x_in = np.linspace(39.5, 20.0, num_points // 2)
+    y_in = np.zeros_like(x_in)
+    z_in = np.full_like(x_in, 20.0)
+    
+    return np.concatenate([x_out, x_in]), np.concatenate([y_out, y_in]), np.concatenate([z_out, z_in])
+
 # ============================================================
 # 🔧 3D TRAJECTORY GENERATOR (Smooth Motion)
 # ============================================================
@@ -510,28 +532,73 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     # ==========================================
     # 🔧 MOTOR CONFIG
     # ==========================================
-    motor_base = MockMotor("Base (Nema 17)", gear_ratio=5.0, max_torque_nm=0.45)
-    motor_shoulder = MockMotor("Shoulder (Nema 23)", gear_ratio=20.0, max_torque_nm=1.2)
-    motor_elbow = MockMotor("Elbow (Nema 23)", gear_ratio=20.0, max_torque_nm=1.2)
+    # UPDATED: We now pass belt_stiffness to the motors
+    motor_base = MockMotor("Base (Nema 23)", gear_ratio=5.0, max_torque_nm=2.8, belt_stiffness=BELT_STIFFNESS_NM_RAD)
+    motor_shoulder = MockMotor("Shoulder (Nema 23)", gear_ratio=20.0, max_torque_nm=2.8, belt_stiffness=BELT_STIFFNESS_NM_RAD)
+    motor_elbow = MockMotor("Elbow (Nema 23)", gear_ratio=20.0, max_torque_nm=2.8, belt_stiffness=BELT_STIFFNESS_NM_RAD)
     motors = [motor_base, motor_shoulder, motor_elbow]
     
-    # Set Home Position
-    home_angs = inverse_kinematics(*HOME_POSITION_CARTESIAN)
-    if home_angs[0] is None:
+    # ==========================================
+    # 1. INITIALIZATION & PRE-TENSIONING (Aim High!)
+    # ==========================================
+    
+    # A. Calculate the "Sag-Free" Home (Where we want to end up visually)
+    home_x, home_y, home_z = HOME_POSITION_CARTESIAN
+    
+    # B. Calculate the "Compensated" Home (Where we must actually aim)
+    #    We need to know the torque at home to know how much to aim up.
+    home_angs_pure = inverse_kinematics(home_x, home_y, home_z)
+    if home_angs_pure[0] is None:
         print("❌ Home position unreachable!")
         return
-
-    for i, m in enumerate(motors):
-        m.actual_pos = np.degrees(home_angs[i])
-        
-    print(f"🏠 Home: {HOME_POSITION_CARTESIAN} cm")
     
-    # 2. Generate Path
+    # Calculate Sag at Home
+    t_home_s, t_home_e = calculate_gravity_torques(home_angs_pure[1], home_angs_pure[2])
+    total_load_home = abs(t_home_s) + abs(t_home_e)
+    sag_home = total_load_home * MATERIAL_STIFFNESS_K
+    
+    # This is the VITAL fix: We aim higher right from the start (Z + Sag)
+    target_z_home = home_z + sag_home
+    
+    print(f"🏠 Home Target: {home_z:.2f} cm")
+    print(f"📐 Compensating for {sag_home:.2f} cm of droop...")
+    print(f"🎯 Initializing Arm Angles for Z = {target_z_home:.2f} cm")
+
+    # C. Get the Angles for this "Aiming High" position
+    start_base, start_sh, start_el = inverse_kinematics(home_x, home_y, target_z_home)
+    
+    # D. Calculate Belt Stretch for these angles
+    #    The motor needs to be even TIGHTER than the arm angle to hold the weight
+    t_start_s, t_start_e = calculate_gravity_torques(start_sh, start_el)
+    stretch_start_s = np.degrees(t_start_s / BELT_STIFFNESS_NM_RAD)
+    stretch_start_e = np.degrees(t_start_e / BELT_STIFFNESS_NM_RAD)
+
+    # E. Apply to Motors
+    #    Base
+    motors[0].actual_pos = np.degrees(start_base)
+    motors[0].motor_angle_deg = np.degrees(start_base)
+    motors[0].current_velocity = 0.0
+    
+    #    Shoulder
+    motors[1].actual_pos = np.degrees(start_sh)                # Arm is at "Aiming High" Angle
+    motors[1].motor_angle_deg = np.degrees(start_sh) + stretch_start_s # Motor is tighter
+    motors[1].current_velocity = 0.0
+
+    #    Elbow
+    motors[2].actual_pos = np.degrees(start_el)
+    motors[2].motor_angle_deg = np.degrees(start_el) + stretch_start_e
+    motors[2].current_velocity = 0.0
+    
+    # ---------------------------------------------------------
+    
+    # 2. Generate Path (Standard logic follows...)
     path_x, path_y, path_z = path_function(num_points=path_resolution)
     
     # 3. Add Approach Path
     start_xyz = (path_x[0], path_y[0], path_z[0])
     num_approach = 50
+    # Note: We interpolate from the VISUAL Home (20.0), not the COMPENSATED Home.
+    # The loop below handles the compensation dynamically.
     full_x = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[0], start_xyz[0], num_approach), path_x])
     full_y = np.concatenate([np.linspace(HOME_POSITION_CARTESIAN[1], start_xyz[1], num_approach), path_y])
     
@@ -597,15 +664,28 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
         targets = [j0_p[i], j1_p[i], j2_p[i]]
         vel_cmds = [j0_v[i], j1_v[i], j2_v[i]]
         
-        # --- A. Gravity Load ---
-        rad_sh = np.radians(motor_shoulder.actual_pos)
-        rad_el = np.radians(motor_elbow.actual_pos)
-        torque_s, torque_e = calculate_gravity_torques(rad_sh, rad_el)
+        # --- A. PREDICT GRAVITY & STRETCH (Feed Forward) ---
+        tgt_rad_sh = np.radians(targets[1])
+        tgt_rad_el = np.radians(targets[2])
         
-        # --- B. Update Motors ---
+        # We calculate the torque we EXPECT to encounter
+        pred_torque_s, pred_torque_e = calculate_gravity_torques(tgt_rad_sh, tgt_rad_el)
+        
+        # --- FIX: ADD FRICTION COMPENSATION FACTOR (1.15) ---
+        # Real gearboxes have ~90% efficiency. The motor fights friction too.
+        # We multiply by 1.15 to 'over-correct' for these invisible losses.
+        COMP_FACTOR = 1.15
+        
+        # Calculate needed compensation angle (Degrees)
+        comp_s_deg = np.degrees((pred_torque_s * COMP_FACTOR) / BELT_STIFFNESS_NM_RAD)
+        comp_e_deg = np.degrees((pred_torque_e * COMP_FACTOR) / BELT_STIFFNESS_NM_RAD)
+
+        # --- B. Update Motors (WITH COMPENSATION) ---
         pos_base_phys = motor_base.update(targets[0], vel_cmds[0], DT, 0.0)
-        pos_sh_phys   = motor_shoulder.update(targets[1], vel_cmds[1], DT, torque_s)
-        pos_el_phys   = motor_elbow.update(targets[2], vel_cmds[2], DT, torque_e)
+        
+        # We pass the Compensated Target AND the Predicted Torque
+        pos_sh_phys = motor_shoulder.update(targets[1] + comp_s_deg, vel_cmds[1], DT, pred_torque_s)
+        pos_el_phys = motor_elbow.update(targets[2] + comp_e_deg, vel_cmds[2], DT, pred_torque_e)
         
         # Quantize Sensors
         pos_base = quantize_angle(pos_base_phys, SENSOR_BIT_DEPTH)
@@ -619,55 +699,43 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
             break
             
         # --- D. Logging (THE TRUTH CHECK) ---
-        # 1. Where is the robot physically?
-        real_rads = [np.radians(d) for d in real_degs]
-        rx, ry, rz = forward_kinematics(*real_rads)
+        # 1. Where is the robot physically? 
+        phys_rads = [np.radians(m.actual_pos) for m in motors]
+        rx, ry, rz = forward_kinematics(*phys_rads)
         
-        # 2. Apply Physics (Gravity pulls the real robot DOWN)
-        # This simulates the PETG bending
-        rx, ry, rz = apply_structural_deflection(rx, ry, rz, torque_s, torque_e)
+        # 2. Apply Structural Bending 
+        # CORRECTION: Use 'pred_torque_s' instead of undefined 'torque_s'
+        rx, ry, rz = apply_structural_deflection(rx, ry, rz, pred_torque_s, pred_torque_e)
         
         # 3. RECOVER THE ORIGINAL TARGET
-        # 'targets' contains the "Sky High" compensated angles.
-        # To find the true visual target, we must subtract the EXACT same sag
-        # amount that we added in Step 3.5.
-        
-        # A. Get commanded angles in radians
+        # We need to know where we WANTED to be to calculate the error
         cmd_rad_sh = np.radians(targets[1])
         cmd_rad_el = np.radians(targets[2])
-        
-        # B. Calculate the torque required to hold this compensated position
-        # (This mirrors the logic in Step 3.5)
         cmd_t_shoulder, cmd_t_elbow = calculate_gravity_torques(cmd_rad_sh, cmd_rad_el)
-        
-        # C. Calculate the sag offset derived from that torque
         cmd_total_load = abs(cmd_t_shoulder) + abs(cmd_t_elbow)
         calculated_sag_offset = cmd_total_load * MATERIAL_STIFFNESS_K
         
-        # D. Get the Cartesian coordinates of the "Sky High" command
+        # Get the "intended" coordinates
         tx_cmd, ty_cmd, tz_cmd = forward_kinematics(*[np.radians(t) for t in targets])
-        
-        # E. True Target = SkyHigh Command - Calculated Sag
-        # This brings the green line down to the intended drawing plane.
         true_target_z = tz_cmd - calculated_sag_offset
 
-        # 4. Calculate Error (True Goal vs Real Position)
+        # 4. Calculate Error
         error = np.sqrt((tx_cmd - rx)**2 + (ty_cmd - ry)**2 + (true_target_z - rz)**2)
         
         log_data.append({
             "timestamp_ms": int(times[i] * 1000),
-            
             "target_x": round(tx_cmd, 3),        
             "target_y": round(ty_cmd, 3),        
             "target_z": round(true_target_z, 3), 
-            
             "real_x": round(rx, 3),
             "real_y": round(ry, 3),
             "real_z": round(rz, 3),
             "error": round(error, 4),
-            "base_deg": round(real_degs[0], 2),
-            "shoulder_deg": round(real_degs[1], 2),
-            "elbow_deg": round(real_degs[2], 2),
+            "stretch_shoulder": round(motor_shoulder.current_belt_stretch, 4),
+            "stretch_elbow": round(motor_elbow.current_belt_stretch, 4),
+            "base_deg": round(real_degs[0], 2),      
+            "shoulder_deg": round(real_degs[1], 2),  
+            "elbow_deg": round(real_degs[2], 2),     
             "torque_shoulder": round(motor_shoulder.last_torque_usage, 2),
             "torque_elbow": round(motor_elbow.last_torque_usage, 2),
             "limit_shoulder": round(motor_shoulder.max_torque_output, 2),
@@ -713,7 +781,8 @@ if __name__ == "__main__":
         'path_360_spin':       (20.0, 400),
         'path_letter_s_3d':    (10.0, 250),
         'path_heart_3d':       (10.0, 300),
-        'path_random_micro_movements': (2.0, 500)
+        'path_random_micro_movements': (2.0, 500),
+        'path_stress_test_max_reach': (8.0, 400)
     }
 
     # 3. Display Menu
