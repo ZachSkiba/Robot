@@ -27,9 +27,7 @@ Ubuntu is generally very safe, but here’s what to watch for:
 
 - Ubuntu requires regular security updates. Delaying updates can leave known vulnerabilities exposed.  
 - Unlike Windows, you won’t always get pop-up reminders—you must actively run:
-
-```bash
-
+- ```bash
 ## e. Third-Party Software
 
 - Installing random scripts or PPAs (personal package archives) can install unverified software that could compromise your system.  
@@ -113,4 +111,4 @@ Many Windows applications either don’t exist natively or require alternatives:
 
 If you want, I can make a practical checklist of “what you should do and avoid on Ubuntu” for day-to-day tasks so you never accidentally compromise your emails, schoolwork, or ROS environment.
 
-sudo apt update && sudo apt upgrade
+
