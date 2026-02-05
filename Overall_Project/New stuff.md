@@ -33,3 +33,4 @@
 
 ## Hardware Updates
 - New motor drives and components added to the **materials list**.
+- New encoders are better
