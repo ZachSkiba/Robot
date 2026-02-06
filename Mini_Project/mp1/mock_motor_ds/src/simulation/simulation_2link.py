@@ -359,34 +359,34 @@ def path_stress_test_max_reach(num_points=400):
 # 🔧 3D TRAJECTORY GENERATOR (Smooth Motion)
 # ============================================================
 def generate_smooth_joint_trajectory_3d(path_x, path_y, path_z, cartesian_speed, dt):
-    """Generates 3-Motor Trajectories with Corner Detection."""
+    """
+    Standard Symmetric Trajectory (Fast).
+    Optimized Accel: 40.0 cm/s^2 (Good balance for 3kg payload)
+    """
     
-    # 1. Analyze Geometry for Corners
-    dx = np.diff(path_x)
-    dy = np.diff(path_y)
-    dz = np.diff(path_z)
+    # 1. Analyze Geometry (Unchanged)
+    dx = np.diff(path_x); dy = np.diff(path_y); dz = np.diff(path_z)
     headings = np.vstack((dx, dy, dz)).T
     norms = np.linalg.norm(headings, axis=1)
-    
     with np.errstate(divide='ignore', invalid='ignore'):
         headings_norm = headings / norms[:, np.newaxis]
     headings_norm[np.isnan(headings_norm)] = 0
-
     dot_products = np.sum(headings_norm[:-1] * headings_norm[1:], axis=1)
-    dot_products = np.clip(dot_products, -1.0, 1.0)
-    angles = np.arccos(dot_products)
-    
-    corner_threshold_rad = np.deg2rad(45.0)
-    sharp_turn_indices = np.where(angles > corner_threshold_rad)[0] + 1
+    angles = np.arccos(np.clip(dot_products, -1.0, 1.0))
+    sharp_turn_indices = np.where(angles > np.deg2rad(45.0))[0] + 1
     segment_indices = [0] + list(sharp_turn_indices) + [len(path_x) - 1]
 
-    # 2. Generate Profile per Segment
+    # 2. Generate Profile
     all_time = []
     j_cmds = [[], [], []]
     j_vels = [[], [], []]
-    
     current_time_offset = 0.0
+    
+    # ACCELERATION SETTING
+    # 50.0 was too jerky. 20.0 was too slow. 
+    # 40.0 is the sweet spot for High-Torque Nema 23s.
     ACCEL_CARTESIAN = 50.0 
+    
     last_joints = [0.0, 0.0, 0.0]
 
     for i in range(len(segment_indices) - 1):
@@ -659,67 +659,98 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
     # 5. Execute Loop
     log_data = []
     
+    # Helper to track previous velocity for acceleration calculation
+    last_vels = [0.0, 0.0, 0.0] 
+    
+    # Inertia Estimations (kg*m^2)
+    # 3kg payload at 40cm arm length = ~0.5
+    INERTIA_SHOULDER = 0.5
+    INERTIA_ELBOW    = 0.15
+    INERTIA_BASE     = 0.8
+    
+    # 5. Execute Loop
+    log_data = []
+    
+    # Helper to track previous velocity for acceleration calculation
+    last_vels = [0.0, 0.0, 0.0] 
+    
+    # Inertia Estimations (kg*m^2)
+    # 3kg payload at 40cm arm length = ~0.5
+    INERTIA_SHOULDER = 0.5
+    INERTIA_ELBOW    = 0.15
+    
+    # 5. Execute Loop
+    log_data = []
+    
+    last_vels = [0.0, 0.0, 0.0] 
+    
+    # Inertia Estimations (kg*m^2)
+    INERTIA_SHOULDER = 0.5
+    INERTIA_ELBOW    = 0.15
+    INERTIA_BASE     = 0.8   # <--- 1. NEW: Define Base Inertia
+    
     for i in range(len(times)):
-        # These targets are "Compensated" (High)
         targets = [j0_p[i], j1_p[i], j2_p[i]]
         vel_cmds = [j0_v[i], j1_v[i], j2_v[i]]
         
-        # --- A. PREDICT GRAVITY & STRETCH (Feed Forward) ---
+        # --- A. PREDICT GRAVITY & INERTIA ---
+        
+        # 1. Calculate Acceleration (The "Kick")
+        accel_b_deg = (vel_cmds[0] - last_vels[0]) / DT  # <--- 2. NEW: Calc Base Accel
+        accel_s_deg = (vel_cmds[1] - last_vels[1]) / DT
+        accel_e_deg = (vel_cmds[2] - last_vels[2]) / DT
+        last_vels = vel_cmds 
+        
+        # 2. Calculate Dynamic Torque (Inertia Load)
+        torque_dyn_b = (np.radians(accel_b_deg) * INERTIA_BASE) # <--- 3. NEW: Calc Base Torque
+        torque_dyn_s = (np.radians(accel_s_deg) * INERTIA_SHOULDER)
+        torque_dyn_e = (np.radians(accel_e_deg) * INERTIA_ELBOW)
+        
+        # 3. Calculate Static Gravity Torque
         tgt_rad_sh = np.radians(targets[1])
         tgt_rad_el = np.radians(targets[2])
-        
-        # We calculate the torque we EXPECT to encounter
         pred_torque_s, pred_torque_e = calculate_gravity_torques(tgt_rad_sh, tgt_rad_el)
         
-        # --- FIX: ADD FRICTION COMPENSATION FACTOR (1.15) ---
-        # Real gearboxes have ~90% efficiency. The motor fights friction too.
-        # We multiply by 1.15 to 'over-correct' for these invisible losses.
+        # 4. Total Compensation (COMMAND)
         COMP_FACTOR = 1.15
+        comp_load_s = (pred_torque_s * COMP_FACTOR) + torque_dyn_s
+        comp_load_e = (pred_torque_e * COMP_FACTOR) + torque_dyn_e
         
-        # Calculate needed compensation angle (Degrees)
-        comp_s_deg = np.degrees((pred_torque_s * COMP_FACTOR) / BELT_STIFFNESS_NM_RAD)
-        comp_e_deg = np.degrees((pred_torque_e * COMP_FACTOR) / BELT_STIFFNESS_NM_RAD)
+        comp_s_deg = np.degrees(comp_load_s / BELT_STIFFNESS_NM_RAD)
+        comp_e_deg = np.degrees(comp_load_e / BELT_STIFFNESS_NM_RAD)
 
-        # --- B. Update Motors (WITH COMPENSATION) ---
-        pos_base_phys = motor_base.update(targets[0], vel_cmds[0], DT, 0.0)
+        # --- B. Update Motors (WITH STABLE PHYSICS) ---
         
-        # We pass the Compensated Target AND the Predicted Torque
+        # <--- 4. NEW: Pass torque_dyn_b into the update function!
+        pos_base_phys = motor_base.update(targets[0], vel_cmds[0], DT, torque_dyn_b)
+        
         pos_sh_phys = motor_shoulder.update(targets[1] + comp_s_deg, vel_cmds[1], DT, pred_torque_s)
         pos_el_phys = motor_elbow.update(targets[2] + comp_e_deg, vel_cmds[2], DT, pred_torque_e)
         
-        # Quantize Sensors
+        # --- C. Logging & Quantization ---
         pos_base = quantize_angle(pos_base_phys, SENSOR_BIT_DEPTH)
         pos_sh   = quantize_angle(pos_sh_phys,   SENSOR_BIT_DEPTH)
         pos_el   = quantize_angle(pos_el_phys,   SENSOR_BIT_DEPTH)
         real_degs = [pos_base, pos_sh, pos_el]
         
-        # --- C. Failure Check ---
         if motor_shoulder.failed or motor_elbow.failed:
             print(f"💥 FAILURE at t={times[i]:.2f}s")
             break
             
-        # --- D. Logging (THE TRUTH CHECK) ---
-        # 1. Where is the robot physically? 
         phys_rads = [np.radians(m.actual_pos) for m in motors]
         rx, ry, rz = forward_kinematics(*phys_rads)
         
-        # 2. Apply Structural Bending 
-        # CORRECTION: Use 'pred_torque_s' instead of undefined 'torque_s'
         rx, ry, rz = apply_structural_deflection(rx, ry, rz, pred_torque_s, pred_torque_e)
         
-        # 3. RECOVER THE ORIGINAL TARGET
-        # We need to know where we WANTED to be to calculate the error
+        # Error Calc
         cmd_rad_sh = np.radians(targets[1])
         cmd_rad_el = np.radians(targets[2])
         cmd_t_shoulder, cmd_t_elbow = calculate_gravity_torques(cmd_rad_sh, cmd_rad_el)
         cmd_total_load = abs(cmd_t_shoulder) + abs(cmd_t_elbow)
         calculated_sag_offset = cmd_total_load * MATERIAL_STIFFNESS_K
         
-        # Get the "intended" coordinates
         tx_cmd, ty_cmd, tz_cmd = forward_kinematics(*[np.radians(t) for t in targets])
         true_target_z = tz_cmd - calculated_sag_offset
-
-        # 4. Calculate Error
         error = np.sqrt((tx_cmd - rx)**2 + (ty_cmd - ry)**2 + (true_target_z - rz)**2)
         
         log_data.append({
@@ -731,17 +762,18 @@ def run_digital_twin_simulation(path_function, cartesian_speed=15.0, path_resolu
             "real_y": round(ry, 3),
             "real_z": round(rz, 3),
             "error": round(error, 4),
+            "base_deg": round(real_degs[0], 2),
+            "shoulder_deg": round(real_degs[1], 2),
+            "elbow_deg": round(real_degs[2], 2),
             "stretch_shoulder": round(motor_shoulder.current_belt_stretch, 4),
             "stretch_elbow": round(motor_elbow.current_belt_stretch, 4),
-            "base_deg": round(real_degs[0], 2),      
-            "shoulder_deg": round(real_degs[1], 2),  
-            "elbow_deg": round(real_degs[2], 2),     
             "torque_shoulder": round(motor_shoulder.last_torque_usage, 2),
             "torque_elbow": round(motor_elbow.last_torque_usage, 2),
+            "torque_base": round(motor_base.last_torque_usage, 2), # <--- 5. NEW: Log it!
             "limit_shoulder": round(motor_shoulder.max_torque_output, 2),
             "limit_elbow": round(motor_elbow.max_torque_output, 2),
-            "torque_base": round(motor_base.last_torque_usage, 2),
-            "limit_base": round(motor_base.max_torque_output, 2),   
+            "limit_base": round(motor_base.max_torque_output, 2),
+            "inertia_torque": round(torque_dyn_s, 2)
         })
         
     filename = os.path.join(RUN_LOG_DIR, "arm_dynamics_log.csv")
