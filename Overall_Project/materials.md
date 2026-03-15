@@ -13,7 +13,7 @@
 - SciPy (for numerical IK / optimization)  
 - Jupyter Notebook or VS Code  
 - Git  
-- GitHub repository  
+- GitHub repository  d
 
 ➕ Added (required by architecture):  
 - PySerial (MCU protocol simulation)  
