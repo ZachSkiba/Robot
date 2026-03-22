@@ -79,3 +79,4 @@ RUN mkdir -p /workspace/src /workspace/build /workspace/install /workspace/log
 RUN pip3 install --upgrade pip "setuptools<80" wheel black numpy scipy matplotlib pandas pyserial jupyterlab
 
 CMD ["/bin/bash"]
+#nice
