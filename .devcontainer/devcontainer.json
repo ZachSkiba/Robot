@@ -1,0 +1,63 @@
+{
+  "name": "6-DOF Robot Arm (Production)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {
+      "USERNAME": "devuser",
+      "USER_UID": "1000",
+      "USER_GID": "1000"
+    }
+  },
+  "remoteUser": "devuser",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder}/..,target=/workspace,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "ROS_DISTRO": "humble",
+    "ROS_WS": "/workspace"
+  },
+  "runArgs": [
+    "--network=host",
+    "--ipc=host",
+    "--privileged",
+    "--pid=host",
+    "--device=/dev/dri:/dev/dri",
+    "--device=/dev/bus/usb:/dev/bus/usb",
+    "-e",
+    "DISPLAY=${localEnv:DISPLAY}",
+    "-e",
+    "WAYLAND_DISPLAY=${localEnv:WAYLAND_DISPLAY}",
+    "-e",
+    "XDG_RUNTIME_DIR=${localEnv:XDG_RUNTIME_DIR}",
+    "-e",
+    "PULSE_SERVER=${localEnv:PULSE_SERVER}",
+    "-v",
+    "/tmp/.X11-unix:/tmp/.X11-unix",
+    "-v",
+    "/mnt/wslg:/mnt/wslg"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-iot.vscode-ros",
+        "ms-python.python",
+        "redhat.vscode-xml",
+        "smilerobotics.urdf",
+        "twxs.cmake",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "ros.distro": "humble",
+        "editor.formatOnSave": true,
+        "python.defaultInterpreterPath": "/usr/bin/python3"
+      }
+    }
+  },
+  "postCreateCommand": "bash -lc 'sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/src /workspace/Robot/src --ignore-src -y'",
+  "postStartCommand": "bash -lc 'source /opt/ros/humble/setup.bash; [ -f /workspace/install/setup.bash ] && source /workspace/install/setup.bash || true; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
+  "shutdownAction": "stopContainer"
+}
