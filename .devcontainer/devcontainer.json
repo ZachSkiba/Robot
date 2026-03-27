@@ -57,7 +57,7 @@
       }
     }
   },
-  "postCreateCommand": "bash -lc 'sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/src /workspace/Robot/src --ignore-src -y'",
+  "postCreateCommand": "bash -lc 'sudo apt-get update && sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/src /workspace/Robot/src --ignore-src -y'",
   "postStartCommand": "bash -lc 'source /opt/ros/humble/setup.bash; [ -f /workspace/install/setup.bash ] && source /workspace/install/setup.bash || true; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
   "shutdownAction": "stopContainer"
 }

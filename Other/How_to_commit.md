@@ -36,6 +36,7 @@ Tip: Commit small, frequent changes. Don’t wait until the end of the week.
 
 Final Push:
 
+cd /workspace/Robot
 git add .
 git commit -m "End of day save"
 git push
