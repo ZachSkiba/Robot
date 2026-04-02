@@ -14,6 +14,7 @@ devuser@docker-desktop:/workspace/Robot$
 
 Get the Latest Code (CRITICAL): Pull your partner’s changes:
 
+cd Robot
 git pull
 
 💾 2. Throughout the Day (Saving & Sharing)
@@ -43,4 +44,4 @@ git push
 
 Close VS Code: Click the X. The container will automatically sleep.
 
-Save Battery/RAM: Right-click Docker Desktop → Quit.  Cool W
+Save Battery/RAM: Right-click Docker Desktop → Quit.  
