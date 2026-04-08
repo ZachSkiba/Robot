@@ -16,7 +16,7 @@ ENV LC_ALL=C.UTF-8
 # ------------------------------------------------------------
 # 1. System Essentials & Robotics Tools
 # ------------------------------------------------------------
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     sudo git git-lfs curl wget build-essential cmake pkg-config \
     python3-pip python3-venv python3-colcon-common-extensions \
     python3-rosdep python3-vcstool python3-argcomplete \
@@ -30,12 +30,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-ros-gz \
     ros-humble-ros-gz-bridge \
     ros-humble-tf2-tools \
-    && if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    
+    # Install foxglove separately so it doesn't kill the build if the repo is missing
+RUN if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
+         apt-get update --fix-missing && \
          apt-get install -y --no-install-recommends ros-humble-foxglove-bridge; \
        else \
-         echo "ros-humble-foxglove-bridge not found in apt sources; skipping"; \
+         echo "ros-humble-foxglove-bridge not found; skipping"; \
        fi \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
 # 2. Create non-root devuser
