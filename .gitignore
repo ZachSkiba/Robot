@@ -1,6 +1,10 @@
+cat <<EOF > /workspace/Robot/.gitignore
 .venv/
-__pycache__/
+.vscode/*.db
+.vscode/*.ipch
 build/
 install/
 log/
+__pycache__/
 *.pyc
+EOF
