@@ -12,11 +12,17 @@
   "remoteUser": "devuser",
   "workspaceFolder": "/workspace",
   "mounts": [
-    "source=${localWorkspaceFolder}/..,target=/workspace,type=bind,consistency=cached"
+    "source=${localWorkspaceFolder}/..,target=/workspace,type=bind,consistency=cached",
+    "source=robot-bashhistory,target=/home/devuser/commandhistory,type=volume",
+    "source=robot-build,target=/workspace/build,type=volume",
+    "source=robot-install,target=/workspace/install,type=volume",
+    "source=robot-log,target=/workspace/log,type=volume"
   ],
   "containerEnv": {
     "ROS_DISTRO": "humble",
-    "ROS_WS": "/workspace"
+    "ROS_WS": "/workspace",
+    "PROMPT_COMMAND": "history -a",
+    "HISTFILE": "/home/devuser/commandhistory/.bash_history"
   },
   "runArgs": [
     "--network=host",
@@ -47,7 +53,10 @@
         "redhat.vscode-xml",
         "smilerobotics.urdf",
         "twxs.cmake",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "ms-vscode.cmake-tools",
+        "ms-python.vscode-pylance",
+        "yzhang.markdown-all-in-one"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
