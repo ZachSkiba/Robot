@@ -1,4 +1,4 @@
-# 🔹 FINAL REFERENCES
+# 🔹 REFERENCES
 
 ## Mechanical & Structural
 
