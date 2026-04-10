@@ -7,7 +7,7 @@
 Develop a **parametric CAD model of a 6-DOF robotic arm**, complete detailed design of **J1 (base)** as the critical subsystem, and **validate** kinematic feasibility in URDF/Gazebo. Optional **3D printing** will be used for structural and transmission prototypes. Design target: **2 kg payload, ~400 mm working radius.**
 
 ### Background
-* Software environment is fully prepared (ROS2, MoveIt, Gazebo devcontainers, scripts).
+* Software environment is fully prepared (ROS2, MoveIt, Gazebo, devcontainers, scripts).
 * Hardware, motors, and transmission ideas are defined; procurement and BOM planning mostly complete.
 * No CAD assets exist yet; 3-DOF skeleton is not modeled.
 * **Goal:** produce a structured CAD model first, focusing on one link/joint at a time to reduce workload while keeping parametric flexibility.
