@@ -52,27 +52,26 @@ If it contains prose, shell text, or anything that is not an ignore rule → fix
 
 ---
 
-## Step 1 — Rename Phase Folders Yourself (Do Not Use Codex)
+## Step 1 — Rename Phase Folders
 
-Do this manually in your terminal. Codex should not touch folder names.
+This rename has been completed. The phase folders should now use the zero-padded names below.
 
-```bash
-cd Robot/src
-
-mv Phase0-Plan     Phase00-Plan
-mv Phase1-Arm      Phase01-Arm
-mv Phase2-Trajectory Phase02-Trajectory
-mv Phase3-Optimize Phase03-Optimize
-mv Phase4-Learning Phase04-Learning
-mv Phase5-Vision   Phase05-Vision
-mv Phase6-Autonomy Phase06-Autonomy
-mv Phase7-Optimization Phase07-Optimization
-mv Phase8-Deployment Phase08-Deployment
-mv Phase9-Specialization Phase09-Specialization
-mv "Phase11-Endgame" Phase11-Endgame
+```text
+Phase00-Plan
+Phase01-Arm
+Phase02-Trajectory
+Phase03-Optimize
+Phase04-Learning
+Phase05-Vision
+Phase06-Autonomy
+Phase07-Optimization
+Phase08-Deployment
+Phase09-Specialization
+Phase10-Mastery
+Phase11-Endgame
 ```
 
-> Phase10 and Phase11 stay as-is — they already sort correctly with zero-padded single digits.
+> Phase10 and Phase11 stay as-is because they already sort correctly once phases 0 through 9 are zero-padded.
 
 Commit immediately after:
 
