@@ -1,187 +1,282 @@
-# Repo Cleanup Guide — 6-DOF Arm Project
+# Repo Cleanup Guide v2 — 6-DOF Arm Project
 
 ## Before You Touch Anything
+
+```bash
+git diff HEAD
+```
+
+Read every line. Codex already created files — verify they are correct before proceeding.
+
+If anything looks wrong:
+
+```bash
+git checkout -- .
+```
+
+Then commit your clean state:
 
 ```bash
 git add .
 git commit -m "snapshot: before repo cleanup"
 ```
 
-Do not skip this. It is your undo button.
+---
+
+## Step 0 — Fix What Codex Already Did
+
+### Check the README Codex Created
+
+Open `README.md` and verify:
+- It does not contain placeholder text
+- It accurately describes your project
+- It does not misrepresent what is built vs. planned
+
+If it is wrong or generic → rewrite it yourself using the template in Step 5.
+
+### Check the .gitignore Codex Modified
+
+Open `.gitignore` and verify it contains only ignore rules, one per line.
+
+Example of correct format:
+```
+build/
+install/
+log/
+.venv/
+__pycache__/
+*.pyc
+```
+
+If it contains prose, shell text, or anything that is not an ignore rule → fix it manually.
 
 ---
 
-## Step 1 — Fix Phase Folder Naming (Sorting Bug)
+## Step 1 — Rename Phase Folders Yourself (Do Not Use Codex)
 
-Rename all phase folders so they sort correctly in file explorers and GitHub.
+Do this manually in your terminal. Codex should not touch folder names.
 
-Current names sort like this: Phase0, Phase1, Phase10, Phase11, Phase2 — which is wrong.
+```bash
+cd Robot/src
 
-Rename to zero-padded format:
+mv Phase0-Plan     Phase00-Plan
+mv Phase1-Arm      Phase01-Arm
+mv Phase2-Trajectory Phase02-Trajectory
+mv Phase3-Optimize Phase03-Optimize
+mv Phase4-Learning Phase04-Learning
+mv Phase5-Vision   Phase05-Vision
+mv Phase6-Autonomy Phase06-Autonomy
+mv Phase7-Optimization Phase07-Optimization
+mv Phase8-Deployment Phase08-Deployment
+mv Phase9-Specialization Phase09-Specialization
+mv "Phase11+-Endgame" Phase11-Endgame
+```
 
-| Old Name | New Name |
+> Phase10 and Phase11 stay as-is — they already sort correctly with zero-padded single digits.
+
+Commit immediately after:
+
+```bash
+git add .
+git commit -m "refactor: zero-pad phase folder names for correct sorting"
+```
+
+---
+
+## Step 2 — Fix package.xml Metadata (Do This Yourself)
+
+Codex flagged placeholder values. Open every `package.xml` and replace:
+
+| Placeholder | Replace With |
 |---|---|
-| Phase0-Plan | Phase00-Plan |
-| Phase1-Arm | Phase01-Arm |
-| Phase2-Trajectory | Phase02-Trajectory |
-| Phase3-Optimize | Phase03-Optimize |
-| Phase4-Learning | Phase04-Learning |
-| Phase5-Vision | Phase05-Vision |
-| Phase6-Autonomy | Phase06-Autonomy |
-| Phase7-Optimization | Phase07-Optimization |
-| Phase8-Deployment | Phase08-Deployment |
-| Phase9-Specialization | Phase09-Specialization |
-| Phase10-Mastery | Phase10-Mastery |
-| Phase11+-Endgame | Phase11-Endgame |
+| `0.0.0` | Your actual version e.g. `0.1.0` |
+| `TODO: Package description` | One sentence describing the package |
+| `devuser@example.com` | Your real email |
+| `TODO` in maintainer/author | Your real name |
 
-> Remove the `+` from `Phase11+` — special characters in folder names cause issues on some systems.
+This takes 5 minutes and makes an immediate difference to anyone who opens the file.
 
 ---
 
-## Step 2 — Rehome `Other/` and `Mini_Project/`
+## Step 3 — Trim requirements.txt (Do This Yourself)
 
-These folders have useful content but bad names. Do not delete them — move and rename.
+340 lines reads as an environment dump, not a deliberate dependency list.
 
-**For `Mini_Project/`:**
+Go through it and keep only packages your code actually imports. Everything else delete.
 
-Decide what it actually is. Pick one:
-- If it's a standalone early prototype → move to `experiments/mini-project/`
-- If it's part of Phase 1 → move content into `Phase01-Arm/`
-
-**For `Other/`:**
-
-Go through it file by file. For each file ask: *which phase or category does this belong to?*
-Then move it there. If you genuinely cannot categorize something → move to `archive/unsorted/`.
-
-Once both folders are empty → delete them.
-
----
-
-## Step 3 — Create `archive/` and `experiments/`
+If you are unsure what is needed, add a comment at the top:
 
 ```
-Robot/
-├── archive/          ← old content, nothing deleted
-│   └── unsorted/
-├── experiments/      ← mini projects, tests, throwaway work
+# ROS dependencies are managed via rosdep
+# Python dependencies for robot_control package only
 ```
-
-This keeps the root clean without losing anything.
 
 ---
 
-## Step 4 — Standardize File Names
+## Step 4 — Tell Codex to Clean Up File Names and Move Files
 
-Rename files to lowercase with hyphens. No spaces, no underscores, no capitals.
+Send this exact message to Codex:
 
-| Bad | Good |
-|---|---|
-| `New stuff.md` | `new-stuff.md` |
-| `Overall_Project.md` | `overall-project.md` |
-| `Project_Description.md` | `project-description.md` |
-| `Software Setup.md` | `software-setup.md` |
+```
+Do not make any changes yet.
 
-> Only rename `.md` and `.txt` files. Do not rename source code files — that breaks imports.
+Scan only .md and .txt files in the Robot/ directory (ignore src/, build/, install/, log/, .git/, .venv/, .devcontainer/).
+
+Produce a PLAN ONLY listing:
+1. Files to rename → lowercase-hyphen format (e.g. "New stuff.md" → "new-stuff.md")
+2. Files to move out of Other/ → suggest destination or archive/unsorted/
+3. Files to move out of Mini_Project/ → suggest destination or experiments/mini-project/
+4. Folders to create: docs/, archive/unsorted/, experiments/
+
+Do not create, edit, move, or rename anything until I reply "Approved."
+```
+
+Review the plan line by line. Reject anything that:
+- Touches a file you do not recognize
+- Moves something to a destination that does not make sense
+- Renames something you want to keep as-is
+
+Then reply "Approved" only for the items you accept.
 
 ---
 
-## Step 5 — Create `docs/`
+## Step 5 — Write the Root README Yourself
 
-Move polished, presentable documentation here. This is what recruiters and professors read.
+Do not let Codex write this. It will be generic. Write it yourself.
 
-```
-Robot/
-└── docs/
-    ├── README.md          ← index of all docs
-    ├── setup/
-    ├── architecture/
-    └── hardware/
-```
-
-Only create subfolders you have content for right now. Empty folders look worse than no folders.
-
----
-
-## Step 6 — Write the Root README
-
-Create or overwrite `Robot/README.md` with this structure:
+Use this structure:
 
 ```markdown
 # 6-DOF Robotic Arm
 
-One sentence describing what this project is and what it does.
+One sentence: what this is and what it does.
 
 ## Overview
 
-2-3 sentences. What problem does this solve? What is the end goal?
+What problem does this solve?
+What is the end goal of the project?
+What makes this project interesting or challenging?
 
 ## System Architecture
 
-Short description or diagram of the overall system.
-(Add a diagram here when you have one — even a rough one is better than none.)
+[Add a diagram here — even a hand-drawn photo is better than nothing]
+
+Brief description of the main components and how they connect.
+
+## What Works Right Now
+
+Be honest. List what is actually functional today.
+Do not list planned features here.
 
 ## Project Structure
 
-Brief explanation of what each top-level folder contains.
-
-## Current Status
-
-What phase are you in? What works right now? What is in progress?
+| Folder | Contents |
+|---|---|
+| src/ | ROS2 packages and robot control code |
+| Phase00-Plan/ | Initial planning and requirements |
+| Phase01-Arm/ | Arm kinematics and hardware setup |
+| docs/ | Polished documentation |
+| experiments/ | Prototypes and test work |
+| archive/ | Old content, kept for reference |
 
 ## Setup
 
-Link to docs/setup/ or list the steps directly.
+Link to docs/setup/ or list steps here.
 
 ## Team
 
-Names and roles.
+| Name | Role |
+|---|---|
+| ... | ... |
 
 ## Roadmap
 
-Link to your phase folders or list phases briefly.
+| Phase | Focus | Status |
+|---|---|---|
+| Phase00 | Planning | Complete |
+| Phase01 | Arm Hardware | In Progress |
+| ... | ... | ... |
 ```
-
-Write this in your own words. Do not leave placeholder text in — recruiters notice immediately.
 
 ---
 
-## Step 7 — Commit Everything
+## Step 6 — Make Your Docs Evidence-First
+
+Codex flagged that phrases like "Provable Safety" and "Resume-Grade Artifacts" in your `Overall_Project/README.md` are claims without evidence.
+
+For each claim, ask: *can I point to something that proves this?*
+
+- Diagram → add it
+- Test result → screenshot it
+- Demo → link a video
+- Plot → export it from your code and embed it
+
+If you cannot back it up yet → remove the claim and replace it with what you are working toward.
+
+---
+
+## Step 7 — Fix Commit Messages Going Forward
+
+Your history currently shows mostly `End of day save`. That is normal while building but looks unprofessional under review.
+
+Use this format from now on:
+
+```
+type: short description
+
+Examples:
+docs: add root README
+feat: scaffold robot_control package
+fix: correct DH parameter table in Phase01
+refactor: rename phase folders for sorting
+```
+
+You cannot fix old commits easily — just start now.
+
+---
+
+## Step 8 — Commit Everything
 
 ```bash
 git add .
-git commit -m "refactor: repo structure cleanup and rename"
+git commit -m "refactor: full repo cleanup and documentation polish"
 ```
 
 ---
 
-## Step 8 — Sanity Check
+## Step 9 — Sanity Check
 
-Ask yourself:
-- Can a new team member find the setup docs in under 1 minute?
-- Does the README explain what the project is without opening any other file?
-- Are there any folders named `Other`, `New`, `Stuff`, or `Misc`?
-- Are there any files with spaces in the name?
+Before pushing, ask:
+
+- Can a new team member find setup docs in under 1 minute?
+- Does the README explain what is built vs. what is planned?
+- Are there any folders named `Other`, `Misc`, or `New`?
+- Are there any files with spaces or underscores in the name?
+- Does `package.xml` have your real name and a real description?
+- Is `requirements.txt` under 50 lines?
 
 If any answer is wrong → fix it before pushing.
 
 ---
 
-## What NOT to Do
+## What NOT to Delegate to Codex
 
-- Do not create folders you have no content for yet
-- Do not rename source code files
-- Do not touch `.json`, `.yaml`, `Dockerfile`, `requirements.txt`, or any config
-- Do not reorganize the `src/` ROS packages — that will break your build
+| Task | Why |
+|---|---|
+| Rename phase folders | Too risky — do it in terminal |
+| Fix package.xml | Needs your real personal info |
+| Trim requirements.txt | Only you know what is actually used |
+| Write the README | Generic output is worse than none |
+| Fix commit history | Cannot be automated safely |
 
 ---
 
 ## Priority Order
 
-If this feels overwhelming, do it in this order. Stop after any step if you run out of time — each step is independently valuable.
-
-1. Git commit (safety net)
-2. Rename phase folders (fixes the sorting bug — highest visual impact)
-3. Gut `Other/` and `Mini_Project/`
-4. Write the README
-5. Standardize file names
-6. Create `docs/`
+1. `git diff HEAD` — verify what Codex already did
+2. Fix phase folder names manually in terminal
+3. Fix `package.xml` metadata
+4. Run Codex for file renames and moves (plan → approve → execute)
+5. Write the README yourself
+6. Trim `requirements.txt`
+7. Final commit and push
