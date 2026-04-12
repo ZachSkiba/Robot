@@ -69,7 +69,7 @@ mv Phase6-Autonomy Phase06-Autonomy
 mv Phase7-Optimization Phase07-Optimization
 mv Phase8-Deployment Phase08-Deployment
 mv Phase9-Specialization Phase09-Specialization
-mv "Phase11+-Endgame" Phase11-Endgame
+mv "Phase11-Endgame" Phase11-Endgame
 ```
 
 > Phase10 and Phase11 stay as-is — they already sort correctly with zero-padded single digits.

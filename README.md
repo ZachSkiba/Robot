@@ -25,7 +25,7 @@ The project combines:
 - [`Overall_Project`](/workspace/Robot/Overall_Project): project-wide vision, constraints, materials, risks, and system-level notes
 - [`Phase0-Plan`](/workspace/Robot/Phase0-Plan): foundational planning, modeling, and early simulation documents
 - [`Phase1-Arm`](/workspace/Robot/Phase1-Arm): physical arm build planning and telemetry goals
-- [`Phase2-Trajectory`](/workspace/Robot/Phase2-Trajectory) through [`Phase11+-Endgame`](/workspace/Robot/Phase11+-Endgame): longer-range roadmap by project phase
+- [`Phase2-Trajectory`](/workspace/Robot/Phase2-Trajectory) through [`Phase11-Endgame`](/workspace/Robot/Phase11-Endgame): longer-range roadmap by project phase
 - [`Project_Description`](/workspace/Robot/Project_Description): higher-level motivation and project framing
 - [`Other`](/workspace/Robot/Other): working notes and utility documents that still need cleanup into permanent locations
 - [`src/robot_control`](/workspace/Robot/src/robot_control): ROS 2 package scaffold for project code
