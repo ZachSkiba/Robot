@@ -1,4 +1,4 @@
-## 🟣 Phase 6 — Mobile Manipulation & Full Autonomy
+# 🟣 Phase 6 — Mobile Manipulation & Full Autonomy
 
 **Duration:** ~8–12 weeks (can be stretched)  
 **Goal:** Turn the arm into a complete autonomous robot system by adding mobility and high-level decision making.  

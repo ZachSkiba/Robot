@@ -1,1 +1,5 @@
-# https://www.amazon.com/WayPonDEV-RPLIDAR-C1-Avoidance-Navigation/dp/B0CMTXV5RC/ref=sr_1_3?crid=1A26QGLC7XP4I&dib=eyJ2IjoiMSJ9.Q0_o7XG09CVodNC2ul_bgmPNcZF9HRT1k-PROvf0hKjqKJbV39ehAW0DwAk6iNfYq_U3V6urH_ETgOWCIoUI8k9u1aLVQf38U82aqO5Mw38AM5Bwjstf4VISIkcrrWl8qGzeEJ4LSSnopfyq406h9ACc5rHYUM81KnnCymEVL_2VsMRF0Ee8Oz8YlYmu2stm6KQDpgA8g6T2jk2tXH98hN7r625TjcJcEr6sdaUNAik.hHj2JtRPfYYANYv5_5HhpCj6v5McF9ckNzkg01ONV9U&dib_tag=se&keywords=lidar+scanner&qid=1769552066&refinements=p_36%3A3500-40000&rnid=2661611011&sprefix=lidar+%2Caps%2C134&sr=8-3 
+# Ideas
+
+## Lidar Reference
+
+- https://www.amazon.com/WayPonDEV-RPLIDAR-C1-Avoidance-Navigation/dp/B0CMTXV5RC/ref=sr_1_3?crid=1A26QGLC7XP4I&dib=eyJ2IjoiMSJ9.Q0_o7XG09CVodNC2ul_bgmPNcZF9HRT1k-PROvf0hKjqKJbV39ehAW0DwAk6iNfYq_U3V6urH_ETgOWCIoUI8k9u1aLVQf38U82aqO5Mw38AM5Bwjstf4VISIkcrrWl8qGzeEJ4LSSnopfyq406h9ACc5rHYUM81KnnCymEVL_2VsMRF0Ee8Oz8YlYmu2stm6KQDpgA8g6T2jk2tXH98hN7r625TjcJcEr6sdaUNAik.hHj2JtRPfYYANYv5_5HhpCj6v5McF9ckNzkg01ONV9U&dib_tag=se&keywords=lidar+scanner&qid=1769552066&refinements=p_36%3A3500-40000&rnid=2661611011&sprefix=lidar+%2Caps%2C134&sr=8-3

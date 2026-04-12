@@ -1,79 +1,123 @@
-Absolutely. Let’s produce the ultimate 2026-ready setup for your 6‑DOF robotic arm with all previous details plus the surgical refinements:
+# Software Setup Steps
 
-Gazebo Fortress (Ignition), no legacy Gazebo 11 confusion.
-ros2_control Hardware Interface for Teensy ↔ ROS2 integration.
-Foxglove Studio for modern 3D telemetry.
-Complete, step-by-step, production-grade workflow for your team.
-🧱 PHASE 0 — Windows Preflight
+This document captures a step-by-step setup workflow for the 6-DOF robotic arm environment.
+
+## Included Components
+
+- Gazebo Fortress (Ignition), no legacy Gazebo 11 confusion.
+- `ros2_control` Hardware Interface for Teensy ↔ ROS2 integration.
+- Foxglove Studio for modern 3D telemetry.
+- Complete, step-by-step, production-grade workflow for your team.
+
+## 🧱 PHASE 0 — Windows Preflight
 
 0.1 Confirm Windows Version
 
+```text
 winver
 Required: Windows 11 22H2 or newer
+```
 
 0.2 Confirm Virtualization is Active
 
+```text
 systeminfo
 Look for: A hypervisor has been detected
 If Virtualization Enabled In Firmware: No → enable Intel VT-x / AMD SVM in BIOS
+```
 
 0.3 Confirm GPU Drivers
 
 For Gazebo Fortress (Ignition), GPU acceleration is mandatory.
 Update to latest drivers and reboot Windows.
-🖥 PHASE 1 — Clean WSL2 Install
+
+## 🖥 PHASE 1 — Clean WSL2 Install
 
 1.1 Install Ubuntu 22.04
 
+```bash
 wsl --install -d Ubuntu-22.04
+```
 Reboot Windows
 
 1.2 Confirm WSL2 Version
 
+```bash
 wsl -l -v
+```
 Must show: Ubuntu-22.04 Running 2
 If version 1:
+```bash
 wsl --set-version Ubuntu-22.04 2
-🧠 PHASE 2 — Resource Allocation
+```
+
+## 🧠 PHASE 2 — Resource Allocation
+
 Create C:\Users\<you>\.wslconfig:
+
+```ini
 [wsl2]
 memory=12GB
 processors=6
 swap=8GB
 localhostForwarding=true
+```
+
 Guidelines:
-32GB RAM → 12–16GB for WSL
-16GB RAM → 8GB max
+
+- 32GB RAM → 12–16GB for WSL
+- 16GB RAM → 8GB max
+
 Apply:
+```bash
 wsl --shutdown
+```
 Reopen Ubuntu
-🕒 PHASE 2.5 — WSL Clock & Time Sync
+
+## 🕒 PHASE 2.5 — WSL Clock & Time Sync
 
 Primary Method: ntpdate safeguard in ~/.bashrc:
 
+```bash
 sudo apt install ntpdate
+```
 
 Add:
 
+```bash
 # WSL2 clock safeguard
 if grep -qi microsoft /proc/version; then
     sudo ntpdate -s time.windows.com > /dev/null 2>&1 || true
 fi
+```
 
 Plan B (Hardware Clock):
 
+```bash
 sudo hwclock -s
+```
 Use if RVIZ or TF tree shows drift
-🧰 PHASE 3 — Ubuntu Base Setup
+
+## 🧰 PHASE 3 — Ubuntu Base Setup
+
+```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y \
 build-essential git curl wget unzip python3-pip python3-venv \
 python3-dev cmake pkg-config mesa-utils net-tools \
 software-properties-common htop nano
-🎮 PHASE 4 — GPU Acceleration Check
+```
+
+## 🎮 PHASE 4 — GPU Acceleration Check
+
+```bash
 glxinfo -B
+```
 Must show: Accelerated: yes
-🔐 PHASE 5 — Python Environment
+
+## 🔐 PHASE 5 — Python Environment
+
+```bash
 mkdir -p ~/robot_ws
 cd ~/robot_ws
 python3 -m venv venv
@@ -83,39 +127,58 @@ pip install --upgrade pip setuptools wheel
 pip install numpy scipy matplotlib pyserial pandas jupyterlab ipywidgets
 
 deactivate
-🔌 PHASE 6 — Teensy USB Handling
+```
+
+## 🔌 PHASE 6 — Teensy USB Handling
 
 6.1 Install usbipd (Windows)
 
+```bash
 winget install usbipd
+```
 
 6.2 Attach Device
 
+```bash
 usbipd list
 usbipd attach --wsl --busid <BUSID> --auto-attach
+```
 
 6.3 Verify in WSL
 
+```bash
 ls /dev/ttyACM*
+```
 Should see /dev/ttyACM0
 
 6.4 Fix Permissions
 
+```bash
 sudo usermod -a -G dialout $USER
 wsl --shutdown
+```
 
 6.5 Optional udev Rule
 
+```bash
 sudo nano /etc/udev/rules.d/99-teensy.rules
+```
+```text
 KERNEL=="ttyACM[0-9]*", MODE="0666"
+```
+```bash
 sudo udevadm control --reload-rules
 sudo udevadm trigger
+```
 
 6.6 Teensy CLI Upload
 
+```bash
 sudo apt install teensy-loader-cli
 teensy_loader_cli --mcu=TEENSY41 -w firmware.hex
-🤖 PHASE 7 — ROS2 Humble Setup (Updated)
+```
+
+## 🤖 PHASE 7 — ROS2 Humble Setup (Updated)
 
 7.1 Add ROS2 Repository
 

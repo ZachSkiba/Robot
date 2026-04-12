@@ -1,4 +1,4 @@
-## 🔴 Phase 7 — Research-Level Intelligence & Resume Polish
+# 🔴 Phase 7 — Research-Level Intelligence & Resume Polish
 
 **Duration:** Open-ended (4–12+ weeks)  
 **Goal:** Turn your system from “impressive project” into research-grade / startup-grade work and lock in resume + portfolio impact.  

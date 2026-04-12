@@ -1,4 +1,4 @@
-## 🔵 Phase 2 — Trajectory Execution & Optimization
+# 🔵 Phase 2 — Trajectory Execution & Optimization
 
 **Duration:** ~4–6 weeks  
 **Goal:** The arm executes repeatable trajectories and quantitatively improves motion quality through optimization (no ML yet).  

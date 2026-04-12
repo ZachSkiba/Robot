@@ -44,7 +44,7 @@ Angles alone are anonymous and ungovernable.
 **Requirement:**  
 Define an explicit **trajectory contract**.
 
-``python
+```python
 trajectory = {
     "id": "...",
     "source": "scripted | human | adversarial",
@@ -52,6 +52,7 @@ trajectory = {
     "states": [...],
     "limits": {...}
 }
+```
 
 ## Why This Is Mandatory
 
@@ -168,7 +169,7 @@ Each run must emit:
 - Root cause attribution
 
 ### Example
-``json
+```json
 {
   "run_id": "2link_run_04",
   "overall": "FAIL",
@@ -181,6 +182,7 @@ Each run must emit:
     }
   ]
 }
+```
 
 # Mini-Project 3 (MP3) — Governance & Failure Enforcement Requirements
 
@@ -234,4 +236,3 @@ Mini-Project C is **complete** *only when* the 2-link arm can be used to:
 - Smooth plots  
 
 Then it is **educational**, not **governed**, and **does not count as Mini-Project 3**.
-

@@ -1,4 +1,4 @@
-## 🟢 Phase 10 — Mastery, Legacy & Long-Term Leverage
+# 🟢 Phase 10 — Mastery, Legacy & Long-Term Leverage
 
 **Duration:** Ongoing / as needed  
 **Goal:** Turn this project into a career anchor you reuse, reference, and extend for years.

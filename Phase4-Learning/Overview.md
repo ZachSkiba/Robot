@@ -1,4 +1,4 @@
-## 🔴 Phase 4 — Reinforcement Learning on Real Hardware (Capstone Phase)
+# 🔴 Phase 4 — Reinforcement Learning on Real Hardware (Capstone Phase)
 
 **Duration:** ~6–8 weeks  
 **Goal:** The robotic arm learns a control policy that outperforms hand-tuned and regression-based controllers.  

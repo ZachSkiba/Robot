@@ -35,7 +35,9 @@
 - New motor drives and components added to the **materials list**.
 - New encoders are better
 
-# Homing 540° Joints
+---
+
+## Homing 540° Joints
 
 ## Problem
 - Joint spins up to 540° (>360°)
@@ -58,7 +60,10 @@ Use a **non-obstructive physical reference**:
 3. Back off slightly
 4. Rotate slowly to re-trigger → define home
 5. Set encoder + stepper as zero
-6. https://www.amazon.com/FORIOT-3-3V-5V-Magnetic-Pressure-sensors/dp/B0CFLNZK9M/ref=sr_1_1_sspa?crid=34BWXRQRS4QST&dib=eyJ2IjoiMSJ9.Og6NfpbTcxJcPjx-p1ByyKyqdAcuFTt-Jdmy4pPEqBiwJoLhWEkWdMAoRnmqnnW7S6bTDRwiI2uRC7D616r8SHhZnkBoTVNIhJ1eTx8HVIs3fHoGWcOsMmccv-KI7ebLg4uFmWssBt9JM_8ez6r1VZCbGpwSH7gVCRUzlBZmUoS5hdMFqCj-HcP2Bq9AQs-4aLav7gWedjEv7latCTGmUR3FBtivV67jaS_1DaULIT4.0oBEwmq6vK9x28sksN63eIGOBFSY_RQLV-mJo9XUcXA&dib_tag=se&keywords=hall+sensor+module&qid=1771530275&refinements=p_36%3A-1000%2Cp_72%3A1248921011&rnid=1248919011&sprefix=hall+sensor+mo%2Caps%2C159&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1 
+
+## Hall Sensor Reference
+
+- https://www.amazon.com/FORIOT-3-3V-5V-Magnetic-Pressure-sensors/dp/B0CFLNZK9M/ref=sr_1_1_sspa?crid=34BWXRQRS4QST&dib=eyJ2IjoiMSJ9.Og6NfpbTcxJcPjx-p1ByyKyqdAcuFTt-Jdmy4pPEqBiwJoLhWEkWdMAoRnmqnnW7S6bTDRwiI2uRC7D616r8SHhZnkBoTVNIhJ1eTx8HVIs3fHoGWcOsMmccv-KI7ebLg4uFmWssBt9JM_8ez6r1VZCbGpwSH7gVCRUzlBZmUoS5hdMFqCj-HcP2Bq9AQs-4aLav7gWedjEv7latCTGmUR3FBtivV67jaS_1DaULIT4.0oBEwmq6vK9x28sksN63eIGOBFSY_RQLV-mJo9XUcXA&dib_tag=se&keywords=hall+sensor+module&qid=1771530275&refinements=p_36%3A-1000%2Cp_72%3A1248921011&rnid=1248919011&sprefix=hall+sensor+mo%2Caps%2C159&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1
 
 ## Mechanical Tips
 - Tab/magnet should be small and rigid  

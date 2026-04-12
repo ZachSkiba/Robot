@@ -1,4 +1,4 @@
-## ⚫ Phase 8 — Deployment, Reliability & “Real-World” Readiness
+# ⚫ Phase 8 — Deployment, Reliability & “Real-World” Readiness
 
 **Duration:** Open-ended (4–10+ weeks)  
 **Goal:** Make the system reliable, repeatable, and presentable as a real product / research platform — not just a prototype.  

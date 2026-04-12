@@ -1,4 +1,4 @@
-## 🟣 Phase 3 — Learning From Error (Data-Driven Control)
+# 🟣 Phase 3 — Learning From Error (Data-Driven Control)
 
 **Duration:** ~4–6 weeks  
 **Goal:** The arm systematically improves accuracy and repeatability by learning from its own execution data.  

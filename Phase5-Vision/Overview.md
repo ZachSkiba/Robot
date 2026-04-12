@@ -1,4 +1,4 @@
-## 🔵 Phase 5 — Vision-Guided Manipulation (Autonomy Layer)
+# 🔵 Phase 5 — Vision-Guided Manipulation (Autonomy Layer)
 
 **Duration:** ~6–10 weeks (can be extended indefinitely)  
 **Goal:** The robotic arm perceives its environment and autonomously decides what to do, not just how to move.  

@@ -1,4 +1,4 @@
-## 🔵 Phase 11 — Impact, Mentorship & Long-Term Signal
+# 🔵 Phase 11 — Impact, Mentorship & Long-Term Signal
 
 **Duration:** Optional / low-maintenance  
 **Goal:** Turn your work into lasting external signal that compounds over time, even when you’re busy with school or jobs.

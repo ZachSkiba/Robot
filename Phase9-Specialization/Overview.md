@@ -1,4 +1,4 @@
-## 🟡 Phase 9 — Specialization, Differentiation & Career Leverage
+# 🟡 Phase 9 — Specialization, Differentiation & Career Leverage
 
 **Duration:** Optional / open-ended  
 **Goal:** Turn your system into a clear identity that aligns with exactly the roles you want (robotics, controls, ML, research, startup).
