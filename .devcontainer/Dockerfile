@@ -30,6 +30,7 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     ros-humble-ros-gz \
     ros-humble-ros-gz-bridge \
     ros-humble-tf2-tools \
+    ros-humble-rmw-cyclonedds-cpp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
     
     # Install foxglove separately so it doesn't kill the build if the repo is missing
