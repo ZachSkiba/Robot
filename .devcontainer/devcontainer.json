@@ -10,17 +10,17 @@
     }
   },
   "remoteUser": "devuser",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspace/Robot",
   "mounts": [
-    "source=${localWorkspaceFolder}/..,target=/workspace,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder},target=/workspace/Robot,type=bind,consistency=cached",
     "source=robot-bashhistory,target=/home/devuser/commandhistory,type=volume",
-    "source=robot-build,target=/workspace/build,type=volume",
-    "source=robot-install,target=/workspace/install,type=volume",
-    "source=robot-log,target=/workspace/log,type=volume"
+    "source=robot-build-v2,target=/workspace/Robot/build,type=volume",
+    "source=robot-install-v2,target=/workspace/Robot/install,type=volume",
+    "source=robot-log-v2,target=/workspace/Robot/log,type=volume"
   ],
   "containerEnv": {
     "ROS_DISTRO": "humble",
-    "ROS_WS": "/workspace",
+    "ROS_WS": "/workspace/Robot",
     "PROMPT_COMMAND": "history -a",
     "HISTFILE": "/home/devuser/commandhistory/.bash_history"
   },
@@ -113,7 +113,7 @@
       }
     }
   },
-  "postCreateCommand": "bash -lc 'sudo apt-get update && sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/src /workspace/Robot/src --ignore-src -y'",
-  "postStartCommand": "bash -lc 'source /opt/ros/humble/setup.bash; [ -f /workspace/install/setup.bash ] && source /workspace/install/setup.bash || true; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
+  "postCreateCommand": "bash -lc 'sudo apt-get update && sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/Robot/src --ignore-src -y || true'",
+  "postStartCommand": "bash -lc 'source /opt/ros/humble/setup.bash; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
   "shutdownAction": "stopContainer"
 }

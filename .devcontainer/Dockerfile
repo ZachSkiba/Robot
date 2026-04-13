@@ -9,7 +9,7 @@ SHELL ["/bin/bash", "-lc"]
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble
-ENV ROS_WS=/workspace
+ENV ROS_WS=/workspace/Robot
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
@@ -68,15 +68,14 @@ RUN rosdep update || true
 # ------------------------------------------------------------
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc \
     && echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc \
-    && echo "if [ -f /workspace/install/setup.bash ]; then source /workspace/install/setup.bash; fi" >> ~/.bashrc \
     && echo "if [ -f /workspace/Robot/install/setup.bash ]; then source /workspace/Robot/install/setup.bash; fi" >> ~/.bashrc \
     && echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
 
 # ------------------------------------------------------------
 # 5. Workspace Setup
 # ------------------------------------------------------------
-WORKDIR /workspace
-RUN mkdir -p /workspace/src /workspace/build /workspace/install /workspace/log
+WORKDIR /workspace/Robot
+RUN mkdir -p /workspace/Robot /workspace/Robot/build /workspace/Robot/install /workspace/Robot/log
 
 # ------------------------------------------------------------
 # 6. Python Tools
