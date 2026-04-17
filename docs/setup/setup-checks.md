@@ -215,9 +215,9 @@ python3 -c '
 import sys
 bad = [p for p in sys.path if \"/.local\" in p or \"/home\" in p]
 print(bad)
-assert not bad'"
+assert not bad ' "
 check "numpy from apt only" "
-python3 -c 'import numpy; import inspect; import numpy; assert \"/usr/lib/python3/dist-packages\" in numpy.__file__'"
+python3 -c 'import numpy; import inspect; import numpy; assert \"/usr/lib/python3/dist-packages\" in numpy.__file__ ' "
 check "cv_bridge ABI roundtrip" "
 python3 -c '
 from cv_bridge import CvBridge
@@ -226,40 +226,20 @@ b = CvBridge()
 img = np.zeros((100,100,3), dtype=np.uint8)
 msg = b.cv2_to_imgmsg(img)
 out = b.imgmsg_to_cv2(msg)
-assert out.shape == img.shape'"
-check "AMENT_PREFIX_PATH cardinality" "
-python3 -c '
-import os
-p = os.environ.get(\"AMENT_PREFIX_PATH\",\"").split(\":\")
-print(p)
-assert len(p) <= 2'"
-check "AMENT_PREFIX_PATH exact structure" "
-python3 -c '
-import os
-p = os.environ.get(\"AMENT_PREFIX_PATH\",\"").split(\":\")
-allowed = [\"/opt/ros/humble\", \"/workspace/Robot/install\"]
-for x in p:
-    assert any(a in x for a in allowed)'"
-check "no pip site-packages leak" "
-python3 -c '
-import site
-paths = site.getsitepackages() + [site.getusersitepackages()]
-print(paths)
-assert all(\".local\" not in p for p in paths)'"
-check "numpy ABI + source valid" "
-python3 -c '
-import numpy
-assert hasattr(numpy, \"__file__\")
-assert \"dist-packages\" in numpy.__file__'"
-check "robot_control visible in environment" "
-ros2 pkg list | grep -q robot_control"
-check "no venv active" "
-python3 -c 'import sys; assert not any(\"venv\" in p for p in sys.path)'"
-check "no duplicate ROS overlay entries" "
-python3 -c '
-import os
-p = os.environ.get(\"AMENT_PREFIX_PATH\",\"").split(\":\")
-assert len(p) == len(set(p))'"
+assert out.shape == img.shape ' "
+check "AMENT_PREFIX_PATH cardinality" 'python3 -c "import os; p = os.environ.get(\"AMENT_PREFIX_PATH\", \"\").split(\":\"); print(p); assert len(p) <= 2"'
+
+check "AMENT_PREFIX_PATH exact structure" 'python3 -c "import os; p = os.environ.get(\"AMENT_PREFIX_PATH\", \"\").split(\":\"); allowed = [\"/opt/ros/humble\", \"/workspace/Robot/install\"]; [assert any(a in x for a in allowed) for x in p]"'
+
+check "no pip site-packages leak" 'python3 -c "import site; paths = site.getsitepackages() + [site.getusersitepackages()]; print(paths); assert all(\".local\" not in p for p in paths)"'
+
+check "numpy ABI + source valid" 'python3 -c "import numpy; assert hasattr(numpy, \"__file__\"); assert \"dist-packages\" in numpy.__file__"'
+
+check "robot_control visible in environment" "ros2 pkg list | grep -q robot_control"
+
+check "no venv active" 'python3 -c "import sys; assert not any(\"venv\" in p for p in sys.path)"'
+
+check "no duplicate ROS overlay entries" 'python3 -c "import os; p = os.environ.get(\"AMENT_PREFIX_PATH\", \"\").split(\":\"); assert len(p) == len(set(p))"'
 
 # ── RESULT ────────────────────────────────
 echo ""
