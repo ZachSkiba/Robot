@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This document defines **task responsibilities for Phase 0** (Architecture, Math, & Simulation) of the robotic arm project.  
+**Task responsibilities for Phase 0** (Architecture, Math, & Simulation) of the robotic arm project.  
 
-It clarifies who focuses on what while ensuring collaboration at key interaction points.
+Focus areas and collaboration points are explicit.
 
 ---
 

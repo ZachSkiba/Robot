@@ -1,343 +1,138 @@
-# Phase 0–5 Scope Definition (Robotic Arm Only)
+# Phase 0-5 Scope Definition
 
-This document defines **what belongs and does not belong** in Phases 0–5 of the robotic arm project, with a focus on technical depth, realism, and resume value.
+## Purpose
+Define which capabilities belong in Phases 0-5 of the robotic arm project and which should be deferred until the system is more mature.
 
----
+## Included Capabilities
 
-## ✅ PID Control — YES (Core)
+### PID Control
+**Phase:** 2-3  
+**Priority:** Core
 
-**Phase:** 2–3  
-**Status:** Mandatory
+- Joint-level position control
+- Gain comparison
+- Measurement of rise time, overshoot, and steady-state error
 
-### What You Do
-- Joint-level PID control for position
-- Compare different gain settings
-- Measure:
-  - Rise time
-  - Overshoot
-  - Steady-state error
+This establishes the baseline controller and creates the reference point for later improvements.
 
-### Why It’s Good
-- Demonstrates control fundamentals
-- Establishes baseline system performance
+### System Identification
+**Phase:** 4-5  
+**Priority:** Core
 
-**Resume signal:**  
-> Designed and tuned closed-loop controllers for a multi-DOF robotic arm
+- Estimate motor constants, friction, gear ratios, and delay from experiments
+- Fit simplified models
+- Validate models against measured motion
 
----
+This connects the hardware to a usable analytical model.
 
-## ✅ System Identification — YES (Core)
+### Lightweight Trajectory Optimization
+**Phase:** Late 5  
+**Priority:** Allowed
 
-**Phase:** 4–5  
-**Status:** Mandatory, project-defining
+- Optimize point-to-point motion
+- Minimize time, energy proxy, or smoothness cost
+- Compare optimized motion against the PID baseline
 
-### What You Do
-Estimate from experimental data:
-- Motor constants
-- Friction
-- Gear ratios
-- System delay
+Scope should remain narrow. Full optimal-control work is not required at this stage.
 
-Fit simple models and validate against real behavior.
+### Kinematics-Based Simulator
+**Phase:** 5  
+**Priority:** Allowed
 
-### Why It’s Good
-- Bridges hardware, math, and data
-- Enables all advanced control and learning later
+- Simple simulator parameterized by measured values
+- Used for visualization and sanity checks
 
-**Resume signal:**  
-> Performed system identification on real robotic hardware using experimental data
+This is not a full digital twin and should not be described as one.
 
----
+## Deferred Capabilities
 
-## ✅ Optimal Control (Lightweight) — YES (Selective)
-
-**Phase:** Late Phase 5  
-**Status:** Allowed (keep scope reasonable)
-
-⚠️ Not full LQR yet.
-
-### What You Do
-- Optimize simple trajectories:
-  - Smooth point-to-point motion
-  - Minimize time or energy
-- Compare optimized motion vs PID baseline
-
-### Why It’s Good
-- Shows optimization skill without overreaching
-
-**Resume signal:**  
-> Implemented trajectory optimization under physical constraints
-
----
-
-## ⚠️ Digital Twin — PARTIAL ONLY
-
-**Phase:** 5 (minimal scope)
-
-You do **not** build a full digital twin yet.
-
-### Allowed
-- Simple kinematic simulator
-- Parameterized using measured values
-- Used for:
-  - Visualization
-  - Sanity checks
-
-### Not Allowed Yet
-- RL training
-- Claims of “high-fidelity simulation”
-
-**Resume wording:**  
-> Developed a kinematics-based simulator informed by experimental measurements
-
----
-
-## ❌ Reinforcement Learning — NO (Not Yet)
-
+### Reinforcement Learning
 **Phase:** 8+
 
-### Why Not
-- Requires a stable simulator
-- Needs large datasets
-- Risky without constraints
+- Requires stable control
+- Requires large, clean datasets
+- Requires a reliable simulator or strong safety constraints
 
-Allowed mention only:
-> Future work includes reinforcement learning
+Reinforcement learning should remain future work until the system is instrumented and repeatable.
 
----
-
-## ❌ Predictive Maintenance — NO
-
+### Predictive Maintenance
 **Phase:** 10+
 
-### Why Not
 - Requires long-term degradation data
-- No meaningful failure signals early on
+- Requires meaningful failure signatures over time
 
----
+This does not fit early development phases.
 
-# Phase ≤5 Add-Ons (Strong Alternatives)
+## Recommended Add-Ons Within Phase 0-5
 
-These add depth **without** overreaching.
+### Calibration Pipeline
+**Phase:** 3-4
 
----
-
-## ⭐ Add-On 1: Calibration Pipeline (Highly Underrated)
-
-**Phase:** 3–4
-
-### What You Do
 - Automatic homing
 - Zero-offset estimation
 - Repeatability testing
 
-### Why It’s Strong
-- Very realistic robotics work
-- Strong industry signal
+### Constraint-Aware Motion Planning
+**Phase:** 4-5
 
-**Resume:**  
-> Designed automated calibration and repeatability testing for a robotic manipulator
-
----
-
-## ⭐ Add-On 2: Constraint-Aware Motion Planning
-
-**Phase:** 4–5
-
-### What You Do
-Enforce:
-- Joint limits
+- Joint-limit enforcement
 - Velocity limits
-- Collision-free zones
-- Abort unsafe motions
+- Unsafe-motion rejection
+- Defined collision-free regions where practical
 
-### Why It’s Strong
-- Safety-focused
-- Shows engineering maturity
+### Data Infrastructure
+**Phase:** 3-5
 
----
-
-## ⭐ Add-On 3: Data Infrastructure (Big DS Signal)
-
-**Phase:** 3–5
-
-### What You Do
-Automatic logging of:
-- Joint states
-- Commands
-- Errors
-
-Produce:
+- Automatic logging of joint states, commands, and errors
 - Structured datasets
-- Clean plots
-- Quantitative metrics
+- Plots and quantitative metrics
 
-**Resume:**  
-> Built a data collection and analysis pipeline for robotic experiments
-
----
-
-## ⭐ Add-On 4: Performance Benchmarking Suite
-
+### Performance Benchmarking
 **Phase:** 5
 
-### What You Do
-Define metrics:
 - Accuracy
 - Repeatability
-- Energy usage
+- Energy or effort proxy
+- Controller-to-controller comparison
 
-Compare controllers quantitatively.
-
----
-
-## ⭐ Add-On 5: Model Validation Experiments
-
+### Model Validation
 **Phase:** 5
 
-### What You Do
 - Predict motion using the identified model
-- Compare predicted vs real behavior
+- Compare prediction against measured behavior
 - Quantify mismatch
 
-**Resume:**  
-> Validated physics-based models against real-world experimental data
+### PS5 Controller Integration
+**Phase:** 3-4  
+**Status:** Optional
 
----
+Use the controller as a teleoperation and data-collection interface, not as a substitute for autonomous control.
 
-## Phase ≤5 Checklist
+#### Appropriate Uses
+- Manual trajectory collection
+- Baseline comparison against PID and optimized motion
+- Safety and limit testing
+- Mode switching between manual, autonomous, and replay modes
 
-### INCLUDED
-- 3-DOF robotic arm
+#### Minimal Technical Scope
+- Controller input mapping
+- Joint-velocity commands
+- Logging of input, joint state, and timestamps
+- Replay of recorded motions
+
+## Phase 0-5 Checklist
+
+### In Scope
+- 3 DOF robotic arm
 - Sensors and automatic logging
 - PID control
 - System identification
-- Simple optimization
-- Kinematics-based simulator
+- Lightweight optimization
+- Kinematics-based simulation
 - Calibration and benchmarking
 
-### EXCLUDED (For Now)
+### Out of Scope
 - Reinforcement learning
-- High-fidelity digital twin
+- Full digital twin
 - Predictive maintenance
-- Vision
-
----
-
-## Final Verdict
-
-If you stop at **Phase 5**, the project is:
-
-- ✅ Intern-ready  
-- ✅ Technically deep  
-- ✅ Fun to build  
-- ✅ Expandable later  
-- ❌ Not overambitious  
-
-This is exactly where strong students stop — and smart ones leave room to grow.
-
----
-
-# Optional Extension: PS5 Controller Integration (Phase ≤5 Safe)
-
-Connecting a PS5 controller is **not a gimmick** if framed correctly.
-
----
-
-## Best Phase to Add
-**Phase:** 3–4  
-After stable PID control, before optimization.
-
----
-
-## What It Is vs What It Is Not
-
-### ❌ Not
-- Gaming the robot
-- Replacing autonomy
-
-### ✅ Is
-- Teleoperation interface
-- Data collection tool
-- Baseline benchmark
-
----
-
-## Concrete Uses (Ranked by Value)
-
-### ⭐ 1. Teleoperation for Data Collection
-Map controller inputs to joint velocities and log:
-- Joint angles
-- Velocities
-- Timestamps
-
-Creates:
-- Demonstration trajectories
-- Realistic motion profiles
-- Future training/validation data
-
-**Resume:**  
-> Designed a human-in-the-loop teleoperation interface for robotic data collection
-
----
-
-### ⭐ 2. Baseline Controller Comparison
-Compare:
-- Human teleoperation
-- PID control
-- Optimized trajectories
-
-Metrics:
-- Smoothness
-- Time to target
-- Repeatability
-
----
-
-### ⭐ 3. Safety and Limits Testing
-Enforce:
-- Joint limits
-- Velocity caps
-- Emergency stop (PS button)
-
----
-
-### ⭐ 4. Mode Switching
-Controller buttons:
-- Manual mode
-- Autonomous mode
-- Replay recorded trajectory
-
----
-
-## Tech Stack
-
-### Software
-- Python
-- pygame or inputs
-- Serial / USB / WiFi communication
-
-### Hardware
-- PS5 controller (Bluetooth or USB)
-- ESP32 or Arduino
-
-No additional cost.
-
----
-
-## Resume Impact Summary
-
-- Teleop alone: 🟢  
-- Teleop + logging: 🟢🟢  
-- Teleop vs optimization: 🟢🟢🟢  
-- Teleop → imitation learning (future): 🟢🟢🟢🟢  
-
----
-
-## Bottom Line
-
-PS5 controller integration is:
-- Fun
-- Resume-safe
-- Technically meaningful
-- A clean bridge to ML later
+- Large perception or vision additions

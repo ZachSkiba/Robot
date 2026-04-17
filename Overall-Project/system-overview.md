@@ -1,7 +1,7 @@
-# 🏗 System Overview (Rev 5.2)
+# 🏗 System Overview
 
-## Purpose of This Document
-This document provides a technical, system-level view of the 6-DOF Robotic Arm Platform (Rev 5.2).
+## Purpose
+Technical, system-level view of the 6-DOF Robotic Arm Platform.
 
 Unlike the README.md, which explains the project's organization and vision, this document explains:
 
@@ -9,7 +9,7 @@ Unlike the README.md, which explains the project's organization and vision, this
 - **The Data Lifecycle:** How motion commands flow down and telemetry flows up.  
 - **The Safety Layers:** Where authority resides when things go wrong.  
 
-This document defines the invariant architecture that remains stable across all build phases.
+The invariant architecture remains stable across all build phases.
 
 ---
 
@@ -92,7 +92,7 @@ Safety is enforced hierarchically. A lower layer always overrides a higher layer
 
 ---
 
-## Component Details (Rev 5.2 Specifics)
+## Component Details
 
 ### 1. Motion Core (Teensy 4.1)
 - **Step Generation:** Uses hardware timer interrupts, not delay()  

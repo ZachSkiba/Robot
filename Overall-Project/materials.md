@@ -13,7 +13,7 @@
 - SciPy (for numerical IK / optimization)  
 - Jupyter Notebook or VS Code  
 - Git  
-- GitHub repository  d
+- GitHub repository
 
 ➕ Added (required by architecture):  
 - PySerial (MCU protocol simulation)  
@@ -27,7 +27,7 @@
 
 # Robotic Arm Project – Phase-by-Phase Materials List
 
-This document lists all materials, components, and tools required for the robotic arm project. Organized by project phase, including mini-projects and preparatory work.
+Materials, components, and tools required for the robotic arm project, organized by project phase, including mini-projects and preparatory work.
 
 ---
 
@@ -75,7 +75,7 @@ This document lists all materials, components, and tools required for the roboti
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| ❌ High-torque servos | — | Removed — not used anywhere in Rev 5.2 |
+| ❌ High-torque servos | — | Removed — not used in the current architecture |
 | NEMA 23 stepper motors | 2 | J1, J2 |
 | NEMA 17 stepper motors | 2 | J3, J4 |
 | NEMA 11 stepper motors | 2 | J5, J6 |

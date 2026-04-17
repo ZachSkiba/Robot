@@ -350,7 +350,7 @@ All three paths are required. `/opt/ros/humble/lib/python3.10/site-packages` is 
 
 `build/`, `install/`, and `log/` live inside the container filesystem. No Docker volumes for these paths. When the container is destroyed, they are destroyed.
 
-This is non-negotiable for Rev 1.
+This is non-negotiable.
 
 The correct hash-invalidation approach for volume caching requires computing a deterministic hash across the full dependency input set: apt package list, Dockerfile, `rosdep` dependencies, and workspace source tree. A hasher that misses a single header file change will serve a stale ABI silently. Building and maintaining that correctly is a substantial DevOps project. The reproducibility risk of an incorrect implementation outweighs the build time savings.
 

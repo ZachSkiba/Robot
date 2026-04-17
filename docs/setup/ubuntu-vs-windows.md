@@ -1,6 +1,6 @@
 # Ubuntu vs. Windows for the 6-DOF Robot Project
 
-This document compares the `Ubuntu + ROS2 + Gazebo + Docker` setup versus a Windows-only setup for 6-DOF robot simulations and eventual hardware integration.
+Comparison of the `Ubuntu + ROS2 + Gazebo + Docker` setup versus a Windows-only setup for 6-DOF robot simulations and eventual hardware integration.
 
 ## Ubuntu vs. Windows Comparison
 
@@ -49,9 +49,7 @@ Ubuntu setup: Industry standard, highly reliable, matches academic/research work
 
 Windows-only: Works for light ROS2 experiments and coding, but timing-sensitive MCU control and Gazebo simulations are more error-prone. PID tuning may be misleading. Containers and GPU-accelerated Gazebo are tricky.
 
-💡 Bottom line: For your 6‑DOF arm project, if you want accurate simulation, real-time control, and safe future hardware bring-up, Ubuntu + Docker + Gazebo + PlatformIO is strongly recommended. Windows-only is workable for prototyping, but it will cause subtle headaches later.
-
-If you want, I can make a side-by-side workflow diagram showing exactly how Python, MATLAB, ROS2, Gazebo, and PlatformIO communicate on Ubuntu vs. Windows, so you can see where the limitations occur.
+Bottom line: For accurate simulation, real-time control, and safe future hardware bring-up, Ubuntu + Docker + Gazebo + PlatformIO is strongly recommended. Windows-only is workable for prototyping, but it will cause subtle headaches later.
 
 ---
 
@@ -112,7 +110,7 @@ Ubuntu 22.04 LTS = industry standard for robotics, zero licensing cost, maximum 
 Other Linux distributions = possible but require extra maintenance and troubleshooting.  
 Windows-only = fine for coding and light simulation, but not reliable for hardware communication, Gazebo simulation, or real-time PID loops.  
 
-✅ If you want professional, reproducible robotics setup, Ubuntu is the safest bet.
+For a professional, reproducible robotics setup, Ubuntu is the safest bet.
 
 ---
 
@@ -169,9 +167,3 @@ Start in a VM now — low-risk, fast start, both partners can code and simulate.
 Switch to dual-boot when you want full Gazebo performance or to connect and control the actual arm.
 
 This workflow lets you develop 80% of the software stack before hardware arrives, so the hardware bring-up is just verification and tuning.
-
-If you want, I can create a step-by-step plan for your exact workflow, showing:
-
-- What to do in the VM.  
-- What to migrate for dual-boot.  
-- How to ensure ROS2 + Gazebo + PlatformIO + MATLAB + Docker all work seamlessly.

@@ -1,12 +1,12 @@
-# ⚖️ Task Split & Governance (Rev 5.2)
+# ⚖️ Task Split & Governance
 
-## Purpose of This Document
-This document defines the Division of Labor and Separation of Concerns between the two primary engineers:
+## Purpose
+Division of Labor and Separation of Concerns between the two primary engineers:
 
 - **Mechanical Engineer (ME):** Your Brother  
 - **Data Scientist (DS):** You  
 
-Under the Rev 5.2 Split-Brain Architecture, tasks are not just assigned based on skill, but on **System Authority**:
+Under the Split-Brain Architecture, tasks are not just assigned based on skill, but on **System Authority**:
 
 - **ME owns the Hardware & Reflex (Teensy)**  
 - **DS owns the Strategy & Judgment (Python)**

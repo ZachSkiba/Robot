@@ -1,4 +1,4 @@
-# ⚙️ Phase 0 – Assumptions & Constraints (Rev 5.2)
+# ⚙️ Phase 0 – Assumptions & Constraints
 
 ---
 
@@ -51,7 +51,7 @@ The "Split-Brain" Reality assumes a distributed control topology:
 **Deliverables:**
 
 - Validated DH Parameters for the 6-DOF chain  
-- Defined "Motion Packet" structure (Rev 5.2 Standard)  
+- Defined "Motion Packet" structure  
 - Simulated "Heartbeat" failure test
 
 ---
@@ -74,7 +74,7 @@ The "Split-Brain" Reality assumes a distributed control topology:
 
 ---
 
-### Data & Protocol Schema (Rev 5.2)
+### Data & Protocol Schema
 - **Packet Design:** Define exact byte structure for `<SegID, Velocities, Duration>`  
 - **Encoder Integration:**  
   - Phase 1: J3 feedback for stall detection  

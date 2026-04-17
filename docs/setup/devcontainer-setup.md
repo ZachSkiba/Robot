@@ -1,8 +1,8 @@
 # 6-DOF Robotic Arm — Professional Software Setup
 
-This document defines the supported development environment for this repository.
+Supported development environment for this repository.
 
-The goal is a repeatable workflow that a new contributor can use to clone the repo, open the container, build the workspace, and get the same result every time.
+The workflow is designed so a new contributor can clone the repo, open the container, build the workspace, and get the same result every time.
 
 ## Gold Path
 

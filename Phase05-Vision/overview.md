@@ -1,13 +1,9 @@
-# 🔵 Phase 5 — Vision-Guided Manipulation (Autonomy Layer)
+# Phase 5 - Vision-Guided Manipulation
 
 **Duration:** ~6–10 weeks (can be extended indefinitely)  
-**Goal:** The robotic arm perceives its environment and autonomously decides what to do, not just how to move.  
+**Goal:** The robotic arm perceives its environment and uses that information to choose and execute tasks.  
 
-> This is where your system stops being “a robot arm” and becomes an intelligent robotic system.
-
----
-
-### 🔹 Phase 5 Outcomes
+## Outcomes
 - Camera-based perception pipeline  
 - Object detection / localization  
 - Hand–eye calibration  
@@ -15,13 +11,7 @@
 - Autonomous task execution (single-step)  
 - End-to-end demo  
 
-**🎯 You can say:**  
-> “We built a vision-guided robotic manipulator with learned control.”  
-> Very strong for both MechE + DS.
-
----
-
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 5.1 — Add Vision Hardware & Calibration (Days 1–7)
 
@@ -40,7 +30,7 @@
 - Handle frame capture & synchronization  
 - Store images with timestamps  
 
-**🔁 Interaction**
+**Coordination**
 - Jointly validate:  
   - field of view  
   - resolution  
@@ -49,8 +39,6 @@
 ---
 
 #### STEP 5.2 — Hand–Eye Calibration (Days 8–14)
-
-> This is huge resume value.
 
 **Together**
 - Define coordinate frames:  
@@ -68,9 +56,8 @@
 - Ensure repeatable poses  
 - Validate geometric correctness  
 
-**🔁 Interaction**
-- Verify:  
-> “When the camera sees X, the arm knows where X is.”
+**Coordination**
+- Verify that camera detections map correctly into the robot reference frame.
 
 ---
 
@@ -93,7 +80,7 @@
 - Adjust physical setup for reliability  
 - Validate grasp feasibility  
 
-**🔁 Interaction**
+**Coordination**
 - Trade off:  
   - ML complexity vs reliability  
 
@@ -118,8 +105,7 @@
 - Tune approach angles & heights  
 - Prevent collisions  
 
-**🔁 Interaction**
-> This is where software meets physics.
+**Coordination**
 
 ---
 
@@ -141,9 +127,8 @@
 - Improve gripper alignment  
 - Reduce variance  
 
-**🔁 Interaction**
-- Iterate until:  
-> “It works reliably, not just once.”
+**Coordination**
+- Iterate until the task is reliable across repeated runs.
 
 ---
 
@@ -159,12 +144,7 @@
     - learning  
     - limitations  
 
-**🎯 Final Statement:**  
-> “This robotic system autonomously perceives, plans, and acts.”
-
----
-
-### 🧠 Role Balance (Phase 5)
+## Role Split
 
 | Area                 | Zach (DS) | Nicholas (MechE) |
 |----------------------|-----------|----------------|
@@ -174,5 +154,3 @@
 | Motion feasibility    | ➖        | ✅             |
 | System integration    | ✅        | ✅             |
 | Evaluation            | ✅        | ✅             |
-
-> Still fully collaborative.

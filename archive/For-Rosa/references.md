@@ -1,6 +1,6 @@
 # 🔹 REFERENCES
 
-This document groups the project references by topic.
+Project references grouped by topic.
 
 ## Mechanical & Structural
 

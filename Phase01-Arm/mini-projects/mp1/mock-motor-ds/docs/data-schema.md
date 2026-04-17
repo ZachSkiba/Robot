@@ -1,4 +1,4 @@
-# Data Logging Contract (v1.0)
+# Data Logging Contract
 
 All logs (virtual or real) must follow this CSV format.
 

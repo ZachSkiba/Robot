@@ -1,7 +1,7 @@
-# ⚠️ Risks and Unknowns (Rev 2.0)
+# ⚠️ Risks and Unknowns
 
-**Context:** Aligned to Master Blueprint Rev 5.2 (Split-Brain Architecture)  
-**Purpose:** This document captures the specific engineering gambles inherent in the Rev 5.2 architecture. These are not bugs; they are the constraints we have chosen to accept.
+**Context:** Aligned to the Split-Brain architecture  
+**Purpose:** Captures the specific engineering gambles inherent in the architecture. These are not bugs; they are the constraints we have chosen to accept.
 
 ---
 
@@ -61,7 +61,7 @@ Printed planetary gearboxes (J1, J4) introduce significantly more backlash than 
 ### 2.1 I²C Bus Capacitance (The “Long Wire” Problem)
 
 **Risk:**  
-Rev 5.2 uses AS5600 encoders (I²C) distributed across the arm. Standard I²C is designed for PCB traces, not **6-foot cables**.
+The current architecture uses AS5600 encoders (I²C) distributed across the arm. Standard I²C is designed for PCB traces, not **6-foot cables**.
 
 **Impact:**
 - Signal reflections or capacitance can lock the bus (SDA stuck low).

@@ -1,4 +1,4 @@
-# Phase 0 — System Overview (Updated)
+# Phase 0 — System Overview
 
 ## Purpose
 

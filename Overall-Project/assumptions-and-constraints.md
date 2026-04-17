@@ -1,4 +1,4 @@
-# 📜 Assumptions & Constraints — Rev 5.2 (Research Edition)
+# 📜 Assumptions & Constraints
 
 ---
 

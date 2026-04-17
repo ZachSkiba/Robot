@@ -1,13 +1,9 @@
-# 🔵 Phase 2 — Trajectory Execution & Optimization
+# Phase 2 - Trajectory Execution and Optimization
 
 **Duration:** ~4–6 weeks  
 **Goal:** The arm executes repeatable trajectories and quantitatively improves motion quality through optimization (no ML yet).  
 
-Phase 2 is where this stops being “a robot that moves” and becomes an engineering system you can evaluate and improve.
-
----
-
-### 🔹 Phase 2 Outcomes
+## Outcomes
 - Deterministic joint-space & Cartesian trajectories  
 - Defined cost functions  
 - Automated experiments  
@@ -15,11 +11,7 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
   - naïve control vs optimized control  
 - Plots + metrics that clearly show improvement  
 
-> This phase is huge for resumes.
-
----
-
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 2.1 — Define Motion Goals & Metrics (Days 1–3)
 
@@ -49,7 +41,7 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
   - torque limits  
   - vibration concerns  
 
-**🔁 Interaction**  
+**Coordination**  
 - Refine metrics until:  
   - mathematically clean  
   - physically meaningful  
@@ -75,7 +67,7 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
   - joint limit compliance  
   - mechanical stress intuition  
 
-**🔁 Interaction**  
+**Coordination**  
 - Bad trajectories get rejected early  
 - Simulation ↔ hardware consistency checked  
 
@@ -103,10 +95,10 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
   - mechanical damping  
   - trajectory constraints  
 
-**🔁 Interaction**  
+**Coordination**  
 - Data explains why motion looks bad  
 - Mechanics explain why data looks bad  
-> This feedback loop is the whole point.
+- Use logging and mechanical observations together to diagnose poor motion quality.
 
 ---
 
@@ -131,9 +123,9 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
   - Are they abusing the system?  
 - Add constraints if needed  
 
-**🔁 Interaction**  
+**Coordination**  
 - Optimization → physical review → constraint update → repeat  
-> This is real engineering iteration.
+- Review optimized trajectories jointly and update constraints as needed.
 
 ---
 
@@ -151,10 +143,9 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
   - run same trajectory multiple times  
 - Identify sources of residual error  
 
-**🔁 Interaction**  
-- Jointly answer:  
-> “Why is optimized better, and where does it still fail?”  
-- Prepares you for Phase 3 (learning).
+**Coordination**  
+- Jointly identify where optimized motion improves performance and where residual error remains.
+- Record unresolved issues for Phase 3.
 
 ---
 
@@ -170,12 +161,7 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
     - before vs after plots  
   - Short demo video  
 
-**🎯 Resume Sentence:**  
-> “We designed and optimized robotic arm trajectories using quantitative performance metrics on real hardware.”  
-
----
-
-### 🧠 Role Balance (Phase 2)
+## Role Split
 
 | Area                | Zach (DS) | Nicholas (MechE) |
 |--------------------|-----------|----------------|
@@ -185,5 +171,3 @@ Phase 2 is where this stops being “a robot that moves” and becomes an engine
 | Optimization        | ✅        | ➖             |
 | Hardware tuning     | ➖        | ✅             |
 | Validation          | ✅        | ✅             |
-
-> No one is idle.

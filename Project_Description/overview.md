@@ -1,225 +1,143 @@
-# 🦾 Robotic Arm Project — Joint Roadmap
+# Robotic Arm Project Roadmap
 
-## Core Principle
-**Every phase must produce data, metrics, and plots.**  
-That’s what turns *“cool robot”* → *“serious engineering project.”*
+## Principle
+Each phase should produce measurable outputs: logged data, plots, validation metrics, or pass/fail criteria. The project should advance only when the current phase is stable and observable.
 
----
+## Phase 0: Architecture and Simulation
+**Timeline:** Weeks 1-2
 
-## 🟢 Phase 0 (Weeks 1–2): Architecture + Simulation (No Hardware Yet)
-
-### What You Build
-Define:
-- DOFs (start with **3 DOF**, cap at **5 DOF max**)  
-- Joint limits  
-- Link lengths  
-
-Then:
-- Build kinematics model  
-- Simulate arm motion  
+### Scope
+- Define a 3 DOF baseline model and cap early physical scope at 5 DOF
+- Set joint limits and link lengths
+- Implement forward and inverse kinematics
+- Simulate motion and visualize trajectories
 
 ### Tools
-- Python (NumPy, Matplotlib)  
-- Optional: MATLAB / Simulink for verification  
+- Python with NumPy and Matplotlib
+- Optional MATLAB or Simulink for cross-checking
 
-### Roles (Both Involved)
+### Responsibilities
+**Mechanical**
+- Kinematic chain
+- Physical feasibility
+- Joint constraints
 
-**MechE**
-- Kinematic chain  
-- Physical feasibility  
-- Joint constraints  
+**Data**
+- Forward kinematics implementation
+- Visualization
+- Error metrics
 
-**Data Science**
-- Forward kinematics equations  
-- Visualization  
-- Error metrics  
+### Outputs
+- Simulated motion to target poses
+- Plots of joint angles and end-effector paths
 
-### 🎯 Output
-- Simulated arm moving to targets  
-- Plots of joint angles & end-effector paths  
+## Phase 1: Physical Arm and Instrumentation
+**Timeline:** Weeks 3-5
 
-✅ **Resume value:** *Robotic kinematics + simulation*
+### Scope
+- Build a 3 DOF arm with stepper motors
+- Add hard stops and safety limits
+- Instrument motion with encoders or step counting
+- Log every run automatically
 
----
+### Logged Signals
+- Motor step counts
+- Timestamps
+- End-effector estimate from kinematics
 
-## 🟡 Phase 1 (Weeks 3–5): Physical Arm + Instrumentation
+### Responsibilities
+**Mechanical**
+- CAD
+- Gear ratios
+- Mounting and stiffness
 
-### What You Build
-- 3 DOF arm with stepper motors  
-- Hard stops + safety limits  
-- Encoders or step counting  
-- Automatic logging  
+**Data**
+- Serial data ingestion
+- Logging schema
+- Real-time plotting
 
-### Sensors (Simple but Powerful)
-- Motor step counts  
-- Time stamps  
-- End-effector estimate (via kinematics)  
+### Outputs
+- Repeatable motion
+- Per-run datasets
 
-⚠️ **You do NOT manually time anything.**  
-The microcontroller logs everything.
+## Phase 2: Trajectory Optimization
+**Timeline:** Weeks 6-8
 
-### Roles
+### Scope
+- Optimize motion between start and end poses
+- Compare trajectories using smoothness, time, overshoot, and an energy proxy
 
-**MechE**
-- CAD  
-- Gear ratios  
-- Mounting & stiffness  
+### Methods
+- Cost functions
+- Gradient-free optimization
+- Parameter sweeps
 
-**Data Science**
-- Serial data ingestion  
-- Logging schema (CSV / SQLite)  
-- Real-time plotting  
+### Responsibilities
+**Mechanical**
+- Physical cost definitions
+- Constraint modeling
 
-### 🎯 Output
-- Arm moves repeatably  
-- Data logged every run  
+**Data**
+- Optimization algorithms
+- Experiment automation
+- Result comparison plots
 
-✅ **Resume value:** *Robotic hardware + telemetry pipeline*
+### Outputs
+- Baseline versus optimized trajectories
+- Quantitative comparison plots
 
----
+## Phase 3: Error Modeling and Compensation
+**Timeline:** Months 3-4
 
-## 🔵 Phase 2 (Weeks 6–8): Trajectory Optimization (No ML Yet)
+### Scope
+- Model systematic joint bias
+- Estimate backlash
+- Correct timing or calibration errors
 
-### What You Optimize
-Given:
-- Start pose  
-- End pose  
+### Data
+- Commanded pose versus measured pose
+- Error vectors
+- Trial history
 
-Optimize:
-- Smoothness  
-- Time  
-- Overshoot  
-- Energy proxy  
+### Responsibilities
+**Mechanical**
+- Interpret physical error sources
+- Validate proposed corrections
 
-### Techniques (Resume Gold)
-- Cost functions  
-- Gradient-free optimization  
-- Parameter sweeps  
+**Data**
+- Regression or compensation models
+- Error prediction
+- Performance analysis
 
-### Roles
+### Outputs
+- Accuracy improvement across repeated trials
+- Error model performance curves
 
-**MechE**
-- Physical cost definitions  
-- Constraint modeling  
+## Phase 4: Reinforcement Learning
+**Timeline:** Months 5-6  
+**Status:** Optional
 
-**Data Science**
-- Optimization algorithms  
-- Experiment automation  
-- Result comparison plots  
+### Scope
+- Use a limited state and action space
+- Train against accuracy, time, and smoothness objectives
+- Keep firmware-side safety constraints in place
 
-### 🎯 Output
-- “Optimized” motion vs naïve motion  
-- Clear quantitative improvement  
+### Preconditions
+- Stable control
+- Reliable logging
+- Validated simulator or safe constrained hardware loop
 
-✅ **Resume value:** *Optimization applied to real robotic systems*
+### Outputs
+- Policy comparison against hand-tuned or optimized controllers
 
----
+## Data Collection
+Microcontroller-side logging should record step counts, timestamps, and commanded targets. Host-side software should collect, store, and plot each run without manual timing or hand labeling.
 
-## 🟣 Phase 3 (Months 3–4): Learning From Error (Intro ML)
-
-### What Learns
-- Systematic joint bias  
-- Backlash compensation  
-- Timing correction  
-
-> This is **not RL yet** — it’s smarter and cleaner.
-
-### Data Collected Automatically
-- Commanded vs actual pose  
-- Error vectors  
-- Trial number  
-
-### Roles
-
-**MechE**
-- Interpret physical error sources  
-- Validate realism  
-
-**Data Science**
-- Regression models  
-- Error prediction  
-- Performance curves  
-
-### 🎯 Output
-- Arm improves accuracy over time  
-- Learning curves  
-
-✅ **Resume value:** *Data-driven control improvement*
-
----
-
-## 🔴 Phase 4 (Months 5–6): RL (Optional but Nuclear)
-
-### RL Objective (Simple, Impressive)
-- **State:** joint angles + target  
-- **Action:** trajectory parameters  
-- **Reward:** accuracy – time – jerk  
-
-### Why This Works
-- Small state space  
-- Safe actions  
-- Real hardware + simulation  
-
-### Roles
-
-**MechE**
-- Reward shaping  
-- Stability & safety  
-
-**Data Science**
-- RL implementation  
-- Training pipeline  
-- Evaluation  
-
-### 🎯 Output
-- Learned policy beats hand-tuned control  
-
-✅ **Resume value:** *Reinforcement learning on physical robot*
-
----
-
-## 🔧 Data Collection (Key Question You Asked)
-
-### How Data Is Collected (Automatically)
-Microcontroller logs:
-- Step counts  
-- Timestamps  
-- Commanded targets  
-
-Python listens over USB / WiFi.
-
-Every run saved:
-- No human timing  
-- No manual labels  
-
-You press **run**, the system records everything.  
-This is how **real robotics labs** work.
-
----
-
-## 🧠 Why This Is Perfect for BOTH of You
-
-| Area | MechE | Data Science |
-|----|----|----|
-| Design | ✅ | ➖ |
-| Control | ✅ | ✅ |
-| Optimization | ✅ | ✅ |
-| ML | ➖ | ✅ |
-| Systems | ✅ | ✅ |
-
-**No one gets sidelined.**
-
----
-
-## Final Recommendation
-
+## Initial Recommended Scope
 Start with:
-- **3 DOF**
-- **Stepper motors**
-- **Heavy logging**
-- **No vision**
+- 3 DOF
+- Stepper motors
+- Automatic logging
+- No vision system in early phases
 
-If you nail **Phases 0–2**, you already have:
-- A strong project  
-- A clean expansion path  
-- Something interviewers respect  
+If Phases 0-2 are complete and measured well, the project already supports expansion into calibration, optimization, and learning.

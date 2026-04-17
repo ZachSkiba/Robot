@@ -1,13 +1,9 @@
-# 🔴 Phase 4 — Reinforcement Learning on Real Hardware (Capstone Phase)
+# Phase 4 - Reinforcement Learning on Real Hardware
 
 **Duration:** ~6–8 weeks  
 **Goal:** The robotic arm learns a control policy that outperforms hand-tuned and regression-based controllers.  
 
-> This is the phase that turns your project into a top-tier ML + Robotics system.
-
----
-
-### 🔹 Phase 4 Outcomes
+## Outcomes
 - Formal RL problem definition (state, action, reward)  
 - Safe real-world RL loop (no “YOLO” training)  
 - Learned policy that improves task performance  
@@ -15,11 +11,11 @@
   - classical control  
   - learned correction (Phase 3)  
   - RL policy  
-- Internship-level demo + report  
+- Demo and report  
 
 ---
 
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 4.1 — Define the RL Problem (Days 1–4)
 
@@ -43,14 +39,12 @@
 - Define actuator limits & constraints  
 - Sanity-check reward realism  
 
-**🔁 Interaction**
+**Coordination**
 - Reward shaping is joint work — this is critical
 
 ---
 
 #### STEP 4.2 — Build a Simulator from Real Data (Days 5–10)
-
-> This avoids destroying hardware and is very resume-strong.
 
 **Together**
 - Decide fidelity level:  
@@ -66,7 +60,7 @@
 - Validate physical plausibility  
 - Identify where sim diverges from the model  
 
-**🔁 Interaction**
+**Coordination**
 - Iterate until simulation ≈ real enough to transfer
 
 ---
@@ -83,7 +77,7 @@
 - Reject unsafe learned behaviors  
 - Suggest reward adjustments  
 
-**🔁 Interaction**
+**Coordination**
 - Tight feedback between learning and physics
 
 ---
@@ -104,7 +98,7 @@
 - Observe hardware stress  
 - Approve incremental expansion of limits  
 
-**🔁 Interaction**
+**Coordination**
 - Policy is never blindly trusted
 
 ---
@@ -124,11 +118,8 @@
   - wear  
   - robustness  
 
-**🔁 Interaction**
-- Jointly answer:  
-> “Does RL actually help?”  
-- If yes → massive win  
-- If no → still a strong scientific result
+**Coordination**
+- Jointly evaluate whether RL improves performance relative to the baselines.
 
 ---
 
@@ -146,13 +137,7 @@
     - how it was done safely  
     - what worked / didn’t  
 
-**🎯 Resume Sentence:**  
-> “We trained and deployed a reinforcement learning policy on a real robotic arm.”  
-> That is elite-tier for internships.
-
----
-
-### 🧠 Role Balance (Phase 4)
+## Role Split
 
 | Area                 | Zach (DS) | Nicholas (MechE) |
 |----------------------|-----------|----------------|
@@ -162,5 +147,3 @@
 | Safety constraints    | ➖        | ✅             |
 | Real-world deployment | ➖        | ✅             |
 | Evaluation            | ✅        | ✅             |
-
-> Both of you are essential every step.

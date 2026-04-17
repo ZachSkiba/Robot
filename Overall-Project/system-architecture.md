@@ -1,6 +1,5 @@
-# 🤖 6-DOF Robotic Arm — Final Master Blueprint (Rev 5.2)
+# 🤖 6-DOF Robotic Arm — Final Master Blueprint
 
-**The "Research" Edition**  
 Split-Brain, Hard Real-Time, Safety-Critical
 
 ---
@@ -198,7 +197,7 @@ This defines the path from “Moving” → “Research Grade.”
 
 ---
 
-## 6️⃣ Build Phases (Rev 5.2)
+## 6️⃣ Build Phases
 
 **Phase 1: Dry Run (Electrical Validation)**  
 - Wire Teensy, level shifters, and one driver  

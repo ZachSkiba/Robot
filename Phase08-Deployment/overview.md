@@ -1,23 +1,18 @@
-# ⚫ Phase 8 — Deployment, Reliability & “Real-World” Readiness
+# Phase 8 - Deployment and Reliability
 
 **Duration:** Open-ended (4–10+ weeks)  
-**Goal:** Make the system reliable, repeatable, and presentable as a real product / research platform — not just a prototype.  
+**Goal:** Make the system reliable, repeatable, and maintainable outside controlled demos.  
 
-> This phase answers:  
-> **“Would this survive outside a demo?”**
-
----
-
-### 🔹 Phase 8 Outcomes
+## Outcomes
 - Long-run stability  
 - Automated testing & monitoring  
 - Safety + fault handling  
 - Clean APIs & modularity  
-- Recruiter-ready polish  
+- External-facing documentation and demos  
 
 ---
 
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 8.1 — Reliability & Stress Testing
 
@@ -78,7 +73,6 @@
 - Clear wiring & labeling  
 - Assembly documentation  
 
-> This is huge industry signal.
 
 ---
 
@@ -123,7 +117,7 @@
 
 ---
 
-### 🧠 Role Balance (Phase 8)
+## Role Split
 
 | Area                   | Zach (DS) | Nicholas (MechE) |
 |------------------------|-----------|----------------|

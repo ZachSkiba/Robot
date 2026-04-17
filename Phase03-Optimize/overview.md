@@ -1,13 +1,9 @@
-# 🟣 Phase 3 — Learning From Error (Data-Driven Control)
+# Phase 3 - Learning From Error
 
 **Duration:** ~4–6 weeks  
 **Goal:** The arm systematically improves accuracy and repeatability by learning from its own execution data.  
 
-> This is where your project clearly becomes robotics + data science, not just control.
-
----
-
-### 🔹 Phase 3 Outcomes
+## Outcomes
 - Measured commanded vs actual behavior  
 - Identified systematic errors (bias, backlash, timing)  
 - Learned correction models  
@@ -16,7 +12,7 @@
 
 ---
 
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 3.1 — Add State Feedback (Days 1–4)
 
@@ -38,7 +34,7 @@
 - Synchronize timestamps  
 - Validate signal quality  
 
-**🔁 Interaction**
+**Coordination**
 - Compare measured vs expected motion  
 - Agree on what errors are real vs noise  
 
@@ -65,7 +61,7 @@
   - “Does this feature cause that error?”  
 - Suggest simplifications  
 
-**🔁 Interaction**
+**Coordination**
 - Iterate until the model inputs make physical sense  
 
 ---
@@ -86,7 +82,7 @@
 - Ensure repeatability  
 - Adjust mechanical issues if needed  
 
-**🔁 Interaction**
+**Coordination**
 - Decide when dataset is “good enough”  
 - Reject bad data intentionally  
 
@@ -110,7 +106,7 @@
   - Is the model compensating for real physics?  
   - Flag unsafe corrections  
 
-**🔁 Interaction**
+**Coordination**
 - Keep learning conservative and stable  
 - Reject black-box magic  
 
@@ -129,10 +125,8 @@
   - more accurate?  
   - safer?  
 
-**🔁 Interaction**
-- Jointly answer:  
-> “Does learning actually improve the robot?”  
-- If yes → Phase 3 is a success
+**Coordination**
+- Jointly evaluate whether learned correction improves repeatability and accuracy.
 
 ---
 
@@ -148,13 +142,7 @@
     - before vs after accuracy  
   - Short demo video  
 
-**🎯 Resume Sentence:**  
-> “We implemented data-driven error correction on a physical robotic arm.”  
-> That’s extremely strong.
-
----
-
-### 🧠 Role Balance (Phase 3)
+## Role Split
 
 | Area                   | Zach (DS) | Nicholas (MechE) |
 |------------------------|-----------|----------------|
@@ -163,5 +151,3 @@
 | Physical error analysis | ➖        | ✅             |
 | Safety & constraints    | ➖        | ✅             |
 | Evaluation              | ✅        | ✅             |
-
-> Still fully collaborative.

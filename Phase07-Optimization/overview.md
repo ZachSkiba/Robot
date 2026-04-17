@@ -1,27 +1,21 @@
-# 🔴 Phase 7 — Research-Level Intelligence & Resume Polish
+# Phase 7 - Research-Level Optimization and Evaluation
 
 **Duration:** Open-ended (4–12+ weeks)  
-**Goal:** Turn your system from “impressive project” into research-grade / startup-grade work and lock in resume + portfolio impact.  
+**Goal:** Extend the system with stronger modeling, robustness testing, and system-level evaluation.  
 
-> This phase is about depth, credibility, and storytelling — not just new hardware.
-
----
-
-### 🔹 Phase 7 Outcomes
+## Outcomes
 - System-level optimization  
 - Learning + classical methods combined  
 - Robustness to uncertainty  
 - Quantitative evaluation  
 - Publication-style documentation  
-- Internship / job-ready portfolio  
+- Technical documentation and benchmark results  
 
 ---
 
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 7.1 — System Identification & Modeling (Weeks 1–2)
-
-> This is huge for MechE + DS overlap.
 
 **Together**
 - Define what to model:  
@@ -40,9 +34,8 @@
 - Compare linear vs nonlinear models  
 - Quantify model error  
 
-**🔁 Interaction**
-- Align on:  
-> “Does the math match the physics?”
+**Coordination**
+- Align model structure with measured physical behavior.
 
 ---
 
@@ -63,8 +56,8 @@
 - Analyze stability margins  
 - Validate real-world behavior  
 
-**🔁 Interaction**
-> This avoids “black-box ML” — very resume-safe.
+**Coordination**
+- Keep learned components bounded by explicit safety and stability constraints.
 
 ---
 
@@ -90,8 +83,6 @@
 ---
 
 #### STEP 7.4 — Optimization at the System Level (Weeks 8–9)
-
-> Not just trajectories — the whole robot.
 
 **Optimize**
 - energy usage  
@@ -129,11 +120,10 @@
 - Repeatability checks  
 - Hardware consistency  
 
-> This is what separates projects from research.
 
 ---
 
-#### STEP 7.6 — Portfolio, Resume, & Storytelling (Weeks 12+)
+#### STEP 7.6 — Documentation and Presentation (Weeks 12+)
 
 **Together**
 - Create:  
@@ -152,12 +142,7 @@
 - Mechanical diagrams  
 - Build documentation  
 
-**🎯 Final Positioning:**  
-> “Autonomous mobile manipulation system with learning-based control and vision.”
-
----
-
-### 🧠 Role Balance (Phase 7)
+## Role Split
 
 | Area                    | Zach (DS) | Nicholas (MechE) |
 |-------------------------|-----------|----------------|
@@ -167,5 +152,3 @@
 | Experimental design      | ➖        | ✅             |
 | Evaluation               | ✅        | ✅             |
 | Presentation             | ✅        | ✅             |
-
-> This phase maximizes both of you.

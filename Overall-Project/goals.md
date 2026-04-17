@@ -1,4 +1,4 @@
-# 🎯 Overall Project Goals — Rev 5.2 (Research Edition)
+# 🎯 Overall Project Goals
 
 ---
 

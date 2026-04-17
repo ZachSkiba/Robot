@@ -1,4 +1,4 @@
-# 🛒 Procurement Plan — Rev 5.2 (Research Edition)
+# 🛒 Procurement Plan
 
 ---
 

@@ -2,12 +2,12 @@
 
 This project is a **research-grade, 6-DOF robotic arm** designed for safe, repeatable motion experiments, targeting high repeatability and precision. It combines modular mechanical design, robust electronics, and a split-brain control architecture, supporting both autonomous and teleoperated operation. The platform serves as a testbed for trajectory optimization, control experiments, and data-driven analysis.
 
-Here is the GitHub link: https://github.com/ZachSkiba/Robot
- (main info/summary:https://github.com/ZachSkiba/Robot/blob/main/Overall_Project/specs_teensy.md) 
+Project repository: https://github.com/ZachSkiba/Robot
+Main summary: https://github.com/ZachSkiba/Robot/blob/main/Overall_Project/specs_teensy.md
 
 ## Current Maturity (Detailed)
 
-* **Architecture & Planning:** Mature — system architecture (Rev 5.2), task split/governance, risks/constraints, and phase roadmaps fully documented.
+* **Architecture & Planning:** Mature — system architecture, task split/governance, risks/constraints, and phase roadmaps fully documented.
 * **Simulation:** Moderate — mini-project simulation exists (single-motor + 2-link/3D dynamics) with multiple logged datasets (e.g., March 6, 2026) showing repeatable virtual test runs.
 * **Procurement:** Moderate-to-high — BOMs and component selections developed; staged purchasing plans in place.
 * **Software Environment:** High — ROS2/Gazebo/devcontainer workflows documented and scaffolded; application-level robot packages mostly skeletons/TODOs.

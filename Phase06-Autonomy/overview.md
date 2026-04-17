@@ -1,15 +1,9 @@
-# 🟣 Phase 6 — Mobile Manipulation & Full Autonomy
+# Phase 6 - Mobile Manipulation and Full Autonomy
 
 **Duration:** ~8–12 weeks (can be stretched)  
 **Goal:** Turn the arm into a complete autonomous robot system by adding mobility and high-level decision making.  
 
-> This is the phase where your project becomes:  
-> **“An autonomous mobile manipulation system.”**  
-> That phrase is elite-tier for resumes.
-
----
-
-### 🔹 Phase 6 Outcomes
+## Outcomes
 - Mobile base + robotic arm integration  
 - Global + local planning  
 - Perception-driven task execution  
@@ -18,7 +12,7 @@
 
 ---
 
-### 🧩 Step-by-Step Plan (with Roles)
+## Plan
 
 #### STEP 6.1 — Mobile Base Design (Weeks 1–2)
 
@@ -37,7 +31,7 @@
 - Plan state representation  
 - Set up simulation for base motion  
 
-**🔁 Interaction**
+**Coordination**
 - Trade off:  
   - stability vs agility  
   - size vs reach  
@@ -61,9 +55,8 @@
 - Fuse sensor data  
 - Log drift + error  
 
-**🔁 Interaction**
-- Validate:  
-> “The robot knows where it thinks it is.”
+**Coordination**
+- Validate odometry estimates against measured motion.
 
 ---
 
@@ -84,14 +77,12 @@
 - Tune acceleration limits  
 - Ensure arm stability while moving  
 
-**🔁 Interaction**
-> Navigation + mechanics must agree.
+**Coordination**
+- Confirm that navigation, dynamics, and arm constraints remain consistent.
 
 ---
 
 #### STEP 6.4 — Arm + Base Coordination (Weeks 7–8)
-
-> This is the hardest and most impressive part.
 
 **Together**
 - Define behaviors:  
@@ -108,8 +99,7 @@
 - Mechanical stress analysis  
 - Collision envelope definition  
 
-**🔁 Interaction**
-> You build true system intelligence.
+**Coordination**
 
 ---
 
@@ -131,8 +121,8 @@
 - Reduce vibration + slip  
 - Increase repeatability  
 
-**🔁 Interaction**
-- Iterate until autonomy is robust, not scripted.
+**Coordination**
+- Iterate until the behavior is repeatable and not dependent on manual intervention.
 
 ---
 
@@ -145,12 +135,7 @@
   - failure analysis  
   - roadmap for future work  
 
-**🎯 Final Claim:**  
-> “Designed and built a fully autonomous mobile manipulation system.”
-
----
-
-### 🧠 Role Balance (Phase 6)
+## Role Split
 
 | Area                 | Zach (DS) | Nicholas (MechE) |
 |----------------------|-----------|----------------|
@@ -160,5 +145,3 @@
 | Stability & dynamics  | ➖        | ✅             |
 | System integration    | ✅        | ✅             |
 | Evaluation & demos    | ✅        | ✅             |
-
-> Still deeply collaborative.
