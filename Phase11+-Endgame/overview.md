@@ -1,4 +1,4 @@
-# 🔵 Phase 11 — Impact, Mentorship & Long-Term Signal
+# Phase 11 — Impact, Mentorship & Long-Term Signal
 
 **Duration:** Optional / low-maintenance  
 **Goal:** Turn your work into lasting external signal that compounds over time, even when you’re busy with school or jobs.
@@ -7,7 +7,7 @@
 
 ---
 
-### 🔹 Phase 11 Outcomes
+### Phase 11 Outcomes
 - Others use or learn from your system  
 - You’re seen as someone who teaches and leads  
 - The project continues to generate value passively  
@@ -15,9 +15,9 @@
 
 ---
 
-### 🧩 Step-by-Step Plan
+### Step-by-Step Plan
 
-#### STEP 11.1 — Knowledge Packaging
+#### STEP 11.1 - Knowledge Packaging
 
 **Together**
 - Decide what to package:  
@@ -41,7 +41,7 @@
 
 ---
 
-#### STEP 11.2 — Teaching / Sharing
+#### STEP 11.2 - Teaching / Sharing
 
 **Options (pick 1–2)**
 - Blog series  
@@ -54,7 +54,7 @@
 
 ---
 
-#### STEP 11.3 — External Feedback Loop
+#### STEP 11.3 - External Feedback Loop
 
 **Together**
 - Show the project to:  
@@ -74,7 +74,7 @@
 
 ---
 
-#### STEP 11.4 — Lightweight Maintenance Mode
+#### STEP 11.4 - Lightweight Maintenance Mode
 
 - Put the project into a “Stable, documented, reusable” state  
 - Rules:  
@@ -84,7 +84,7 @@
 
 ---
 
-#### STEP 11.5 — Career Leverage (Quiet but Powerful)
+#### STEP 11.5 - Career Leverage (Quiet but Powerful)
 
 - Use the project to:  
   - Anchor recommendation letters  
@@ -92,11 +92,11 @@
   - Justify advanced coursework  
   - Stand out in referrals  
 
-> You don’t “push” it — it pulls interest.
+> You don’t “push” it - it pulls interest.
 
 ---
 
-### 🧠 Role Balance (Phase 11)
+### Role Balance (Phase 11)
 
 | Area                 | Zach (DS) | Nicholas (MechE) |
 |----------------------|-----------|-----------------|
@@ -107,7 +107,7 @@
 
 ---
 
-### 🧰 Phase 11 — Materials Checklist
+### Phase 11 — Materials Checklist
 - ⬜ Final stable system  
 - ⬜ Clean documentation  
 - ⬜ Diagrams & visuals  
@@ -116,7 +116,7 @@
 
 ---
 
-### 🏁 What Phase 11 Really Does
+### What Phase 11 Really Does
 
 Phase 11 ensures:  
 - This project keeps working for you  
@@ -130,7 +130,7 @@ Phase 11 ensures:
 
 ---
 
-## 🟣 Phase 12 — Personalization, Ownership & Next-Generation Spin-Offs
+## Phase 12 — Personalization, Ownership & Next-Generation Spin-Offs
 
 **Duration:** Optional / long-term  
 **Goal:** Turn the project into multiple futures you can branch from, depending on where your careers go.
@@ -139,7 +139,7 @@ Phase 11 ensures:
 
 ---
 
-### 🔹 Phase 12 Outcomes
+### Phase 12 Outcomes
 - Clear individual “sub-projects”  
 - Independent extensions built on the same core  
 - Strong ownership stories (“this part was mine”)  
@@ -147,9 +147,9 @@ Phase 11 ensures:
 
 ---
 
-### 🧩 Step-by-Step Plan
+### Step-by-Step Plan
 
-#### STEP 12.1 — Declare Ownership Zones
+#### STEP 12.1 - Declare Ownership Zones
 
 **Together**
 - Formally split primary ownership, while still collaborating:
@@ -168,7 +168,7 @@ Phase 11 ensures:
 
 ---
 
-#### STEP 12.2 — Independent Spin-Off Paths (Pick One Each)
+#### STEP 12.2 - Independent Spin-Off Paths (Pick One Each)
 
 **Zach (DS-Leaning Options)**
 - Sim-to-real transfer experiments  
@@ -186,7 +186,7 @@ Phase 11 ensures:
 
 ---
 
-#### STEP 12.3 — Parallel Development (Low Coupling)
+#### STEP 12.3 - Parallel Development (Low Coupling)
 
 **Together**
 - Define stable interfaces  
@@ -197,7 +197,7 @@ Phase 11 ensures:
 
 ---
 
-#### STEP 12.4 — Choose a “Signature Contribution”
+#### STEP 12.4 - Choose a “Signature Contribution”
 
 - Each of you should end Phase 12 able to say:  
 > *“If you remove this part, the system isn’t the same.”*  
@@ -206,7 +206,7 @@ Phase 11 ensures:
 
 ---
 
-#### STEP 12.5 — Long-Term Payoff
+#### STEP 12.5 - Long-Term Payoff
 
 - Project can now:  
   - Become a thesis seed  
@@ -218,7 +218,7 @@ Phase 11 ensures:
 
 ---
 
-### 🧠 Role Balance (Phase 12)
+### - Role Balance (Phase 12)
 
 | Area                  | Zach (DS) | Nicholas (MechE) |
 |-----------------------|-----------|-----------------|
@@ -229,7 +229,7 @@ Phase 11 ensures:
 
 ---
 
-### 🧰 Phase 12 — Materials Checklist
+### Phase 12 — Materials Checklist
 - ⬜ Stable shared codebase  
 - ⬜ Clear module boundaries  
 - ⬜ Defined ownership docs  
@@ -237,7 +237,7 @@ Phase 11 ensures:
 
 ---
 
-# Phase 13 — Real-World Adoption, Proof & Exit Options
+# Phase 13 - Real-World Adoption, Proof & Exit Options
 
 **Duration:** Optional / opportunistic  
 **Goal:** Move from “personal platform” to external adoption, validation, or transition — without locking yourselves into one path.  

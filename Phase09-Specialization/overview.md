@@ -1,4 +1,4 @@
-# 🟡 Phase 9 — Specialization, Differentiation & Career Leverage
+# Phase 9 — Specialization, Differentiation & Career Leverage
 
 **Duration:** Optional / open-ended  
 **Goal:** Turn your system into a clear identity that aligns with exactly the roles you want (robotics, controls, ML, research, startup).
@@ -17,9 +17,7 @@
 
 ---
 
-### 🧩 Step-by-Step Plan (with Path Options)
-
-You choose **one or two tracks below — not all**.
+###  Step-by-Step Plan 
 
 ---
 
@@ -43,14 +41,14 @@ You choose **one or two tracks below — not all**.
 - Physical interpretation of failures  
 - Hardware limits & validation  
 
-🎯 **Target Roles**
+**Target Roles**
 - ML engineer (applied)  
 - Robotics ML  
 - Research internships  
 
 ---
 
-## ⚙️ Track B — Control, Optimization & Mechanics Focus (MechE-Heavy)
+##  Track B — Control, Optimization & Mechanics Focus (MechE-Heavy)
 
 **Theme:** *High-performance robotic manipulation*
 
@@ -70,14 +68,14 @@ You choose **one or two tracks below — not all**.
 - System identification  
 - Performance analytics  
 
-🎯 **Target Roles**
+**Target Roles**
 - Controls engineer  
 - Robotics engineer  
 - Mechatronics roles  
 
 ---
 
-## 👁️ Track C — Perception & Autonomy Focus (Balanced)
+##  Track C — Perception & Autonomy Focus (Balanced)
 
 **Theme:** *Perception-driven autonomy*
 
@@ -97,14 +95,14 @@ You choose **one or two tracks below — not all**.
 - Mechanical visibility constraints  
 - Real-world robustness  
 
-🎯 **Target Roles**
+**Target Roles**
 - Autonomous systems  
 - Robotics software  
 - Applied AI  
 
 ---
 
-## 🚀 Track D — Product / Startup / Systems Focus (Industry Signal)
+## Track D — Product / Startup / Systems Focus (Industry Signal)
 
 **Theme:** *Deployable robotic system*
 
@@ -124,14 +122,14 @@ You choose **one or two tracks below — not all**.
 - Assembly repeatability  
 - Hardware cost optimization  
 
-🎯 **Target Roles**
+**Target Roles**
 - Robotics startups  
 - Systems engineering  
 - Product-oriented teams  
 
 ---
 
-### 🧠 Role Balance (Phase 9)
+### Role Balance (Phase 9)
 
 | Area                  | Zach (DS) | Nicholas (MechE) |
 |-----------------------|-----------|------------------|
@@ -139,6 +137,3 @@ You choose **one or two tracks below — not all**.
 | System-level thinking | ✅        | ✅               |
 | Interview storytelling| ✅        | ✅               |
 | Technical leadership  | ✅        | ✅               |
-
-> Phase 9 is where you stop being *students with a project*  
-> and start being **engineers with a system**.

@@ -1,4 +1,4 @@
-# 🟢 Phase 10 — Mastery, Legacy & Long-Term Leverage
+# Phase 10 — Mastery, Legacy & Long-Term Leverage
 
 **Duration:** Ongoing / as needed  
 **Goal:** Turn this project into a career anchor you reuse, reference, and extend for years.
@@ -17,7 +17,7 @@
 
 ---
 
-### 🧩 Step-by-Step Plan
+### Step-by-Step Plan
 
 #### STEP 10.1 — Freeze a “Gold Version” of the System
 
@@ -46,7 +46,7 @@
 - CAD + hardware visuals  
 - System-level engineering stories  
 
-🎯 **You should each be able to talk about:**  
+**You should each be able to talk about:**  
 - *“What I owned”*  
 - *“What we built together”*  
 - *“What I learned”*  
@@ -90,7 +90,7 @@ Options:
 
 ---
 
-### 🧠 Role Balance (Phase 10)
+### Role Balance (Phase 10)
 
 | Area                  | Zach (DS) | Nicholas (MechE) |
 |-----------------------|-----------|-----------------|
