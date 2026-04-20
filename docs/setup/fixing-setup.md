@@ -18,11 +18,15 @@ Rebuild is the only mechanism that produces a valid runtime state.
 
 No shell variable, no `ENV` block, and no sourcing script can prevent a developer from manually running `source /opt/ros/humble/setup.bash` in a subprocess, or prevent VSCode from injecting `PYTHONPATH` overrides into a task shell. Every rule in this document is a convention with partial enforcement. The goal is to close the common paths to drift, not to assert that drift is impossible.
 
-**The deployment model this document targets is:**
+**The deployment model this document targets has three strictly separated phases:**
 
-> Immutable container + single controlled entrypoint. All environment setup is centralized through one canonical script. No ad-hoc runtime sourcing. No overlay chaining outside the controlled chain. Rebuild is the only change mechanism.
+> **Build phase** (Dockerfile only): apt installs, pip tooling installs, `rosdep init`. This is the only phase that may modify the dependency graph. Output is an immutable image layer.
+>
+> **Init phase** (one-time container setup, `postCreateCommand`): workspace verification, `rosdep update` as metadata refresh only. This phase may not modify the dependency graph — no `pip install`, no `apt install`, no `source` calls.
+>
+> **Runtime phase** (execution only): `entrypoint.sh`, `runtime-env.sh`, ROS nodes. All runtime environment mutation is centralized and deterministic via `runtime-env.sh`. No ad-hoc sourcing, no uncontrolled environment changes.
 
-This is one of two valid ROS deployment models. The other — mutable overlay workflow with dynamic colcon layering — is the ROS default but is incompatible with reproducibility requirements. This document does not support the mutable overlay model. Pick one and commit.
+These phases are not interchangeable. A step placed in the wrong phase breaks the reproducibility model. `rosdep update` belongs in Init, not Runtime. Dependency installs belong in Build, not Init or Runtime.
 
 ---
 
@@ -49,7 +53,11 @@ This causes:
 
 This system follows a **rebuild-deterministic container model**:
 
-> Correctness is defined only by the reproducible build output of the Docker image + source code.
+> Correctness = (Docker image) + (fresh colcon build on that image).
+
+These are two separate correctness inputs. The Docker image defines the base dependency graph. `colcon build` produces the runtime overlay — `install/` — which defines actual `sys.path` entries and node entrypoints. Neither alone is sufficient. A valid Docker image with a stale `install/` produces broken `ros2 run` behavior. A valid `install/` built against a different image produces ABI failures.
+
+`colcon build` is not demoted to "just output." It is a runtime overlay mutation that changes `sys.path` and generates shebang-bound entrypoints. It is the second correctness input. Both must be reconstructed together when either changes.
 
 Runtime shells, interactive sessions, and subprocess environments are considered **non-authoritative** and may diverge without violating system correctness.
 
@@ -57,9 +65,27 @@ The only valid correction mechanism is:
 
 - modify Dockerfile / apt package list / source
 - rebuild container
+- run a fresh `colcon build` on the new image
 - re-run validation suite
 
 No runtime changes are considered persistent.
+
+---
+
+### Phase Model
+
+This system has three execution phases. Each phase has strict boundaries. Crossing them is the primary source of reproducibility failures.
+
+| Phase | Trigger | Allowed | Forbidden |
+|-------|---------|---------|-----------|
+| **Build** | `docker build` | `apt install`, `pip install` (tooling only, root), `rosdep init` | runtime decisions, sourcing, postCreate logic |
+| **Init** | `postCreateCommand` | workspace verification, `rosdep update` (metadata only) | `pip install`, `apt install`, `source` calls, dependency graph changes |
+| **Runtime** | `entrypoint.sh` + all execution | sourcing via `runtime-env.sh` only; environment mutation is centralized and deterministic | ad-hoc sourcing, uncontrolled `source` calls, filesystem or package changes |
+
+**Why `rosdep update` is in Init, not Build:**
+`rosdep update` is a metadata refresh — it updates the local index of available rosdep keys. It does not install packages and does not modify the dependency graph. It belongs in Init because it is network-dependent and time-sensitive (the rosdep database can change), making it unsuitable for a frozen image layer. It is explicitly not "dependency resolution" — that belongs in Build via `apt` only.
+
+**The phase boundary that most commonly breaks:** placing dependency installation logic in `postCreateCommand`. Any `pip install` or `apt install` in Init creates a hidden mutable state that diverges across developer machines and over time.
 
 ---
 
@@ -105,9 +131,7 @@ This has a direct consequence: a valid `apt` state with a stale colcon overlay p
 - ROS packages → `apt` only
 - ALL Python runtime packages (ROS + non-ROS numeric stack included) → `apt` only via Ubuntu / ROS distribution
 - ROS executable environment (node entrypoints, `PYTHONPATH` overlay) → colcon build output only, rebuilt from source on every environment change
-- No entry in the final `sys.path` that is reachable by the ROS runtime interpreter may originate from user-site or pip-managed locations
-
-**Scope of the `sys.path` origin invariant:** this rule applies to runtime execution paths — packages imported by ROS nodes during execution. Developer tooling installed via pip at build time (linters, formatters) physically shares the same interpreter binary but is not imported during ROS node execution. Those packages are outside the scope of this invariant. The invariant is violated only if a pip-managed package can be imported by a running ROS node.
+- No user-site or dynamically installed pip packages may appear in `sys.path`; build-time pip installed as root is a trusted input equivalent to `apt`
 
 ---
 
@@ -158,11 +182,23 @@ ABI is invalid if ANY of the following occur after a clean build:
 
 `cv_bridge` is compiled against the system NumPy C-API. NumPy C-API compatibility is a direct ABI constraint (layer 3 above) — not merely a reproducibility preference. If the runtime NumPy version changes the underlying C struct layout, the result is a segfault or buffer pointer mismatch at runtime — not a clean import error. This failure is silent until it occurs in live execution.
 
-**Hard rule:** `numpy`, `scipy`, `setuptools`, and `protobuf` are ABI-constrained dependencies of ROS Python bindings. They must come from `apt` only. They must never be pip-installed or pip-upgraded. Any version change requires re-running the full validation suite, specifically Test #6, because the failure mode is silent data corruption, not a clean import error.
-
-Validation Test #6 is the most critical guardrail in this document. A system that passes all other tests but fails Test #6 is broken.
+**Hard rule:** `numpy`, `scipy`, `setuptools`, and `protobuf` are ABI-constrained dependencies of ROS Python bindings. They must come from `apt` only. They must never be pip-installed or pip-upgraded. Any version change requires re-running the full validation suite, specifically Test D2, because the failure mode is silent data corruption, not a clean import error.
 
 Additionally: ROS 2 Humble is sensitive to `setuptools` version. If `setuptools` exceeds approximately `58.2.0`, `colcon` may throw `SetuptoolsDeprecationWarning` or fail to install package data. `setuptools` must come from `apt` and must never be pip-upgraded.
+
+### ABI Death Zone: OpenCV
+
+`cv2` from `apt` is compiled against a specific `libopencv`, FFmpeg, and GStreamer stack. If `pip opencv-python` or `pip opencv-python-headless` is installed — even indirectly as a transitive dependency — the result is a symbol mismatch or runtime segfault. The two `cv2` modules are binary-incompatible even though they present the same Python API.
+
+**Hard rule:** `opencv-python` and `opencv-python-headless` must never appear in the environment. `cv2` must resolve to the `apt`-installed system library only.
+
+Validate with:
+
+```bash
+python3 -c "import cv2; print(cv2.__file__)"
+```
+
+Must resolve to `/usr/lib/...`. Any path under `/usr/local/lib`, site-packages, or `~/.local` means a pip-installed `cv2` is active and the system is broken.
 
 ---
 
@@ -209,23 +245,21 @@ All runtime Python dependencies are installed via `apt`. The `apt` graph is the 
 
 ### pip: Scope and Reality
 
-`pip` cannot be fully eliminated from a ROS + Python ecosystem. Some ROS build tools invoke pip indirectly. Some colcon plugins introduce pip-like behavior depending on workspace configuration. Some ROS packages assume pip availability for optional components.
+`pip` cannot be fully eliminated from a ROS + Python ecosystem. Some ROS build tools invoke pip indirectly. Some colcon plugins introduce pip-like behavior depending on workspace configuration. Build-time pip-installed tooling (linters, formatters) physically shares the same interpreter binary as ROS nodes. There is no technical mechanism to prevent `import black` inside a ROS node — enforcement of "runtime vs tooling" separation within one interpreter relies on developer discipline, not system guarantees.
 
-The correct framing is not "pip is eliminated." The correct framing is a scoped enforcement invariant across two distinct execution domains:
+The correct invariant is therefore not "pip packages are isolated from the runtime domain." The correct invariant is:
 
-**ROS runtime execution domain** (packages imported by running ROS nodes):
+> **No user-site or dynamically installed pip packages may exist in `sys.path`. Build-time pip is a trusted input.**
 
-> No Python package resolution in the ROS runtime execution domain may originate from user-site or pip-managed site-packages.
+This means:
 
-This is a `sys.path` origin constraint for runtime code paths. If a pip-managed package can be imported by a running ROS node — regardless of how pip was invoked — that is a system violation.
+- pip packages installed as root during Docker build (`RUN pip install ...` before `USER`) → permitted; they are a controlled, reproducible build input equivalent to `apt`
+- pip packages installed at user-site (`~/.local`) → forbidden; they are dynamic, uncontrolled, and outside the image layer
+- pip packages installed after container creation (in Init or Runtime phase) → forbidden; they are hidden mutable state
 
-**Developer tooling domain** (linters, formatters, CI helpers):
+The practical distinction is not "which domain imports it" but "when and how it was installed." Build-time pip installation is deterministic and reproducible. Post-build pip installation is not.
 
-> pip-installed developer tools (e.g. `flake8`, `black`) are permitted. They are installed at Docker build time, as root, before any `USER` directive. They physically share the interpreter binary but are never imported during ROS node execution. They are exempt from the `sys.path` origin invariant.
-
-These two domains are logically separate even though they share one interpreter binary. The invariant applies to what ROS nodes can import at runtime, not to what exists on the filesystem.
-
-Detection rule for the runtime domain: Test B1 checks that no entry in `sys.path` references `~/.local` or user-site paths. This catches user-site contamination. It does not flag Dockerfile-installed pip tooling installed to system site-packages as root, which is correct behavior.
+Detection rule: Test B1 checks that no entry in `sys.path` references `~/.local` or user-site paths. This catches the forbidden case. It does not flag Dockerfile-installed pip tooling installed to system site-packages as root, which is the permitted case.
 
 ### pip Usage Rule
 
@@ -255,6 +289,29 @@ The system must never contain:
 - system Python → Ubuntu / ROS distribution only
 - ALL Python runtime packages → `apt` only
 - developer tooling (optional) → Docker build-time `pip` only, before any `USER` directive
+
+### `ament_python` `install_requires` Rule
+
+`ament_python` packages with non-empty `install_requires` in `setup.py` trigger pip-like dependency resolution during `colcon build`. This silently pulls packages into the colcon install space outside the `apt` graph, bypassing all dependency controls. Test B1 does not catch this because the packages land in the colcon overlay site-packages, not `~/.local`.
+
+**Hard rule:** `install_requires` must be empty for all `ament_python` packages in this workspace.
+
+```python
+# setup.py — REQUIRED for all ament_python packages
+setup(
+    ...
+    install_requires=['setuptools'],  # setuptools only — never add runtime deps here
+    ...
+)
+```
+
+Validate with:
+
+```bash
+grep -rn "install_requires" /workspace/Robot/src/
+```
+
+Any entry beyond `['setuptools']` is a violation. CI must fail on this check.
 
 ---
 
@@ -300,7 +357,7 @@ Enforce:
 "postCreateCommand": "bash /workspace/Robot/.devcontainer/setup.sh"
 ```
 
-`setup.sh` is a one-time container setup script. Its job is idempotent system checks and optional `rosdep` update. It does **not** source the ROS environment — that is `runtime-env.sh`'s job. Mixing setup actions with environment construction causes silent drift.
+`setup.sh` is the Init phase script. It runs once at container creation. It performs workspace verification and `rosdep update` (metadata refresh only). It does **not** install packages, does not source the ROS environment, and does not modify `sys.path`. It is explicitly not a dependency installer — that is the Build phase's job.
 
 Create `/workspace/Robot/.devcontainer/setup.sh`:
 
@@ -308,14 +365,15 @@ Create `/workspace/Robot/.devcontainer/setup.sh`:
 #!/usr/bin/env bash
 set -e
 
-# One-time container setup — NOT environment definition.
-# This script mutates the container once after creation.
-# Do not source ROS setup files here. Do not call runtime-env.sh here.
-# Environment construction is handled exclusively by runtime-env.sh.
+# INIT PHASE script — runs once at container creation (postCreateCommand).
+# Allowed: workspace verification, rosdep update (metadata refresh only).
+# Forbidden: pip install, apt install, source calls, sys.path modification.
+# rosdep update refreshes the local key index only — it does not install packages.
+# Dependency installation belongs in the Dockerfile (Build phase), not here.
 
 rosdep update
 
-echo "Container setup complete."
+echo "Container init complete."
 ```
 
 To prevent interactive terminals from bypassing the entrypoint environment, add this to `devcontainer.json`:
@@ -329,12 +387,15 @@ To prevent interactive terminals from bypassing the entrypoint environment, add 
 }
 ```
 
-This forces every VSCode-integrated terminal to source the ROS environment through `runtime-env.sh` (see Section 12 for the split between `runtime-env.sh` and `entrypoint.sh`). Without this, developers opening a terminal will get `command not found` for `ros2` and may begin manually sourcing `setup.bash`, creating the exact contamination this model is designed to prevent.
+This forces every VSCode-integrated terminal to source the ROS environment through `runtime-env.sh`. Without this, developers opening a terminal will get `command not found` for `ros2` and may begin manually sourcing `setup.bash`, creating the exact contamination this model is designed to prevent.
 
 Also set the Python interpreter explicitly in `.vscode/settings.json` to prevent the Python extension from auto-selecting an interpreter:
 
 ```json
 "python.defaultInterpreterPath": "/usr/bin/python3",
+"python.terminal.activateEnvironment": false,
+"python.analysis.autoImportCompletions": false,
+"python.analysis.useImportHeuristic": false,
 "python.analysis.extraPaths": [
     "/opt/ros/humble/lib/python3.10/site-packages",
     "/opt/ros/humble/local/lib/python3.10/dist-packages",
@@ -342,7 +403,9 @@ Also set the Python interpreter explicitly in `.vscode/settings.json` to prevent
 ]
 ```
 
-All three paths are required. `/opt/ros/humble/lib/python3.10/site-packages` is where ROS Python packages are installed by `apt`. `/opt/ros/humble/local/lib/python3.10/dist-packages` is the secondary ROS dist-packages location that the original setting omitted — missing it produces false "clean editor" import state where the editor reports missing symbols that actually exist at runtime. `/workspace/Robot/install/local/lib/python3.10/dist-packages` is the workspace colcon overlay path, required for the editor to resolve packages built from source.
+All settings are required. `python.defaultInterpreterPath` sets the interpreter. `python.terminal.activateEnvironment: false` prevents the Python extension from injecting environment activation into terminals behind your back. `python.analysis.autoImportCompletions: false` and `python.analysis.useImportHeuristic: false` prevent the language server from resolving imports differently than the runtime — without these, the editor may report clean imports that fail at runtime, or suppress errors that will appear at runtime. The three `extraPaths` entries are required for editor import resolution: the first is where ROS Python packages are installed by `apt`, the second is the secondary ROS dist-packages location (missing it produces false "missing symbol" errors), and the third is the workspace colcon overlay path required for source-built packages.
+
+**Debug sessions are not authoritative runtime environments.** When launching Python via the VSCode debugger (`debugpy`), `sys.path` may be modified at runtime and the entrypoint guarantees do not apply. A node that imports correctly in a terminal may behave differently under the debugger. Debug session results are not a substitute for validation suite results.
 
 ---
 
@@ -350,13 +413,13 @@ All three paths are required. `/opt/ros/humble/lib/python3.10/site-packages` is 
 
 `build/`, `install/`, and `log/` live inside the container filesystem. No Docker volumes for these paths. When the container is destroyed, they are destroyed.
 
-This is non-negotiable.
+This is non-negotiable for Rev 1.
 
 The correct hash-invalidation approach for volume caching requires computing a deterministic hash across the full dependency input set: apt package list, Dockerfile, `rosdep` dependencies, and workspace source tree. A hasher that misses a single header file change will serve a stale ABI silently. Building and maintaining that correctly is a substantial DevOps project. The reproducibility risk of an incorrect implementation outweighs the build time savings.
 
 If build times become a critical blocker to development velocity, revisit volume caching as a dedicated project with proper hash-invalidation infrastructure. Until then: feel the 4-minute rebuild when a dependency changes. That pain enforces disciplined dependency management.
 
-Named volumes for `build/` and `install/` are also the primary cause of "it works on my machine" failures in dev containers. Even wiping directory contents inside a running container does not reliably clear the underlying Docker volume.
+Named volumes for `build/` and `install/` break the coupling between the dependency graph and the build artifacts. ABI mismatch does not come from caching per se — it comes from decoupling: `install/` was built against one image state, and the running container is a different image state. The volume preserves the artifact while the image changes underneath it. That is the real failure mechanism, and it produces silent ABI corruption, not a clean error.
 
 Any persistence of `build/` or `install/` that is not under the container filesystem invalidates reproducibility guarantees.
 
@@ -465,13 +528,21 @@ RUN apt-get install -y \
   python3-setuptools
 ```
 
-Then initialise rosdep:
+Then initialise rosdep and resolve workspace dependencies in the Dockerfile (Build phase):
 
 ```dockerfile
-RUN rosdep init 2>&1 || echo "WARNING: rosdep init failed — check output above" && rosdep update
+RUN rosdep init 2>&1 || echo "WARNING: rosdep init failed — check output above"
+
+# rosdep update must run before rosdep install so that resolution happens against
+# a known index snapshot at build time, not a live index fetched at a later point.
+# This does not make rosdep resolution fully time-invariant — rosdep resolves against
+# the apt sources available at build time, which can drift across rebuilds if apt
+# sources are not pinned. The dpkg.lock file (Test C1) detects this drift.
+RUN rosdep update && \
+    rosdep install --from-paths /workspace/Robot/src --ignore-src -r -y
 ```
 
-Do not use `|| true` silently. A broken rosdep state is invisible if failures are swallowed.
+Do not run `rosdep update` again in the Init phase (`setup.sh`) if it was already run in the Dockerfile. Running it in Init is appropriate only when the Dockerfile does not include it — e.g. if the source tree is mounted at runtime rather than copied at build time. For this repo, the Dockerfile runs both. `rosdep init` initialises the sources list and belongs in Build only. Do not use `|| true` silently on `rosdep init`. A broken rosdep state is invisible if failures are swallowed.
 
 ---
 
@@ -495,12 +566,12 @@ This is a real ROS failure class, not a theoretical one. If more than one overla
 - two nodes can import different versions of the same package depending on which overlay sourced first
 - the failure is silent unless the packages have incompatible APIs
 
-**Invariant:** exactly one overlay chain is permitted to be active at runtime. That chain is:
+**Invariant:** exactly one active workspace overlay is permitted on top of the base ROS distribution. That chain is:
 
-1. `/opt/ros/humble/setup.bash` (base ROS layer)
+1. `/opt/ros/humble/setup.bash` (base ROS distribution layer)
 2. `/workspace/Robot/install/setup.bash` (workspace overlay, if built)
 
-No other overlays. No additional `source` calls. No nested overlay sourcing. If a third overlay is detected in `AMENT_PREFIX_PATH`, the environment is contaminated and must be reconstructed.
+No other workspace overlays. No additional `source` calls outside this chain. No nested overlay sourcing. If a third entry appears in `AMENT_PREFIX_PATH` that is not one of these two paths, the environment is contaminated and must be reconstructed. This rule does not forbid the standard ROS underlay/overlay pattern — it forbids uncontrolled additions beyond the one declared workspace overlay.
 
 ### Script Architecture: One Canonical Environment Script
 
@@ -525,6 +596,27 @@ All three must call the same canonical script. If the canonical script changes, 
 # ROS environment logic lives here and nowhere else.
 # Do not add exec "$@" here — this is not an entrypoint.
 
+# Guard: distinguish valid preconfigured environment from foreign overlay contamination.
+# A pre-existing AMENT_PREFIX_PATH that already contains the expected base path means
+# this script has already been sourced (e.g. nested shell, re-entry). Reuse it.
+# A pre-existing AMENT_PREFIX_PATH that does NOT contain the expected base path means
+# a foreign overlay was sourced before this script. That is contamination — fail loudly.
+EXPECTED_BASE="/opt/ros/humble"
+if [[ -n "$AMENT_PREFIX_PATH" ]]; then
+  case "$AMENT_PREFIX_PATH" in
+    *"$EXPECTED_BASE"*)
+      echo "WARNING: AMENT_PREFIX_PATH already contains ROS base; reusing existing environment."
+      return 0
+      ;;
+    *)
+      echo "ERROR: AMENT_PREFIX_PATH is set but does not contain expected base: $EXPECTED_BASE"
+      echo "  Current value: $AMENT_PREFIX_PATH"
+      echo "  A foreign overlay was sourced before runtime-env.sh. Reconstruct the environment."
+      return 1
+      ;;
+  esac
+fi
+
 source /opt/ros/humble/setup.bash
 
 if [ -f /workspace/Robot/install/setup.bash ]; then
@@ -532,7 +624,7 @@ if [ -f /workspace/Robot/install/setup.bash ]; then
 fi
 ```
 
-**`/workspace/Robot/.devcontainer/entrypoint.sh`** — the container process entrypoint. This script is *executed*, not sourced. It has no environment logic of its own — it calls the canonical script and hands off:
+**`/workspace/Robot/.devcontainer/entrypoint.sh`** — the container process entrypoint. This script is *executed*, not sourced. It has no environment logic of its own — it calls the canonical script, runs pre-flight assertions, and hands off:
 
 ```bash
 #!/usr/bin/env bash
@@ -543,6 +635,24 @@ set -e
 # Do not duplicate ROS sourcing here.
 
 source /workspace/Robot/.devcontainer/runtime-env.sh
+
+# Pre-flight assertions: catch contamination immediately, not after debugging.
+python3 - <<'EOF'
+import sys
+
+# Assert interpreter path
+assert sys.executable == '/usr/bin/python3', \
+    f'FAIL: wrong interpreter: {sys.executable}'
+
+# Assert no user-site contamination in sys.path
+violations = [p for p in sys.path if '/.local' in p or '/home/' in p]
+assert not violations, \
+    f'FAIL: user-site in sys.path: {violations}'
+
+print('Pre-flight assertions PASSED')
+EOF
+
+which python3 | grep -q "/usr/bin/python3" || { echo "FAIL: python3 not resolving to /usr/bin/python3"; exit 1; }
 
 exec "$@"
 ```
@@ -755,7 +865,7 @@ These tests verify the environment is identical across rebuilds. A system that p
 
 ```bash
 dpkg-query -W > /tmp/dpkg_current.txt
-diff /workspace/Robot/expected/dpkg.lock /tmp/dpkg_current.txt
+diff /workspace/expected/dpkg.lock /tmp/dpkg_current.txt
 ```
 
 Checks the `apt` construction layer against a known-good baseline. If differences exist, rebuild is required.
@@ -763,14 +873,14 @@ Checks the `apt` construction layer against a known-good baseline. If difference
 To generate the initial lock file after a validated clean build:
 
 ```bash
-dpkg-query -W > /workspace/Robot/expected/dpkg.lock
+dpkg-query -W > /workspace/expected/dpkg.lock
 ```
 
 **Test C2 — ROS package graph check**
 
 ```bash
 ros2 pkg list > /tmp/ros_pkgs.txt
-diff /workspace/Robot/expected/ros_pkgs.txt /tmp/ros_pkgs.txt
+diff /workspace/expected/ros_pkgs.txt /tmp/ros_pkgs.txt
 ```
 
 If differences exist, the environment is not reproducible.
@@ -780,6 +890,14 @@ If differences exist, the environment is not reproducible.
 ### Category D — Runtime Correctness
 
 These tests verify the system executes correctly at the ABI boundary. Passing A–C does not guarantee D. ABI failures can exist in a clean, reproducible environment.
+
+**Test D0 — Interpreter path assertion**
+
+```bash
+python3 -c "import sys; print(sys.executable)"
+```
+
+Must output `/usr/bin/python3`. This asserts the interpreter path at runtime, not just on `PATH`. A mismatch here means a different interpreter is being invoked than the one the system was built against — all ABI guarantees are void.
 
 **Test D1 — ROS import test**
 
@@ -809,42 +927,87 @@ This exercises the actual NumPy C-API boundary (ABI layer 3). A clean import of 
 
 **If D2 fails after any package change, the environment is broken regardless of what A, B, and C report.**
 
+**Test D3 — OpenCV ABI source check**
+
+```bash
+python3 -c "import cv2; print(cv2.__file__)"
+```
+
+Must resolve to `/usr/lib/...`. Any path under `/usr/local/lib`, pip-managed site-packages, or `~/.local` means a pip-installed `cv2` is active. This produces binary incompatibility with the system `libopencv` stack that `cv_bridge` was compiled against. The failure mode is a symbol mismatch or segfault — not a clean import error.
+
 ---
 
 ## 15. Hard Rules
 
+**Phase rules:**
+- Correctness = (Docker image) + (fresh colcon build on that image); both must be reconstructed together when either changes
+- Dependency graph changes belong in the Build phase (Dockerfile) only — no `pip install` or `apt install` in Init or Runtime
+- `postCreateCommand` (Init phase) is permitted only for: workspace verification and `rosdep update` as metadata refresh; it must never modify the dependency graph
+- `rosdep init` and `rosdep install` belong in the Dockerfile (Build phase); `rosdep update` belongs in `setup.sh` (Init phase)
+- Runtime phase (`entrypoint.sh` and all execution): all environment mutation is centralized and deterministic via `runtime-env.sh`; no ad-hoc sourcing or uncontrolled environment changes permitted
+
+**Dependency rules:**
 - The ground truth of this system is a deterministic, reproducible `sys.path` + binary linkage state; everything else is a construction mechanism that produces it
-- No entry in `sys.path` reachable by the ROS runtime execution domain may originate from user-site or pip-managed locations; pip-installed developer tooling (linters, formatters) installed as root at build time is exempt from this invariant
-- No `pip install` as a direct authority after container creation — any runtime dependency change requires a Docker image rebuild
-- `pip` permitted as a direct tool only for developer tooling in Dockerfile `RUN` layers, as root, before any `USER` directive
-- All four pip hardening env vars must be set: `PYTHONNOUSERSITE=1`, `PIP_USER=0`, `PIP_NO_USER_CONFIG=1`, `PIP_DISABLE_PIP_VERSION_CHECK=1`
+- No user-site or dynamically installed pip packages may appear in `sys.path`; build-time pip installed as root during Docker build is a trusted input equivalent to `apt`
 - All Python runtime packages installed via `apt` only — no `requirements.txt` for runtime deps
 - `numpy`, `scipy`, `setuptools`, `protobuf` are ABI-constrained dependencies; they must come from `apt` only and must never be pip-installed or pip-upgraded
+- `opencv-python` and `opencv-python-headless` must never appear in the environment; `cv2` must resolve to the `apt`-installed system library only
 - `setuptools` must not exceed the apt-provided version; colcon is sensitive to `setuptools` beyond ~58.2.0
+- `install_requires` in all `ament_python` `setup.py` files must contain only `['setuptools']`; any additional entry bypasses the apt dependency graph and is a violation caught by CI
 - No `.venv` anywhere
-- Exactly one overlay chain active at runtime: base ROS layer + workspace overlay only; any third entry in `AMENT_PREFIX_PATH` is contamination
-- All sourcing is centralized through `runtime-env.sh`; ad-hoc sourcing is eliminated; `entrypoint.sh` calls it, VSCode terminals call it, CI calls it, `docker exec` sessions source it; nothing else contains ROS sourcing logic
+
+**pip rules:**
+- `pip` permitted as a direct tool only for developer tooling in Dockerfile `RUN` layers, as root, before any `USER` directive
+- All four pip hardening env vars must be set: `PYTHONNOUSERSITE=1`, `PIP_USER=0`, `PIP_NO_USER_CONFIG=1`, `PIP_DISABLE_PIP_VERSION_CHECK=1`
+
+**Sourcing and overlay rules:**
+- Exactly one active workspace overlay on top of the base ROS distribution; any entry in `AMENT_PREFIX_PATH` beyond the expected two paths is contamination
+- `runtime-env.sh` guard distinguishes valid preconfigured environment (already contains `/opt/ros/humble`) from foreign contamination (unknown path); reuses the former, fails loudly on the latter
+- All sourcing centralized through `runtime-env.sh`; ad-hoc sourcing eliminated; `entrypoint.sh` calls it, VSCode terminals call it, CI calls it, `docker exec` sessions source it; nothing else contains ROS sourcing logic
+- `entrypoint.sh` runs pre-flight assertions on `sys.executable` and `sys.path` before handing off to the process; contamination is caught at process start, not after debugging
+
+**Build artifact rules:**
 - `build/`, `install/`, `log/` live inside the container filesystem only — no named Docker volumes for these paths
 - Full wipe of `install/` required on: Dockerfile changes, apt package changes, `package.xml` dependency changes, source tree restructuring, interpreter or ABI changes; not required for inner-loop logic edits
 - All ROS Python packages rebuilt after any environment change
-- VSCode `tasks.json` and `launch.json` audited for `env` blocks injecting Python-relevant variables
-- `.vscode/settings.json` must explicitly set `python.defaultInterpreterPath` to `/usr/bin/python3` and include all three `extraPaths` entries
+
+**VSCode rules:**
+- `tasks.json` and `launch.json` audited for `env` blocks injecting Python-relevant variables
+- `.vscode/settings.json` must set `python.defaultInterpreterPath` to `/usr/bin/python3`, `python.terminal.activateEnvironment` to `false`, `python.analysis.autoImportCompletions` to `false`, `python.analysis.useImportHeuristic` to `false`, and include all three `extraPaths` entries
+- Debug sessions (`debugpy`) are not authoritative runtime environments; validation suite results take precedence over debugger behavior
+
+**Validation rule:**
+- Test D0 (interpreter path assertion via `sys.executable`) must match `/usr/bin/python3`; all ABI guarantees are void if it does not
 - Test D2 (`cv_bridge` C-API round-trip) must pass after every rebuild — import success alone is not sufficient; passing Categories A–C does not guarantee runtime correctness
+- Test D3 (`cv2.__file__` source check) must resolve to `/usr/lib/...`; pip-installed OpenCV produces binary incompatibility that manifests as segfault, not import error
 
 ---
 
 ## 16. Expected Final State
 
-- One Python interpreter: `/usr/bin/python3`
-- Runtime truth is a deterministic `sys.path` constructed from: apt site-packages (base) + colcon overlay (workspace) + `PYTHONPATH` from `runtime-env.sh` — no other inputs reachable by the ROS runtime execution domain
-- No entry in `sys.path` reachable by ROS nodes originates from user-site or pip-managed locations; pip-installed dev tooling at system site-packages is explicitly exempt
-- ROS Humble from `apt` only; all Python runtime packages from `apt` only
-- Exactly one overlay chain active: base ROS layer + workspace colcon overlay only
-- All sourcing centralized through `runtime-env.sh`; no ad-hoc sourcing permitted; `entrypoint.sh` calls it; VSCode terminals call it; CI calls it; `docker exec` sessions source it explicitly
-- `build/`, `install/`, `log/` ephemeral — no Docker volume persistence
+**Phase model:**
+- Build phase (Dockerfile): all dependency graph decisions frozen here; `apt` installs, `rosdep init`, `rosdep update`, `rosdep install`, pip tooling only
+- Init phase (`setup.sh` via `postCreateCommand`): workspace verification only; `rosdep update` skipped here since Dockerfile already ran it
+- Runtime phase (`entrypoint.sh` + execution): all environment mutation centralized and deterministic via `runtime-env.sh`; pre-flight assertions run before any process launch
+
+**Environment state:**
+- Correctness = Docker image + fresh colcon build on that image; both reconstructed together on any change
+- One Python interpreter: `/usr/bin/python3`; asserted at runtime via `sys.executable` in entrypoint pre-flight
+- Runtime truth is a deterministic `sys.path` constructed from: apt site-packages (base) + colcon overlay (workspace) + `PYTHONPATH` from `runtime-env.sh`
+- No user-site or dynamically installed pip packages in `sys.path`; build-time pip is trusted input
+- ROS Humble from `apt` only; all Python runtime packages from `apt` only; workspace deps via `rosdep install`
+- Exactly one active workspace overlay on top of the base ROS distribution; `runtime-env.sh` distinguishes valid preconfigured environments from foreign contamination
+- `install_requires` in all `ament_python` packages contains only `['setuptools']`; verified by CI
+- `cv2` resolves to system `apt` library; `opencv-python` and `opencv-python-headless` absent from environment
+- All sourcing centralized through `runtime-env.sh`; no ad-hoc sourcing permitted
+
+**Build artifacts:**
+- `build/`, `install/`, `log/` ephemeral — no Docker volume persistence; volumes decouple dependency graph from build artifacts and produce silent ABI mismatch
 - `install/` wiped on dependency graph changes, source tree restructuring, and ABI changes; inner-loop logic edits do not require a wipe
-- ABI validation covers all four layers: compiled extension, C-API, NumPy binary compatibility, ROS build-time linkage
-- Validation suite: three atomic categories (A: installation sources, B: `sys.path` origin enforcement for runtime domain, C: reproducibility) plus one behavioral category (D: runtime ABI correctness)
+
+**Validation:**
+- ABI validation covers all four layers: compiled extension, C-API, NumPy binary compatibility, ROS build-time linkage; plus OpenCV ABI (Test D3)
+- Validation suite: three atomic categories (A: installation sources, B: `sys.path` origin, C: reproducibility) plus one behavioral category (D: runtime ABI correctness including interpreter path, cv_bridge C-API round-trip, and OpenCV source)
 - Known residual risks documented explicitly rather than hidden behind false guarantees
 - The system is reconstructible from source, not maintained in state
 
