@@ -26,7 +26,7 @@ Develop a **parametric CAD model of a 6-DOF robotic arm**, complete detailed des
 * Motor placement, belt sizing, wide-spaced bearings, thick ribbed plates for torsional stiffness.
 * Other joints: envelopes/parametric placeholders; focus detailed design on one critical subsystem first.
 
-#### 3. 3D Printing & Prototyping
+#### 3. 3D Printing & Prototyping (Optional-If Time)
 * Print structural frames, pulley mounts, and belt components for validation.
 * Ensure fit, assembly, and basic motion clearance; prototype loads lighter than 2 kg.
 
