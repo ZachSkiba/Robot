@@ -32,18 +32,26 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     ros-humble-tf2-tools \
     ros-humble-rmw-cyclonedds-cpp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-    
-    # Install foxglove separately so it doesn't kill the build if the repo is missing
+
+# Install foxglove separately so it doesn't kill the build if the repo is missing
 RUN if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
-         apt-get update --fix-missing && \
-         apt-get install -y --no-install-recommends ros-humble-foxglove-bridge; \
-       else \
-         echo "ros-humble-foxglove-bridge not found; skipping"; \
-       fi \
+    apt-get update --fix-missing && \
+    apt-get install -y --no-install-recommends ros-humble-foxglove-bridge; \
+    else \
+    echo "ros-humble-foxglove-bridge not found; skipping"; \
+    fi \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
-# 2. Create non-root devuser
+# 2. Python Tools
+# ------------------------------------------------------------
+COPY .devcontainer/requirements-python.txt /tmp/requirements-python.txt
+RUN python3 -m pip install --no-cache-dir --upgrade pip "setuptools<80" wheel \
+    && python3 -m pip install --no-cache-dir -r /tmp/requirements-python.txt \
+    && rm /tmp/requirements-python.txt
+
+# ------------------------------------------------------------
+# 3. Create non-root devuser
 # ------------------------------------------------------------
 ARG USERNAME=devuser
 ARG USER_UID=1000
@@ -56,7 +64,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # ------------------------------------------------------------
-# 3. Initialize rosdep
+# 4. Initialize rosdep
 # ------------------------------------------------------------
 RUN rosdep init 2>/dev/null || true
 
@@ -64,7 +72,7 @@ USER $USERNAME
 RUN rosdep update || true
 
 # ------------------------------------------------------------
-# 4. ROS Sourcing Automation
+# 5. ROS Sourcing Automation
 # ------------------------------------------------------------
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc \
     && echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc \
@@ -72,15 +80,10 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc \
     && echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
 
 # ------------------------------------------------------------
-# 5. Workspace Setup
+# 6. Workspace Setup
 # ------------------------------------------------------------
 WORKDIR /workspace/Robot
 RUN mkdir -p /workspace/Robot /workspace/Robot/build /workspace/Robot/install /workspace/Robot/log
-
-# ------------------------------------------------------------
-# 6. Python Tools
-# ------------------------------------------------------------
-RUN pip3 install --upgrade pip "setuptools<80" wheel black numpy scipy matplotlib pandas pyserial jupyterlab
 
 CMD ["/bin/bash"]
 #nice
