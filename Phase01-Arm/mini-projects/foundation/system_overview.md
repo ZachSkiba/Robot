@@ -1,4 +1,4 @@
-# 🦾 Robotic Arm Project
+# Robotic Arm Project
 
 ## Mini-Projects — Production-Grade Foundations
 
@@ -36,11 +36,9 @@ Anything that violates these rules is excluded.
 * **DS** owns *metrics*, *acceptance criteria*, and *go / no-go decisions*
 * **Either side can block progression*
 
-This is intentional tension.
-
 ---
 
-## 🎮 Human-in-the-Loop Control (PS5 Controller)
+## Human-in-the-Loop Control (PS5 Controller)
 
 **Present throughout all mini-projects, never dominant**
 
@@ -99,9 +97,7 @@ This architecture **never changes**.
 
 ---
 
-## 🧩 Mini-Project 1
-
-## Single-Axis Control + Data Contract
+## Mini-Project 1 — Single-Axis Control + Data Contract
 
 *(Foundation of the Entire Robot)*
 
@@ -216,9 +212,9 @@ If one joint is not **provably stable**, the arm is fiction.
 
 ---
 
-### 🔒 Mandatory Gate
+### Mandatory Gate
 
-📦 **Single-Joint Performance Report (Shared)**
+**Single-Joint Performance Report (Shared)**
 
 * ME: control strategy, limits, failure handling
 * DS: error distributions, noise stats, stability verdict
@@ -227,9 +223,7 @@ Failure blocks all progression.
 
 ---
 
-## 🧩 Mini-Project 2
-
-## Multi-Joint Coordination + Model Validation
+## Mini-Project 2 — Multi-Joint Coordination + Model Validation
 
 *(Math ↔ Physics Contract)*
 
@@ -246,11 +240,7 @@ Failure blocks all progression.
 
 ---
 
-## 🧩 Mini-Project 3
-
-## Integration, Replay, and System Judgment
-
-*(What Makes This Serious)*
+## Mini-Project 3 — Integration, Replay, and System Judgment
 
 ### Phase 0 — Judgment System
 
@@ -266,8 +256,6 @@ Failure blocks all progression.
 
 ---
 
-## 🧠 Final Deliverable
-
 ## Automated Health Verdict System
 
 **Input**
@@ -282,7 +270,7 @@ ME may not increase speed, payload, or complexity unless DS verdict allows it.
 
 ---
 
-## 📊 Final Summary
+## Final Summary
 
 | Mini-Project | Phase 0 Focus           | Phase 1 Focus             | 6-DOF Carry-Forward |
 | ------------ | ----------------------- | ------------------------- | ------------------- |
@@ -297,9 +285,3 @@ ME may not increase speed, payload, or complexity unless DS verdict allows it.
 **Carry-forward:** ~90%
 
 ---
-
-## Final Verdict
-
-This is not *"a robotics project with data."*
-
-This is a **governed cyber-physical system with enforced gates**.

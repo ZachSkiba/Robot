@@ -3,12 +3,9 @@
 **Duration:** Optional / open-ended  
 **Goal:** Turn your system into a clear identity that aligns with exactly the roles you want (robotics, controls, ML, research, startup).
 
-> Phase 9 is not about *more features*.  
-> It’s about choosing a narrative — and going deep.
-
 ---
 
-### 🔹 Phase 9 Outcomes
+### Phase 9 Outcomes
 - Clear technical specialization  
 - Depth over breadth  
 - Strong interview talking points  
@@ -21,7 +18,7 @@
 
 ---
 
-## 🧠 Track A — Learning & Intelligence Focus (DS-Heavy, Still Robotics)
+## Track A — Learning & Intelligence Focus (DS-Heavy, Still Robotics)
 
 **Theme:** *Learning-based robotic manipulation*
 
@@ -133,7 +130,7 @@
 
 | Area                  | Zach (DS) | Nicholas (MechE) |
 |-----------------------|-----------|------------------|
-| Specialization depth  | ✅        | ✅               |
-| System-level thinking | ✅        | ✅               |
-| Interview storytelling| ✅        | ✅               |
-| Technical leadership  | ✅        | ✅               |
+| Specialization depth  | Yes       | Yes              |
+| System-level thinking | Yes       | Yes              |
+| Interview storytelling| Yes       | Yes              |
+| Technical leadership  | Yes       | Yes              |

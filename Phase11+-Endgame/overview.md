@@ -3,8 +3,6 @@
 **Duration:** Optional / low-maintenance  
 **Goal:** Turn your work into lasting external signal that compounds over time, even when you’re busy with school or jobs.
 
-> This phase is about influence and credibility, not more engineering.
-
 ---
 
 ### Phase 11 Outcomes
@@ -41,7 +39,7 @@
 
 ---
 
-#### STEP 11.2 - Teaching / Sharing
+#### STEP 11.2 - Teaching and Sharing
 
 **Options (pick 1–2)**
 - Blog series  
@@ -49,8 +47,6 @@
 - GitHub wiki  
 - Workshop for classmates  
 - Helping a junior team replicate Phase 1–2  
-
-> Huge soft-signal for leadership.
 
 ---
 
@@ -84,7 +80,7 @@
 
 ---
 
-#### STEP 11.5 - Career Leverage (Quiet but Powerful)
+#### STEP 11.5 - Career Leverage
 
 - Use the project to:  
   - Anchor recommendation letters  
@@ -100,33 +96,19 @@
 
 | Area                 | Zach (DS) | Nicholas (MechE) |
 |----------------------|-----------|-----------------|
-| Teaching & explanation | ✅        | ✅              |
-| Technical clarity      | ✅        | ✅              |
-| Mentorship             | ✅        | ✅              |
-| Reputation building    | ✅        | ✅              |
+| Teaching & explanation | Yes      | Yes             |
+| Technical clarity      | Yes      | Yes             |
+| Mentorship             | Yes      | Yes             |
+| Reputation building    | Yes      | Yes             |
 
 ---
 
 ### Phase 11 — Materials Checklist
-- ⬜ Final stable system  
-- ⬜ Clean documentation  
-- ⬜ Diagrams & visuals  
-- ⬜ Optional blog / video tools  
-- ⬜ Time for occasional upkeep  
-
----
-
-### What Phase 11 Really Does
-
-Phase 11 ensures:  
-- This project keeps working for you  
-- You’re remembered for depth + clarity  
-- Your effort compounds instead of fading  
-
-> At this point, the project has gone from:  
-> *“Something we built”*  
-> to  
-> *“Part of who we are as engineers.”*
+- [ ] Final stable system
+- [ ] Clean documentation
+- [ ] Diagrams & visuals
+- [ ] Optional blog / video tools
+- [ ] Time for occasional upkeep
 
 ---
 
@@ -134,8 +116,6 @@ Phase 11 ensures:
 
 **Duration:** Optional / long-term  
 **Goal:** Turn the project into multiple futures you can branch from, depending on where your careers go.
-
-> Phase 12 is about ownership: each of you can now take the system in different directions without starting over.
 
 ---
 
@@ -164,8 +144,6 @@ Phase 11 ensures:
 - Control performance  
 - Hardware reliability & redesign  
 
-> Great for interviews.
-
 ---
 
 #### STEP 12.2 - Independent Spin-Off Paths (Pick One Each)
@@ -181,8 +159,6 @@ Phase 11 ensures:
 - Improved gripper mechanism  
 - Higher-performance control (MPC, feedforward)  
 - Payload-adaptive mechanics  
-
-> Each spin-off uses the same base system and produces a standalone story.
 
 ---
 
@@ -202,8 +178,6 @@ Phase 11 ensures:
 - Each of you should end Phase 12 able to say:  
 > *“If you remove this part, the system isn’t the same.”*  
 
-> Strongest possible signal of impact.
-
 ---
 
 #### STEP 12.5 - Long-Term Payoff
@@ -214,26 +188,24 @@ Phase 11 ensures:
   - Anchor a startup idea  
   - Be reused in future roles  
 
-> You’re no longer working on the project — you’re standing on it.
-
 ---
 
 ### - Role Balance (Phase 12)
 
 | Area                  | Zach (DS) | Nicholas (MechE) |
 |-----------------------|-----------|-----------------|
-| Technical ownership   | ✅        | ✅              |
-| Independent growth    | ✅        | ✅              |
-| Long-term leverage    | ✅        | ✅              |
-| Platform reuse        | ✅        | ✅              |
+| Technical ownership   | Yes      | Yes             |
+| Independent growth    | Yes      | Yes             |
+| Long-term leverage    | Yes      | Yes             |
+| Platform reuse        | Yes      | Yes             |
 
 ---
 
 ### Phase 12 — Materials Checklist
-- ⬜ Stable shared codebase  
-- ⬜ Clear module boundaries  
-- ⬜ Defined ownership docs  
-- ⬜ Time for independent exploration
+- [ ] Stable shared codebase
+- [ ] Clear module boundaries
+- [ ] Defined ownership docs
+- [ ] Time for independent exploration
 
 ---
 
@@ -261,10 +233,10 @@ This phase is about closing the loop with the real world.
 
 You deliberately place the system into a real context:
 
-- 🔬 Research lab (assistive robotics, manipulation)  
-- 🏭 Industry demo (automation / QA / inspection)  
-- 🧑‍🏫 Education (teaching platform, robotics club)  
-- 🚀 Startup concept (narrow, focused use case)  
+- Research lab (assistive robotics, manipulation)
+- Industry demo (automation / QA / inspection)
+- Education (teaching platform, robotics club)
+- Startup concept (narrow, focused use case)
 
 You’re not committing forever — just testing fit.
 
@@ -296,8 +268,7 @@ This is where maturity shows.
 - Improve robustness  
 - Handle real-world abuse cases  
 
-**Deliverable:**  
-> “Here’s how it performed outside our setup.”
+**Deliverable:** External performance summary.
 
 ---
 
@@ -305,10 +276,10 @@ This is where maturity shows.
 
 Explicitly choose one:
 
-- 🎓 Research continuation (paper / thesis)  
-- 💼 Job leverage (portfolio + interviews)  
-- 🚀 Startup pivot (very narrow scope)  
-- 🧠 Archive & move on (with confidence)  
+- Research continuation (paper / thesis)
+- Job leverage (portfolio + interviews)
+- Startup pivot (very narrow scope)
+- Archive & move on (with confidence)
 
 Choosing to stop is also success.
 
@@ -322,18 +293,16 @@ Produce one clean artifact:
 - Demo for an external audience  
 - Short write-up: problem → system → results → lessons  
 
-This becomes your closing chapter.
-
 ---
 
 ## Role Balance (Phase 13)
 
 | Area                    | Zach (DS) | Nicholas (MechE) |
 |-------------------------|-----------|-----------------|
-| External evaluation      | ✅        | ➖              |
-| Adaptation & robustness  | ➖        | ✅              |
-| System integration       | ✅        | ✅              |
-| Decision making          | ✅        | ✅              |
+| External evaluation      | Yes      | —               |
+| Adaptation & robustness  | —        | Yes             |
+| System integration       | Yes      | Yes             |
+| Decision making          | Yes      | Yes             |
 
 ---
 
@@ -346,14 +315,8 @@ This becomes your closing chapter.
 
 ---
 
-## What Phase 13 Really Is
-
-Phase 13 is closure with optional upside.  
-
-It ensures that:
+## Phase 13 Exit Criteria
 
 - You don’t over-engineer forever  
 - The project has a clean ending  
-- You extract maximum real-world value  
-
-After this, the project can rest — and your careers keep moving forward.
+- You extract maximum real-world value

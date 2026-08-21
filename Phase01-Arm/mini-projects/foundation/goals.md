@@ -1,4 +1,4 @@
-# 🦾 Robotic Arm Project – Mini-Projects Goals
+# Robotic Arm Project – Mini-Projects Goals
 
 ## General Goals for All Mini-Projects
 - Unlock essential skills for full 6-DOF arm development.

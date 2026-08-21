@@ -3,12 +3,9 @@
 **Duration:** Ongoing / as needed  
 **Goal:** Turn this project into a career anchor you reuse, reference, and extend for years.
 
-> Phase 10 is not about adding complexity —  
-> it’s about extracting maximum value from everything you built.
-
 ---
 
-### 🔹 Phase 10 Outcomes
+### Phase 10 Outcomes
 - You become the robotics person in interviews  
 - Project supports multiple job applications  
 - Reusable platform for future ideas  
@@ -19,18 +16,17 @@
 
 ### Step-by-Step Plan
 
-#### STEP 10.1 — Freeze a “Gold Version” of the System
+#### STEP 10.1 — Establish a Stable System Snapshot
 
 **Together**
 - Pick a stable snapshot:  
   - Works reliably  
   - Clean code  
   - Clear demo  
-- This is your reference version.
+- Use this snapshot as the reference version.
 
 **Deliverable**
-- Git tag / release  
-- *“This is the version I show recruiters”*
+- Git tag / release
 
 ---
 
@@ -46,10 +42,10 @@
 - CAD + hardware visuals  
 - System-level engineering stories  
 
-**You should each be able to talk about:**  
-- *“What I owned”*  
-- *“What we built together”*  
-- *“What I learned”*  
+**Each contributor should be able to describe:**
+- *“What I owned”*
+- *“What we built together”*
+- *“What I learned”*
 
 ---
 
@@ -73,8 +69,6 @@ Your robot is now a sandbox:
 - New control idea? → deploy it  
 - New sensor? → integrate it  
 
-> You never start from zero again.
-
 ---
 
 #### STEP 10.5 — External Signal (Optional but Powerful)
@@ -94,9 +88,7 @@ Options:
 
 | Area                  | Zach (DS) | Nicholas (MechE) |
 |-----------------------|-----------|-----------------|
-| Technical storytelling | ✅        | ✅              |
-| Interview leverage     | ✅        | ✅              |
-| Career alignment       | ✅        | ✅              |
-| Long-term reuse        | ✅        | ✅              |
-
-> At this point, the project works for you, not the other way around.
+| Technical storytelling | Yes      | Yes             |
+| Interview leverage     | Yes      | Yes             |
+| Career alignment       | Yes      | Yes             |
+| Long-term reuse        | Yes      | Yes             |

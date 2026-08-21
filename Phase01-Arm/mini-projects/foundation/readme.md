@@ -1,11 +1,7 @@
-# 🦾 Robotic Arm Project – Mini-Projects (Phase 0)
+# Robotic Arm Project – Mini-Projects (Phase 0)
 
 ## Overview
-Phase 0 consists of **mini-projects** designed to unlock core skills, verify hardware/software behavior, and build confidence before assembling the full robotic arm. These are **training wheels**, not portfolio projects. The goal is:
-
-> “Can we handle the hardware and code safely and reliably without panic?”
-
-Mini-projects are **short, focused, and stop immediately once objectives are met**.
+Phase 0 consists of **mini-projects** designed to unlock core skills, verify hardware/software behavior, and build confidence before assembling the full robotic arm. These are **training exercises**, not portfolio projects. Mini-projects are **short, focused, and stop immediately once objectives are met**.
 
 ---
 
@@ -128,6 +124,5 @@ Mini-projects are **short, focused, and stop immediately once objectives are met
 - After completion, you are ready to scale to Phase 1 (multi-joint integration)  
 
 **Notes:**  
-- Mini-projects are **skill unlocks, not optional warm-ups**.  
-- Biggest failure mode: skipping the warm-up; second: never stopping.  
-- Stop immediately once objectives are achieved — **do not optimize endlessly**.  
+- Mini-projects are **skill unlocks, not optional warm-ups**.
+- Stop immediately once objectives are achieved — **do not optimize endlessly**.

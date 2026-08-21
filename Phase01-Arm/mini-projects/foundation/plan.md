@@ -1,4 +1,4 @@
-# 🦾 Robotic Arm Mini-Projects — Data Science Roadmap
+# Robotic Arm Mini-Projects — Data Science Roadmap
 
 **Role:** Data Science (DS) Lead / Software Lead  
 **Philosophy:** Virtual-First, Hardware-Gated.  
@@ -6,11 +6,11 @@
 
 ---
 
-## 🟢 Mini-Project 1 — Single-Joint Control + Data Contract
+## Mini-Project 1 — Single-Joint Control + Data Contract
 **Goal:** Master the feedback loop (PID), data logging, and "Truth" metrics.  
 **Hardware Trigger:** Completion of Phase 0 allows the ME to power on the motor.
 
-### 📅 Phase 0 — Virtual Execution (2–3 Weeks)
+### Phase 0 — Virtual Execution (2–3 Weeks)
 *Work to be done while waiting for Cart 1 components.*
 
 #### **Week 1: The Foundation & Schema**
@@ -50,7 +50,7 @@
 - [ ] **Generate "Phase 0 Performance Report"**
     - A document showing the plots of the simulation proving the logging and analysis pipeline works.
 
-### 🚀 Phase 1 — Hardware Execution (Post-Delivery)
+### Phase 1 — Hardware Execution (Post-Delivery)
 *Work to be done once the motor and microcontroller are on the desk.*
 
 - [ ] **Connectivity Test:** Verify Python can handshake with the Teensy.
@@ -60,10 +60,10 @@
 
 ---
 
-## 🟡 Mini-Project 2 — Multi-Joint Coordination + Model Validation
+## Mini-Project 2 — Multi-Joint Coordination + Model Validation
 **Goal:** Validate Kinematics (FK/IK) and ensure two joints can move without fighting each other.
 
-### 📅 Phase 0 — Virtual Coordination (1–2 Weeks)
+### Phase 0 — Virtual Coordination (1–2 Weeks)
 *Can be started alongside MP1 Phase 1.*
 
 #### **Week 1: The Math (FK/IK)**
@@ -83,17 +83,17 @@
     - Plot the "Path Deviation" (how far the tip is from the straight line).
 - [ ] **Phase 0 Coordination Report:** Validate that your math holds up for 1000 random points.
 
-### 🚀 Phase 1 — Hardware Coordination
+### Phase 1 — Hardware Coordination
 - [ ] **Ghost Replay:** Feed the "straight line" angles to the real motors.
 - [ ] **Latency Test:** Measure the time delta between commanding J1 and J2.
 - [ ] **Correlation Analysis:** Prove that J1 and J2 start and stop at the exact same time.
 
 ---
 
-## 🔴 Mini-Project 3 — Integration, Replay, & Judgment
-**Goal:** The final "Brain" of the system. Enforcing safety and judgment logic.
+## Mini-Project 3 — Integration, Replay, & Judgment
+**Goal:** Integrate safety enforcement and system judgment logic.
 
-### 📅 Phase 0 — Virtual Judgment System (1–2 Weeks)
+### Phase 0 — Virtual Judgment System (1–2 Weeks)
 
 - [ ] **The "Black Box" Recorder**
     - Ensure every session automatically saves a timestamped log file.
@@ -105,14 +105,14 @@
     - **Yellow:** Minor overshoot or noise.
     - **Red:** Safety limits hit or E-stop triggered.
 
-### 🚀 Phase 1 — Hardware Integrity
+### Phase 1 — Hardware Integrity
 - [ ] **E-Stop Validation:** Physically hit the E-stop and verify the software flags it immediately.
 - [ ] **Stress Test:** Run the arm for 10 minutes and check for thermal drift in the logs.
-- [ ] **Final System Health Report:** The "Diploma" for the robot arm.
+- [ ] **Final System Health Report:** Document system health and acceptance results.
 
 ---
 
-## 📚 Ongoing Infrastructure (Carry Forward)
+## Ongoing Infrastructure (Carry Forward)
 *Tasks to maintain throughout the project.*
 
 * **Metric Library:** Keep your plotting code modular (`plot_error.py`, `calc_rmse.py`) so you can reuse it.
@@ -121,7 +121,7 @@
 
 ---
 
-## 📝 Deliverable Summary Table
+## Deliverable Summary Table
 
 | Mini-Project | Phase 0 (Virtual) Deliverable | Phase 1 (Hardware) Deliverable |
 | :--- | :--- | :--- |
