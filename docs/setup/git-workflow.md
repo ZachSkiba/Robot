@@ -47,6 +47,6 @@ git push
 ```
 
 ### Close Down
-
+   
 - Close VS Code: Click the X. The container will automatically sleep.
 - Save battery/RAM: Right-click Docker Desktop → Quit.
