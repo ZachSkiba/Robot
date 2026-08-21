@@ -36,7 +36,7 @@ git push
 Tip: Commit small, frequent changes. Don't wait until the end of the week.
 
 ## 3. Evening Routine (Closing Down)
-
+  
 ### Final Push
 
 ```bash
