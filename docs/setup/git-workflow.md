@@ -45,7 +45,7 @@ git add .
 git commit -m "End of day save"
 git push
 ```
-
+ 
 ### Close Down
    
 - Close VS Code: Click the X. The container will automatically sleep.
