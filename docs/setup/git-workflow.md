@@ -1,52 +1,93 @@
-# Daily Robot Workflow: Open, Save, Close
+# Git Workflow
 
-This is your day-to-day checklist for working on the repository. Always pull in the morning and push at night.
+## Branches
 
-## 1. Morning Routine (Opening & Getting Updates)
+* `main` = stable/released code
+* `dev` = active development
+* `feature/*` = individual features
 
-1. Start the engine: Open Docker Desktop and let it run.
-2. Open the lab: Open VS Code → File > Open Folder → select `Robot`.
-3. Jack in: Click `Reopen in Container` (bottom-right) if prompted. Wait for this terminal:
+## Rules
 
-```text
-devuser@docker-desktop:/workspace/Robot$
-```
+1. Feature branches are **always created from `dev`**.
+2. Developers work **only on feature branches**.
+3. Never push directly to `dev` or `main`.
+4. Feature branches are merged into `dev` after testing.
+5. `dev` is merged into `main` when stable.
+6. Delete feature branches after they are merged.
 
-4. Get the latest code (CRITICAL): Pull your partner's changes:
+---
+
+## Start New Feature
 
 ```bash
-cd Robot
+git fetch origin
+git switch dev
+git pull origin dev
+git switch -c feature/my-feature
+```
+
+## Work
+
+```bash
+git add .
+git commit -m "..."
+git push -u origin feature/my-feature
+```
+
+## Get an Existing GitHub Branch
+
+```bash
+git fetch origin
+git switch --track origin/feature/my-feature
+```
+
+## Update Existing Branch
+
+```bash
 git pull
 ```
 
-## 2. Throughout the Day (Saving & Sharing)
+---
 
-- Save locally as you code (`Ctrl+S` / `Cmd+S`).
-- When a feature is ready, push to GitHub:
-
-```bash
-# 1. Stage all changed files
-# 2. Commit with a descriptive message
-# 3. Push to GitHub
-git add .
-git commit -m "Added the base link to the URDF file"
-git push
-```
-
-Tip: Commit small, frequent changes. Don't wait until the end of the week.
-
-## 3. Evening Routine (Closing Down)
-  
-### Final Push
+## Merge Feature → Dev
 
 ```bash
-cd /workspace/Robot
-git add .
-git commit -m "End of day save"
-git push
+git switch dev
+git pull origin dev
+git merge feature/my-feature
+git push origin dev
 ```
- 
-### Close Down
-   
-- Close VS Code: Click the X. The container will automatically sleep.
-- Save battery/RAM: Right-click Docker Desktop → Quit.
+
+## Delete Feature
+
+Delete the local branch:
+
+```bash
+git branch -d feature/my-feature
+```
+
+Delete the GitHub branch:
+
+```bash
+git push origin --delete feature/my-feature
+```
+
+---
+
+## Promote Dev → Main
+
+```bash
+git switch main
+git pull origin main
+git merge dev
+git push origin main
+```
+
+---
+
+## Check GitHub Branches
+
+```bash
+git fetch origin
+git branch -a
+```
