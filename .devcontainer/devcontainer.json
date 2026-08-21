@@ -24,7 +24,7 @@
     "PROMPT_COMMAND": "history -a",
     "HISTFILE": "/home/devuser/commandhistory/.bash_history"
   },
-  "runArgs": [
+ "runArgs": [
     "--network=host",
     "--ipc=host",
     "--privileged",
