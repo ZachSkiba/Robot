@@ -82,8 +82,12 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc \
 # ------------------------------------------------------------
 # 6. Workspace Setup
 # ------------------------------------------------------------
+USER root
+RUN mkdir -p /workspace/Robot /workspace/Robot/build /workspace/Robot/install /workspace/Robot/log \
+    && chown -R $USERNAME:$USERNAME /workspace/Robot
+
 WORKDIR /workspace/Robot
-RUN mkdir -p /workspace/Robot /workspace/Robot/build /workspace/Robot/install /workspace/Robot/log
+USER $USERNAME
 
 CMD ["/bin/bash"]
 #nice

@@ -8,3 +8,11 @@ __pycache__/
 build/
 install/
 log/
+
+# VS Code generated browse database
+.vscode/browse.vc.db
+.vscode/browse.vc.db-shm
+.vscode/browse.vc.db-wal
+.vscode/browse.vc.db.lock
+.vscode/BROWSE.VC.DB-shm
+.vscode/BROWSE.VC.DB-wal
