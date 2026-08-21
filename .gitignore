@@ -5,6 +5,8 @@ __pycache__/
 .vscode/*.db
 .vscode/*.ipch
 
+.vscode/BROWSE.VC.DB-shm
+.vscode/BROWSE.VC.DB-wal
 build/
 install/
 log/
