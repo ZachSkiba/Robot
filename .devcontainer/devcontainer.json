@@ -114,6 +114,6 @@
     }
   },
   "postCreateCommand": "bash -lc 'sudo apt-get update && sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/Robot/src --ignore-src -y || true'",
-  "postStartCommand": "bash -lc 'source /opt/ros/humble/setup.bash; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
+  "postStartCommand": "bash -lc 'sudo chown -R devuser:devuser /home/devuser/commandhistory; source /opt/ros/humble/setup.bash; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
   "shutdownAction": "stopContainer"
 }
