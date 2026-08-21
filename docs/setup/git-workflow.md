@@ -72,6 +72,12 @@ Delete the GitHub branch:
 git push origin --delete feature/my-feature
 ```
 
+Delete old remote branch:
+
+```bash
+git fetch --prune
+```
+
 ---
 
 ## Promote Dev → Main
