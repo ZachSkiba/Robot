@@ -213,5 +213,5 @@ The goal is not to show a robot that moves. It is to demonstrate the ability to 
 
 ## Contact
 
-[Nicholas Skiba · nskiba@hawk.illinoistech.edu · [LinkedIn](www.linkedin.com/in/nicholas-skiba-477b6b287) · portfolio]
+[Nicholas Skiba · nskiba@hawk.illinoistech.edu · [LinkedIn](www.linkedin.com/in/nicholas-skiba-477b6b287) · portfolio]  
 [Zachary Skiba · zskiba@hawk.illinoistech.edu · LinkedIn · portfolio]
