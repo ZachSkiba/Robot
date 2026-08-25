@@ -188,37 +188,6 @@ Robot/
 
 ---
 
-## Getting Started
-
-### Option 1: VS Code Dev Container (Recommended)
-
-Requirements: Docker, VS Code, Dev Containers extension.
-
-```bash
-git clone <repo-url>
-cd Robot
-# Open in VS Code → "Reopen in Container"
-# Container installs all ROS 2 Humble dependencies automatically
-```
-
-Inside the container:
-
-```bash
-colcon build
-source install/setup.bash
-```
-
-### Option 2: Existing ROS 2 Humble Environment
-
-```bash
-source /opt/ros/humble/setup.bash
-cd Robot
-colcon build
-source install/setup.bash
-```
-
----
-
 ## Recommended Reading Order
 
 1. [`docs/overall_project/README.md`](docs/overall_project/README.md) — scope, constraints, safety philosophy
@@ -244,4 +213,5 @@ The goal is not to show a robot that moves. It is to demonstrate the ability to 
 
 ## Contact
 
-*[Your name · email · LinkedIn · portfolio]*
+[Nicholas Skiba · nskiba@hawk.illinoistech.edu · [LinkedIn](www.linkedin.com/in/nicholas-skiba-477b6b287) · portfolio]
+[Zachary Skiba · zskiba@hawk.illinoistech.edu · LinkedIn · portfolio]
