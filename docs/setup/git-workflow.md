@@ -98,4 +98,40 @@ git fetch origin
 git branch -a
 ```
 
+## If Branches Diverge
+
+If Git says the branches have diverged or rejects your push, rebase your local commits onto the updated remote branch:
+
+```bash
+git pull --rebase
+```
+
+If there are no conflicts, push your changes:
+
+```bash
+git push
+```
+
+If there are conflicts:
+
+```bash
+git status
+```
+
+Fix the conflicted files, then continue the rebase:
+
+```bash
+git add .
+git rebase --continue
+git push
+```
+
+If you need to cancel the rebase:
+
+```bash
+git rebase --abort
+```
+
+**Do not use `git push --force` on `dev` or `main`.**
+
  
