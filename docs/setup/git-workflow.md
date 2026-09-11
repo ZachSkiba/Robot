@@ -29,6 +29,7 @@ git switch -c feature/my-feature
 ## Work
 
 ```bash
+cd /workspace/Robot
 git add .
 git commit -m "..."
 git push -u origin feature/my-feature
