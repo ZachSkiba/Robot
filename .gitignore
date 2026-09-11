@@ -16,3 +16,10 @@ log/
 .vscode/browse.vc.db.lock
 .vscode/BROWSE.VC.DB-shm
 .vscode/BROWSE.VC.DB-wal
+# VS Code generated browse database
+.vscode/browse.vc.2.db
+.vscode/browse.vc.2.db-shm
+.vscode/browse.vc.2.db-wal
+.vscode/browse.vc.2.db.lock
+.vscode/BROWSE.VC.2.DB-shm
+.vscode/BROWSE.VC.2.DB-wal
