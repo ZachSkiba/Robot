@@ -47,6 +47,7 @@ RUN if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
 # ------------------------------------------------------------
 COPY .devcontainer/requirements-python.txt /tmp/requirements-python.txt
 RUN python3 -m pip install --no-cache-dir --upgrade pip "setuptools<80" wheel \
+    && python3 -m pip install --no-cache-dir platformio \
     && python3 -m pip install --no-cache-dir -r /tmp/requirements-python.txt \
     && rm /tmp/requirements-python.txt
 
