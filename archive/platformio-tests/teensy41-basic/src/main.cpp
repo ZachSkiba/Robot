@@ -18,7 +18,11 @@
 //    Include:  "serial_throughput_test.h"
 //    Function: runSerialThroughputTest()
 //
-// 4) Diagnostic firmware
+// 4) Calculation speed test
+//    Include:  "calculation_speed_test.h"
+//    Function: runCalculationSpeedBenchmark()
+//
+// 5) Diagnostic firmware
 //    Include:  "firmware-updates.h"
 //    Functions:
 //      initializeDiagnosticFirmware()
@@ -33,6 +37,7 @@
 // #include "latency_test.h"
 // #include "loop_timing_test.h"
 // #include "serial_throughput_test.h"
+// #include "calculation_speed_test.h"
 // #include "firmware-updates.h"
 
 
@@ -156,6 +161,7 @@ void setup()
     // runLatencyBenchmark();
     // runLoopTimingTest();
     // runSerialThroughputTest();
+    // runCalculationSpeedBenchmark();
 
     // Diagnostic firmware is slightly different:
     // initializeDiagnosticFirmware();
@@ -237,11 +243,11 @@ void loop()
 // Example:
 //
 //     docker cp `
-//       209a464b76cb:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex `
+//       53a87d23ff37:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex `
 //       "$HOME\teensy-flash\firmware.hex"
 //
 // IMPORTANT:
-// Replace 209a464b76cb with the current container ID.
+// Replace 53a87d23ff37 with the current container ID.
 //
 // Verify the file:
 //

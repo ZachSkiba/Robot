@@ -1,5 +1,10 @@
 {
     "platformio-ide.activateProjectOnTextEditorChange": true,
+    "platformio-ide.pioHomeServerHttpHost": "0.0.0.0",
+    "platformio-ide.pioHomeServerHttpPort": 8008,
+    "C_Cpp.default.configurationProvider": "platformio.platformio-ide",
+    "C_Cpp.default.configuration": "PlatformIO Teensy 4.1",
+    "C_Cpp.default.compileCommands": "/workspace/Robot/archive/platformio-tests/teensy41-basic/compile_commands.json",
     "ROS2.distro": "humble",
     "python.autoComplete.extraPaths": [
         "/opt/ros/humble/lib/python3.10/site-packages",

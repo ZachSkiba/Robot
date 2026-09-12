@@ -13,6 +13,7 @@
   "workspaceFolder": "/workspace/Robot",
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace/Robot,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.vscode,target=/workspace/.vscode,type=bind,consistency=cached",
     "source=robot-bashhistory,target=/home/devuser/commandhistory,type=volume",
     "source=robot-build-v2,target=/workspace/Robot/build,type=volume",
     "source=robot-install-v2,target=/workspace/Robot/install,type=volume",
