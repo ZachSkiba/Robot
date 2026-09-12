@@ -122,7 +122,7 @@ uint32_t runTrigBenchmark(uint32_t &elapsedMs)
 
     uint32_t iterations = 0;
 
-    constexpr float TWO_PI = 6.28318530718f;
+    constexpr float FULL_TURN_RADIANS = 6.28318530718f;
 
     const uint32_t start = millis();
 
@@ -135,9 +135,9 @@ uint32_t runTrigBenchmark(uint32_t &elapsedMs)
 
         angle += 0.01f;
 
-        if (angle >= TWO_PI)
+        if (angle >= FULL_TURN_RADIANS)
         {
-            angle -= TWO_PI;
+            angle -= FULL_TURN_RADIANS;
         }
 
         iterations++;
