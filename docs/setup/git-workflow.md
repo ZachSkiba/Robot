@@ -17,6 +17,11 @@
 
 ---
 
+## Entering Platformio Project
+```bash
+cd /workspace/Robot/archive/platformio-tests/teensy41-basic
+```
+
 ## Start New Feature
 
 ```bash

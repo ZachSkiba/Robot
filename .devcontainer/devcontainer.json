@@ -37,8 +37,6 @@
     "-e",
     "WAYLAND_DISPLAY=${localEnv:WAYLAND_DISPLAY}",
     "-e",
-    "XDG_RUNTIME_DIR=${localEnv:XDG_RUNTIME_DIR}",
-    "-e",
     "PULSE_SERVER=${localEnv:PULSE_SERVER}",
     "-v",
     "/tmp/.X11-unix:/tmp/.X11-unix",
