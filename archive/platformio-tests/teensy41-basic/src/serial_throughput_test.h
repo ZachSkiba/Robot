@@ -1,3 +1,6 @@
-#pragma once
+#ifndef SERIAL_THROUGHPUT_TEST_H
+#define SERIAL_THROUGHPUT_TEST_H
 
-void runSerialThroughputTest();
+bool runSerialThroughputTest();
+
+#endif

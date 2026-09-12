@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <math.h>
+#include <stdint.h>
 
 #include "calculation_speed_test.h"
 
@@ -7,260 +8,250 @@ namespace
 {
 
 // ============================================================
-// TEST CONFIGURATION
+// CONFIGURATION
 // ============================================================
 
+// Each individual benchmark runs for approximately 5 seconds.
 constexpr uint32_t BENCHMARK_DURATION_MS = 5000UL;
 
-// Use volatile sinks so the compiler cannot simply remove
-// the calculations because their results are never used.
+// Number of workload iterations measured as one timing batch.
+//
+// Batching is important because micros() has different timing
+// resolutions on different Arduino-style boards.
+//
+// For example, classic 16 MHz AVR boards commonly have a
+// micros() resolution of approximately 4 microseconds.
+constexpr uint32_t BATCH_SIZE = 100UL;
+
+// ============================================================
+// COMPILER-PROTECTION SINKS
+// ============================================================
+//
+// These volatile variables prevent the compiler from removing
+// the calculations because their results are not used elsewhere.
+//
+
 volatile uint32_t integerSink = 0;
 volatile float floatSink = 0.0f;
 volatile float trigSink = 0.0f;
 volatile float robotMathSink = 0.0f;
 
 // ============================================================
-// INTEGER BENCHMARK
+// RESULT STRUCTURE
+// ============================================================
+
+struct BenchmarkResult
+{
+    uint32_t elapsedUs = 0;
+
+    uint64_t iterations = 0;
+
+    uint32_t batches = 0;
+
+    uint32_t minimumBatchUs = UINT32_MAX;
+
+    uint32_t maximumBatchUs = 0;
+
+    uint64_t totalBatchUs = 0;
+};
+
+// ============================================================
+// PORTABLE INTEGER WORKLOAD
 // ============================================================
 //
-// Measures a repeatable integer-heavy workload.
+// This is a repeatable integer-heavy workload.
 //
-// This is NOT "integer instructions per second".
-// It measures completed benchmark iterations per second.
+// The reported result is:
+//     completed benchmark iterations per second
+//
+// It is NOT a count of CPU instructions.
 //
 
-uint32_t runIntegerBenchmark(uint32_t &elapsedMs)
+inline void runIntegerWork(uint32_t iteration)
 {
-    uint32_t value = 0x12345678UL;
-    uint32_t iterations = 0;
+    uint32_t value = iteration;
 
-    const uint32_t start = millis();
+    value ^= value << 13;
+    value ^= value >> 17;
+    value ^= value << 5;
 
-    while ((millis() - start) < BENCHMARK_DURATION_MS)
-    {
-        // Integer multiply/add
-        value = (value * 1664525UL) + 1013904223UL;
-
-        // Integer bit operations
-        value ^= value >> 13;
-        value ^= value << 17;
-        value ^= value >> 5;
-
-        // Additional integer arithmetic
-        value += iterations;
-        value -= 0x9E3779B9UL;
-
-        iterations++;
-    }
-
-    elapsedMs = millis() - start;
+    value += 0x9E3779B9UL;
+    value *= 1664525UL;
+    value += 1013904223UL;
 
     integerSink = value;
-
-    return iterations;
 }
 
 // ============================================================
-// FLOATING-POINT BENCHMARK
+// PORTABLE FLOATING-POINT WORKLOAD
 // ============================================================
 //
-// Measures a repeatable single-precision floating-point workload.
+// This intentionally uses 32-bit float values.
 //
 
-uint32_t runFloatBenchmark(uint32_t &elapsedMs)
+inline void runFloatWork(uint32_t iteration)
 {
-    float value = 0.125f;
+    float value =
+        0.125f + static_cast<float>(iteration) * 0.000001f;
+
     float value2 = 1.375f;
 
-    uint32_t iterations = 0;
+    value =
+        (value * 1.000123f) +
+        0.000031f;
 
-    const uint32_t start = millis();
+    value2 =
+        (value2 * 0.999877f) -
+        0.000017f;
 
-    while ((millis() - start) < BENCHMARK_DURATION_MS)
+    value += value2 * 0.125f;
+    value2 += value * 0.0625f;
+
+    if (value > 1000.0f)
     {
-        value = (value * 1.000123f) + 0.000031f;
-        value2 = (value2 * 0.999877f) - 0.000017f;
-
-        value += value2 * 0.125f;
-        value2 += value * 0.0625f;
-
-        if (value > 1000.0f)
-        {
-            value *= 0.001f;
-        }
-
-        if (value2 < -1000.0f)
-        {
-            value2 *= 0.001f;
-        }
-
-        iterations++;
+        value *= 0.001f;
     }
 
-    elapsedMs = millis() - start;
+    if (value2 < -1000.0f)
+    {
+        value2 *= 0.001f;
+    }
 
     floatSink = value + value2;
-
-    return iterations;
 }
 
 // ============================================================
-// TRIGONOMETRY BENCHMARK
+// PORTABLE TRIGONOMETRY WORKLOAD
 // ============================================================
 //
-// Measures single-precision sin/cos workload.
-//
-// sinf() and cosf() are intentionally used instead of sin()
-// and cos() because this benchmark is specifically measuring
-// 32-bit floating-point trigonometry.
+// Uses sinf() and cosf() explicitly for single-precision math.
 //
 
-uint32_t runTrigBenchmark(uint32_t &elapsedMs)
+inline void runTrigWork(uint32_t iteration)
 {
-    float angle = 0.1f;
-    float result = 0.0f;
-
-    uint32_t iterations = 0;
-
     constexpr float FULL_TURN_RADIANS = 6.28318530718f;
 
-    const uint32_t start = millis();
+    float angle =
+        0.1f + static_cast<float>(iteration % 1000UL) * 0.001f;
 
-    while ((millis() - start) < BENCHMARK_DURATION_MS)
+    float result = 0.0f;
+
+    result += sinf(angle);
+    result += cosf(angle * 0.5f);
+
+    angle += 0.01f;
+
+    if (angle >= FULL_TURN_RADIANS)
     {
-        const float halfAngle = angle * 0.5f;
-
-        result += sinf(angle);
-        result += cosf(halfAngle);
-
-        angle += 0.01f;
-
-        if (angle >= FULL_TURN_RADIANS)
-        {
-            angle -= FULL_TURN_RADIANS;
-        }
-
-        iterations++;
+        angle -= FULL_TURN_RADIANS;
     }
 
-    elapsedMs = millis() - start;
-
-    trigSink = result;
-
-    return iterations;
+    trigSink = result + angle;
 }
 
 // ============================================================
-// ROBOT MATH BENCHMARK
+// ROBOT-STYLE MATH WORKLOAD
 // ============================================================
 //
-// This is intentionally more representative of robotics.
+// This is not a complete 6-DOF kinematics implementation.
 //
-// It performs repeated 3D vector / transformation-style
-// floating-point calculations.
+// It approximates common robotics numerical operations:
 //
-// The workload is NOT intended to be a complete kinematics
-// implementation. It is a platform-independent approximation
-// of the numerical work commonly performed by robot software.
+// - 3D vector transformation
+// - matrix/vector multiplication
+// - vector magnitude
+// - vector normalization
+// - position updates
+// - orientation-style trigonometry
+//
+// Later, this should be replaced or supplemented with your
+// actual forward-kinematics and inverse-kinematics code.
 //
 
-uint32_t runRobotMathBenchmark(uint32_t &elapsedMs)
+inline void runRobotMathWork(uint32_t iteration)
 {
-    // Position
-    float x = 0.35f;
+    float x = 0.35f +
+              static_cast<float>(iteration % 100UL) * 0.0001f;
+
     float y = -0.20f;
     float z = 0.75f;
 
-    // Direction / vector
     float vx = 0.80f;
     float vy = -0.35f;
     float vz = 0.55f;
 
-    // Transformation-style values
-    float r00 = 0.98f;
-    float r01 = -0.12f;
-    float r02 = 0.08f;
+    // Approximate rotation matrix.
+    const float r00 = 0.98f;
+    const float r01 = -0.12f;
+    const float r02 = 0.08f;
 
-    float r10 = 0.11f;
-    float r11 = 0.97f;
-    float r12 = -0.16f;
+    const float r10 = 0.11f;
+    const float r11 = 0.97f;
+    const float r12 = -0.16f;
 
-    float r20 = -0.10f;
-    float r21 = 0.15f;
-    float r22 = 0.98f;
+    const float r20 = -0.10f;
+    const float r21 = 0.15f;
+    const float r22 = 0.98f;
 
-    float result = 0.0f;
+    // --------------------------------------------------------
+    // Matrix/vector multiplication
+    // --------------------------------------------------------
 
-    uint32_t iterations = 0;
+    const float nx =
+        (r00 * vx) +
+        (r01 * vy) +
+        (r02 * vz);
 
-    const uint32_t start = millis();
+    const float ny =
+        (r10 * vx) +
+        (r11 * vy) +
+        (r12 * vz);
 
-    while ((millis() - start) < BENCHMARK_DURATION_MS)
+    const float nz =
+        (r20 * vx) +
+        (r21 * vy) +
+        (r22 * vz);
+
+    // --------------------------------------------------------
+    // Position update
+    // --------------------------------------------------------
+
+    x += nx * 0.001f;
+    y += ny * 0.001f;
+    z += nz * 0.001f;
+
+    // --------------------------------------------------------
+    // Vector magnitude
+    // --------------------------------------------------------
+
+    const float magnitude =
+        sqrtf(
+            (nx * nx) +
+            (ny * ny) +
+            (nz * nz));
+
+    // --------------------------------------------------------
+    // Vector normalization
+    // --------------------------------------------------------
+
+    if (magnitude > 0.000001f)
     {
-        // ----------------------------------------------------
-        // 3D vector transformation
-        // ----------------------------------------------------
-
-        const float nx =
-            (r00 * vx) +
-            (r01 * vy) +
-            (r02 * vz);
-
-        const float ny =
-            (r10 * vx) +
-            (r11 * vy) +
-            (r12 * vz);
-
-        const float nz =
-            (r20 * vx) +
-            (r21 * vy) +
-            (r22 * vz);
-
-        // ----------------------------------------------------
-        // Position update
-        // ----------------------------------------------------
-
-        x += nx * 0.001f;
-        y += ny * 0.001f;
-        z += nz * 0.001f;
-
-        // ----------------------------------------------------
-        // Vector magnitude
-        // ----------------------------------------------------
-
-        const float magnitude =
-            sqrtf(
-                (nx * nx) +
-                (ny * ny) +
-                (nz * nz));
-
-        // ----------------------------------------------------
-        // Normalize vector
-        // ----------------------------------------------------
-
-        if (magnitude > 0.000001f)
-        {
-            vx = nx / magnitude;
-            vy = ny / magnitude;
-            vz = nz / magnitude;
-        }
-
-        // ----------------------------------------------------
-        // Additional orientation-style calculations
-        // ----------------------------------------------------
-
-        const float c = cosf(x);
-        const float s = sinf(y);
-
-        result +=
-            (vx * c) +
-            (vy * s) +
-            (vz * z);
-
-        iterations++;
+        vx = nx / magnitude;
+        vy = ny / magnitude;
+        vz = nz / magnitude;
     }
 
-    elapsedMs = millis() - start;
+    // --------------------------------------------------------
+    // Orientation-style calculations
+    // --------------------------------------------------------
+
+    const float c = cosf(x);
+    const float s = sinf(y);
+
+    const float result =
+        (vx * c) +
+        (vy * s) +
+        (vz * z);
 
     robotMathSink =
         result +
@@ -270,49 +261,147 @@ uint32_t runRobotMathBenchmark(uint32_t &elapsedMs)
         vx +
         vy +
         vz;
-
-    return iterations;
 }
 
 // ============================================================
-// RESULT PRINTING
+// GENERIC BENCHMARK RUNNER
+// ============================================================
+//
+// The workload is supplied as a function pointer.
+//
+// This keeps the timing logic identical for all workloads.
+//
+
+using WorkloadFunction = void (*)(uint32_t iteration);
+
+BenchmarkResult runBenchmark(
+    WorkloadFunction workload)
+{
+    BenchmarkResult result;
+
+    const uint32_t startUs = micros();
+
+    while ((micros() - startUs) <
+           (BENCHMARK_DURATION_MS * 1000UL))
+    {
+        const uint32_t batchStartUs = micros();
+
+        for (uint32_t i = 0; i < BATCH_SIZE; i++)
+        {
+            workload(
+                static_cast<uint32_t>(
+                    result.iterations + i));
+        }
+
+        const uint32_t batchEndUs = micros();
+
+        const uint32_t batchElapsedUs =
+            batchEndUs - batchStartUs;
+
+        if (batchElapsedUs < result.minimumBatchUs)
+        {
+            result.minimumBatchUs = batchElapsedUs;
+        }
+
+        if (batchElapsedUs > result.maximumBatchUs)
+        {
+            result.maximumBatchUs = batchElapsedUs;
+        }
+
+        result.totalBatchUs += batchElapsedUs;
+
+        result.batches++;
+
+        result.iterations += BATCH_SIZE;
+    }
+
+    result.elapsedUs = micros() - startUs;
+
+    return result;
+}
+
+// ============================================================
+// PRINT ONE RESULT
 // ============================================================
 
 void printBenchmarkResult(
-    const char *name,
-    uint32_t iterations,
-    uint32_t elapsedMs)
+    const char *label,
+    const BenchmarkResult &result)
 {
-    Serial.print(name);
-    Serial.println();
+    Serial.println(label);
 
-    Serial.print("  Iterations:       ");
-    Serial.println(iterations);
+    Serial.print("  Duration:          ");
+    Serial.print(result.elapsedUs / 1000000.0f, 3);
+    Serial.println(" s");
 
-    Serial.print("  Duration:         ");
-    Serial.print(elapsedMs);
-    Serial.println(" ms");
+    Serial.print("  Iterations:        ");
+    Serial.println(
+        static_cast<unsigned long>(
+            result.iterations));
 
-    if (elapsedMs > 0)
+    Serial.print("  Batches:           ");
+    Serial.println(result.batches);
+
+    if (result.elapsedUs > 0)
     {
         const float iterationsPerSecond =
-            (static_cast<float>(iterations) * 1000.0f) /
-            static_cast<float>(elapsedMs);
+            static_cast<float>(result.iterations) *
+            1000000.0f /
+            static_cast<float>(result.elapsedUs);
 
-        Serial.print("  Iterations/sec:   ");
+        const float averageIterationUs =
+            1000000.0f /
+            iterationsPerSecond;
+
+        Serial.print("  Iterations/sec:    ");
         Serial.println(iterationsPerSecond, 2);
+
+        Serial.print("  Average iteration: ");
+        Serial.print(averageIterationUs, 6);
+        Serial.println(" us");
+    }
+    else
+    {
+        Serial.println("  Iterations/sec:    unavailable");
+    }
+
+    Serial.print("  Minimum batch:     ");
+    Serial.print(result.minimumBatchUs);
+    Serial.println(" us");
+
+    Serial.print("  Maximum batch:     ");
+    Serial.print(result.maximumBatchUs);
+    Serial.println(" us");
+
+    if (result.batches > 0)
+    {
+        const float averageBatchUs =
+            static_cast<float>(result.totalBatchUs) /
+            static_cast<float>(result.batches);
+
+        const float averageBatchIterationUs =
+            averageBatchUs /
+            static_cast<float>(BATCH_SIZE);
+
+        Serial.print("  Average batch:     ");
+        Serial.print(averageBatchUs, 3);
+        Serial.println(" us");
+
+        Serial.print("  Batch avg/iter:    ");
+        Serial.print(averageBatchIterationUs, 6);
+        Serial.println(" us");
     }
 
     Serial.println();
 }
 
+// ============================================================
+// PUBLIC BENCHMARK FUNCTION
+// ============================================================
+
 } // namespace
 
-// ============================================================
-// PUBLIC BENCHMARK
-// ============================================================
-
-void runCalculationSpeedBenchmark()
+bool runCalculationSpeedBenchmark()
 {
     Serial.println();
     Serial.println("================================");
@@ -320,83 +409,75 @@ void runCalculationSpeedBenchmark()
     Serial.println("================================");
     Serial.println();
 
-    Serial.println("Each benchmark runs for approximately");
+    Serial.println("Portable Arduino-style benchmark");
+    Serial.println("Higher iterations/sec = faster");
+    Serial.println();
+
+    Serial.print("Benchmark duration: ");
     Serial.print(BENCHMARK_DURATION_MS / 1000UL);
-    Serial.println(" seconds.");
+    Serial.println(" seconds");
+
+    Serial.print("Batch size:         ");
+    Serial.println(BATCH_SIZE);
+
     Serial.println();
 
-    Serial.println("Results are benchmark iterations/second.");
-    Serial.println("Higher is faster.");
-    Serial.println();
-
     // --------------------------------------------------------
-    // Integer
+    // Integer benchmark
     // --------------------------------------------------------
 
-    uint32_t integerTime = 0;
-
-    const uint32_t integerIterations =
-        runIntegerBenchmark(integerTime);
+    const BenchmarkResult integerResult =
+        runBenchmark(runIntegerWork);
 
     // --------------------------------------------------------
-    // Float
+    // Floating-point benchmark
     // --------------------------------------------------------
 
-    uint32_t floatTime = 0;
-
-    const uint32_t floatIterations =
-        runFloatBenchmark(floatTime);
+    const BenchmarkResult floatResult =
+        runBenchmark(runFloatWork);
 
     // --------------------------------------------------------
-    // Trigonometry
+    // Trigonometry benchmark
     // --------------------------------------------------------
 
-    uint32_t trigTime = 0;
-
-    const uint32_t trigIterations =
-        runTrigBenchmark(trigTime);
+    const BenchmarkResult trigResult =
+        runBenchmark(runTrigWork);
 
     // --------------------------------------------------------
-    // Robot math
+    // Robot-style math benchmark
     // --------------------------------------------------------
 
-    uint32_t robotMathTime = 0;
-
-    const uint32_t robotMathIterations =
-        runRobotMathBenchmark(robotMathTime);
+    const BenchmarkResult robotMathResult =
+        runBenchmark(runRobotMathWork);
 
     // --------------------------------------------------------
-    // Results
+    // Print detailed results
     // --------------------------------------------------------
 
     Serial.println();
     Serial.println("================================");
-    Serial.println("RESULTS");
+    Serial.println("DETAILED RESULTS");
     Serial.println("================================");
     Serial.println();
 
     printBenchmarkResult(
         "Integer arithmetic",
-        integerIterations,
-        integerTime);
+        integerResult);
 
     printBenchmarkResult(
         "32-bit floating point",
-        floatIterations,
-        floatTime);
+        floatResult);
 
     printBenchmarkResult(
         "Trigonometry",
-        trigIterations,
-        trigTime);
+        trigResult);
 
     printBenchmarkResult(
         "Robot-style math",
-        robotMathIterations,
-        robotMathTime);
+        robotMathResult);
 
     // --------------------------------------------------------
-    // Summary table
+    // Summary
     // --------------------------------------------------------
 
     Serial.println("================================");
@@ -410,55 +491,65 @@ void runCalculationSpeedBenchmark()
     Serial.println(
         "----------------------------------------");
 
-    if (integerTime > 0)
+    if (integerResult.elapsedUs > 0)
     {
-        Serial.print(
-            "Integer arithmetic    ");
-
+        Serial.print("Integer arithmetic    ");
         Serial.println(
-            (static_cast<float>(integerIterations) * 1000.0f) /
-            static_cast<float>(integerTime),
+            static_cast<float>(integerResult.iterations) *
+            1000000.0f /
+            static_cast<float>(integerResult.elapsedUs),
             2);
     }
 
-    if (floatTime > 0)
+    if (floatResult.elapsedUs > 0)
     {
-        Serial.print(
-            "32-bit float          ");
-
+        Serial.print("32-bit float          ");
         Serial.println(
-            (static_cast<float>(floatIterations) * 1000.0f) /
-            static_cast<float>(floatTime),
+            static_cast<float>(floatResult.iterations) *
+            1000000.0f /
+            static_cast<float>(floatResult.elapsedUs),
             2);
     }
 
-    if (trigTime > 0)
+    if (trigResult.elapsedUs > 0)
     {
-        Serial.print(
-            "Trigonometry          ");
-
+        Serial.print("Trigonometry          ");
         Serial.println(
-            (static_cast<float>(trigIterations) * 1000.0f) /
-            static_cast<float>(trigTime),
+            static_cast<float>(trigResult.iterations) *
+            1000000.0f /
+            static_cast<float>(trigResult.elapsedUs),
             2);
     }
 
-    if (robotMathTime > 0)
+    if (robotMathResult.elapsedUs > 0)
     {
-        Serial.print(
-            "Robot-style math      ");
-
+        Serial.print("Robot-style math      ");
         Serial.println(
-            (static_cast<float>(robotMathIterations) * 1000.0f) /
-            static_cast<float>(robotMathTime),
+            static_cast<float>(robotMathResult.iterations) *
+            1000000.0f /
+            static_cast<float>(robotMathResult.elapsedUs),
             2);
     }
 
     Serial.println();
 
-    Serial.println(
-        "Higher iterations/sec = faster.");
-
+    Serial.println("NOTES:");
+    Serial.println("- Results are benchmark iterations/sec.");
+    Serial.println("- They are not CPU instruction counts.");
+    Serial.println("- The same source can run on many Arduino boards.");
+    Serial.println("- Timer resolution differs between processors.");
+    Serial.println("- Compiler optimization affects the results.");
+    Serial.println("- Robot-style math is not complete 6-DOF kinematics.");
     Serial.println();
+
     Serial.println("=== TEST COMPLETE ===");
+
+    return integerResult.elapsedUs > 0 &&
+           floatResult.elapsedUs > 0 &&
+           trigResult.elapsedUs > 0 &&
+           robotMathResult.elapsedUs > 0 &&
+           integerResult.iterations > 0 &&
+           floatResult.iterations > 0 &&
+           trigResult.iterations > 0 &&
+           robotMathResult.iterations > 0;
 }

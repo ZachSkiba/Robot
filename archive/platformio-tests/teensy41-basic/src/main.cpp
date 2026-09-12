@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "test_protocol.h"
 
 // ============================================================
 // SELECT WHICH PROGRAM TO RUN
@@ -23,22 +24,43 @@
 //    Function: runCalculationSpeedBenchmark()
 //
 // 5) Diagnostic firmware
-//    Include:  "firmware-updates.h"
+//    Include:  "diagnostic-firmware.h"
 //    Functions:
 //      initializeDiagnosticFirmware()
 //      runDiagnosticFirmware()
 //
+// 6) Universal board test suite
+//    Include:  "universal-board-test.h"
+//    Functions:
+//      initializeUniversalBoardTest()
+//      runUniversalBoardTest()
+//
 // ============================================================
 
-// CHANGE THIS: uncomment ONE include only.
+// CHANGE THIS: define ONE program only.
 
+// #define RUN_LATENCY_BENCHMARK
+// #define RUN_LOOP_TIMING_TEST
+// #define RUN_SERIAL_THROUGHPUT_TEST
+// #define RUN_CALCULATION_SPEED_TEST
+#define RUN_DIAGNOSTIC_FIRMWARE
+// #define RUN_UNIVERSAL_BOARD_TEST
+
+#if defined(RUN_LATENCY_BENCHMARK)
 #include "latency_test.h"
-
-// #include "latency_test.h"
-// #include "loop_timing_test.h"
-// #include "serial_throughput_test.h"
-// #include "calculation_speed_test.h"
-// #include "firmware-updates.h"
+#elif defined(RUN_LOOP_TIMING_TEST)
+#include "loop_timing_test.h"
+#elif defined(RUN_SERIAL_THROUGHPUT_TEST)
+#include "serial_throughput_test.h"
+#elif defined(RUN_CALCULATION_SPEED_TEST)
+#include "calculation_speed_test.h"
+#elif defined(RUN_DIAGNOSTIC_FIRMWARE)
+#include "diagnostic-firmware.h"
+#elif defined(RUN_UNIVERSAL_BOARD_TEST)
+#include "universal-board-test.h"
+#else
+#error "Define exactly one RUN_* test selection in main.cpp"
+#endif
 
 
 // ============================================================
@@ -52,6 +74,23 @@ constexpr uint32_t SERIAL_BAUD = 115200;
 // CHANGE THIS: startup delay
 // Unit: milliseconds
 constexpr uint32_t STARTUP_DELAY_MS = 1000;
+
+void announceFirmware()
+{
+#if defined(RUN_UNIVERSAL_BOARD_TEST)
+    printTestProtocol("universal", "universal-board", "universal_board_001");
+#elif defined(RUN_DIAGNOSTIC_FIRMWARE)
+    printTestProtocol("diagnostic", "diagnostic", "diagnostic_001");
+#elif defined(RUN_LATENCY_BENCHMARK)
+    printTestProtocol("benchmark", "latency", "latency_001");
+#elif defined(RUN_LOOP_TIMING_TEST)
+    printTestProtocol("benchmark", "loop", "loop_001");
+#elif defined(RUN_SERIAL_THROUGHPUT_TEST)
+    printTestProtocol("benchmark", "serial", "serial_001");
+#elif defined(RUN_CALCULATION_SPEED_TEST)
+    printTestProtocol("benchmark", "calculation", "calculation_001");
+#endif
+}
 
 void waitForStart()
 {
@@ -69,15 +108,20 @@ void waitForStart()
                 input.trim();
                 input.toUpperCase();
 
-                if (input == "READY")
+                if (input == "IDENTIFY")
+                {
+                    announceFirmware();
+                }
+                else if (input == "READY")
                 {
                     Serial.println();
                     Serial.println("================================");
-                    Serial.println("Teensy Test Runner");
+                    Serial.println("Board Test Runner");
                     Serial.println("================================");
-                    Serial.println("Teensy is connected.");
+                    Serial.println("Board is connected.");
                     Serial.println("Type YES and press Enter to start.");
                     Serial.println();
+                    Serial.println(F("@TEST_START_READY"));
 
                     input = "";
 
@@ -146,33 +190,46 @@ void setup()
 {
     Serial.begin(SERIAL_BAUD);
 
-    delay(100);
+    delay(STARTUP_DELAY_MS);
 
+    announceFirmware();
+
+#if defined(RUN_UNIVERSAL_BOARD_TEST)
+    initializeUniversalBoardTest();
+#elif defined(RUN_DIAGNOSTIC_FIRMWARE)
+    initializeDiagnosticFirmware();
+#else
     waitForStart();
 
     Serial.println("Starting selected test...");
     Serial.println();
 
-    // CHANGE THIS: call the function matching the include above.
-
-    runLatencyBenchmark();
-
-    // Other options:
-    // runLatencyBenchmark();
-    // runLoopTimingTest();
-    // runSerialThroughputTest();
-    // runCalculationSpeedBenchmark();
-
-    // Diagnostic firmware is slightly different:
-    // initializeDiagnosticFirmware();
+#if defined(RUN_LATENCY_BENCHMARK)
+    Serial.println(F("@TEST_START"));
+    const bool passed = runLatencyBenchmark();
+#elif defined(RUN_LOOP_TIMING_TEST)
+    Serial.println(F("@TEST_START"));
+    const bool passed = runLoopTimingTest();
+#elif defined(RUN_SERIAL_THROUGHPUT_TEST)
+    Serial.println(F("@TEST_START"));
+    const bool passed = runSerialThroughputTest();
+#elif defined(RUN_CALCULATION_SPEED_TEST)
+    Serial.println(F("@TEST_START"));
+    const bool passed = runCalculationSpeedBenchmark();
+#endif
+    Serial.print(F("@TEST_RESULT="));
+    Serial.println(passed ? F("PASS") : F("FAIL"));
+    Serial.println(F("@TEST_COMPLETE"));
+#endif
 }
 
 void loop()
 {
-    // Most tests do everything inside setup(), so loop stays empty.
-
-    // For diagnostic firmware, use:
-    // runDiagnosticFirmware();
+#if defined(RUN_UNIVERSAL_BOARD_TEST)
+    runUniversalBoardTest();
+#elif defined(RUN_DIAGNOSTIC_FIRMWARE)
+    runDiagnosticFirmware();
+#endif
 }
 
 // ============================================================
@@ -243,7 +300,9 @@ void loop()
 // Example:
 //
 //     docker cp `
+//   Then copy
 //       53a87d23ff37:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex `
+//   Press enter
 //       "$HOME\teensy-flash\firmware.hex"
 //
 // IMPORTANT:
@@ -371,43 +430,37 @@ void loop()
 //
 // ============================================================
 //
-// STEP 10 — RUN THE TEST
+// STEP 10 — RUN THE PYTHON TEST RUNNER
 //
 // ============================================================
 //
 // 🟩 UBUNTU WSL
 //
-// Run:
+// Run from WSL or the development environment:
 //
+//     cd /workspace/Robot/archive/platformio-tests
 //     python3 ~/teensy-test.py
 //
-// The program will:
+// The program will identify the firmware currently flashed and then:
 //
-//     1. Connect to the Teensy.
-//     2. Wait for the "Type YES..." prompt.
-//     3. Display the prompt.
-//     4. Let you type YES.
-//     5. Send YES to the Teensy.
-//     6. Start the selected test.
-//     7. Display the test results automatically.
+//     1. Find and open the board's serial port.
+//     2. Start a benchmark using READY/YES.
+//     3. Ask diagnostic firmware for status, or send run_all to the universal suite.
+//     4. Return a PASS/FAIL result from the machine-readable protocol.
 //
 // Example:
 //
-//     Connected to Teensy.
-//     Waiting for Teensy prompt...
+//     Opening /dev/ttyACM0 at 115200 baud...
 //
 //     =================================
-//     Teensy Test Runner
+//     Board Test Runner
 //     =================================
-//     Selected program is ready.
-//     Type YES and press Enter to start.
+//     Detected protocol: benchmark / latency
 //
-//     Type YES and press Enter:
-//     > YES
-//
-//     === TEST OUTPUT ===
-//     === Teensy Latency Test ===
-//     Measuring loop cadence with micros()...
+// IMPORTANT:
+// The legacy tests are compile-time selections. Flash the matching selection
+// before running it. The universal suite is the only image that can run its
+// complete collection of tests from one flashed program.
 //
 //     === TEST SUMMARY ===
 //     Duration:       10.00 s
@@ -449,7 +502,8 @@ void loop()
 // 🟩 UBUNTU WSL
 //     teensy_loader_cli ...
 //     → reattach if necessary
-//     → cat /dev/ttyACM0
+//     → cd /workspace/Robot/archive/platformio-tests
+//     → python3 teensy-test.py
 //
 // ============================================================
 //

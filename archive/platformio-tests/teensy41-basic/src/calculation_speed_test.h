@@ -1,3 +1,6 @@
-#pragma once
+#ifndef CALCULATION_SPEED_TEST_H
+#define CALCULATION_SPEED_TEST_H
 
-void runCalculationSpeedBenchmark();
+bool runCalculationSpeedBenchmark();
+
+#endif

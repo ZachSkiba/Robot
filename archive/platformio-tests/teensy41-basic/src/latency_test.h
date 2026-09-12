@@ -1,3 +1,6 @@
-#pragma once
+#ifndef LATENCY_TEST_H
+#define LATENCY_TEST_H
 
-void runLatencyBenchmark();
+bool runLatencyBenchmark();
+
+#endif

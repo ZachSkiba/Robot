@@ -1,3 +1,6 @@
-#pragma once
+#ifndef LOOP_TIMING_TEST_H
+#define LOOP_TIMING_TEST_H
 
-void runLoopTimingTest();
+bool runLoopTimingTest();
+
+#endif

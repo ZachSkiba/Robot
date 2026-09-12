@@ -1,7 +1,11 @@
-#pragma once
+#ifndef TEST_SUITE_H
+#define TEST_SUITE_H
 
-#include <Arduino.h>
+#include "calculation_speed_test.h"
+#include "diagnostic-firmware.h"
+#include "latency_test.h"
+#include "loop_timing_test.h"
+#include "serial_throughput_test.h"
+#include "universal-board-test.h"
 
-void runLatencyBenchmark();
-void runSerialThroughputTest();
-void runLoopTimingTest();
+#endif
