@@ -1,0 +1,5 @@
+{
+    "platformio-ide.pioHomeServerHttpHost": "0.0.0.0",
+    "C_Cpp.default.configurationProvider": "platformio.platformio-ide",
+    "C_Cpp.default.configuration": "PlatformIO Teensy 4.1"
+}
