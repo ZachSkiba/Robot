@@ -1,217 +1,219 @@
 # 6-DOF Robotic Arm Platform
 
-**Status:** Early-stage development — planning complete, simulation implementation beginning
+**Status:** Early-stage development — embedded bring-up and subsystem development in progress
 
-A staged robotics project for designing, simulating, and building a 6-degree-of-freedom robotic arm. The focus is safety-first design, structured telemetry, and disciplined systems engineering — demonstrated through process and documentation now, and through running code as each phase completes.
+A collaborative robotics project focused on designing, simulating, and eventually building a 6-degree-of-freedom robotic arm. Development follows a staged approach: establish the system architecture, validate individual subsystems, design the mechanical system, and progressively integrate hardware and software.
 
-> **Documentation rule:** Anything not yet implemented or evidenced in this repository is explicitly labeled *design intent* or *planned*. No capability is claimed without qualification until it exists.
-
----
-
-## Tech Stack
-
-| Layer | Tools |
-|---|---|
-| Motion planning | ROS 2 Humble · MoveIt 2 |
-| Simulation | Gazebo Classic |
-| Embedded control | Planned: STM32-class MCU (selection Phase 01) |
-| Dev environment | Docker · VS Code Dev Containers |
-| Build system | colcon · CMake |
-| Language | Python · C++ (ROS 2 nodes) |
+> **Documentation rule:** Capabilities are only described as implemented when supported by code, hardware, or test evidence in the repository. Everything else is explicitly labeled **planned** or **design intent**.
 
 ---
 
-## Why This Project
+## Project Goals
 
-Most hobby robot arms are built bottom-up: buy motors, wire things, hope it works. This project inverts that. Design starts with constraints, safety margins, and a validation plan — then works toward hardware.
+The long-term system will combine:
 
-Engineering priorities, in order:
+* Mechanical design and actuator selection
+* Embedded control
+* Position sensing and feedback
+* Robot kinematics and trajectory planning
+* Simulation and validation
+* Telemetry and data logging
+* Hardware/software integration
+* Safety and fault handling
 
-1. **Safety** — defined at the architecture level before any motion command is written
-2. **Observability** — every joint state and command logged with timestamps
-3. **Staged validation** — simulation before hardware; hardware-in-the-loop before deployment
-4. **Reproducibility** — fully containerized dev environment; anyone can build it
+The project is intentionally developed incrementally rather than attempting full-system integration immediately.
 
 ---
 
 ## Current Status
 
-| Area | Status |
-|---|---|
-| Repository structure and planning docs | ✅ Present |
-| ROS 2 package scaffold (`robot_control`) | ✅ Builds in container |
-| Dev container environment | ✅ Operational |
-| Safety architecture | 📄 Designed — not yet implemented |
-| Simulation (Gazebo + URDF) | 🔲 Planned |
-| Active ROS 2 control nodes | 🔲 Not yet implemented |
-| Hardware integration | 🔲 Planned (Phase 01+) |
+| Area                             | Status                   |
+| -------------------------------- | ------------------------ |
+| System architecture and planning | ✅ Established            |
+| Development environment          | ✅ Operational            |
+| Dev Container                    | ✅ Operational            |
+| Teensy 4.1 bring-up              | 🔄 In progress           |
+| PC → USB → Teensy communication  | 🔄 In progress           |
+| Embedded diagnostics and testing | 🔄 In progress           |
+| Robotics mini-projects           | 🔲 In progress / planned |
+| Mechanical arm design            | 🔲 Not yet started       |
+| Motor/driver integration         | 🔲 Not yet started       |
+| Encoder integration              | 🔲 Not yet started       |
+| Closed-loop joint control        | 🔲 Not yet implemented   |
+| Full 6-DOF integration           | 🔲 Future                |
 
-**What is not in this repository yet (explicit):**
-- A checked-in URDF robot model
-- Launch files for simulation
-- Implemented ROS 2 control or telemetry nodes
-- Hardware of any kind
-
----
-
-## Phase 00 Exit Criteria
-
-Phase 00 closes when all of the following are demonstrated — not just planned:
-
-- [ ] ROS 2 workspace builds reproducibly in the dev container
-- [ ] Gazebo launches with a URDF robot model loaded
-- [ ] `robot_control` node publishes joint states to a ROS 2 topic
-- [ ] Joint state output confirmed via `ros2 topic echo`
-- [ ] MoveIt planning scene loads without error
-- [ ] Each item above documented with terminal output or screenshot
-
-Phase 01 does not begin until every box is checked.
+The physical components for the project have been acquired, but the arm has **not yet been mechanically designed, assembled, or connected into a working robotic system**.
 
 ---
 
-## Safety Architecture
+## Current Development
 
-> **Status:** Designed and documented — not yet implemented in code.
+### Embedded Platform
 
-The intended safety model is layered. No single layer is trusted alone.
+Current development is focused on the **Teensy 4.1** as the embedded platform.
 
-**Enforcement layers (planned, in execution order):**
+```text
+PC
+ │
+ │ USB
+ ▼
+Teensy 4.1
+```
 
-1. **Planning layer (MoveIt):** collision avoidance, IK validity, path feasibility
-2. **Control node (`robot_control`):** joint limit enforcement, velocity/acceleration clamping, command validation before dispatch
-3. **Watchdog node:** monitors command stream freshness; triggers safe stop on timeout or interruption
+Current work includes:
 
-**Safety envelope variables:**
-- Joint position limits — defined in URDF, enforced at the controller level
-- Velocity and acceleration limits — clamped before any command is issued
-- Workspace constraints — MoveIt planning scene boundaries
-- Command timeout — stale or interrupted commands trigger halt, not continuation
+* USB serial communication
+* Diagnostic firmware
+* Embedded performance testing
+* Timing and computation benchmarks
+* Hardware/software development workflow
 
-**Failure behavior (design intent):**
-- All faults default to **stop and hold** — not uncontrolled release
-- No layer assumes a higher layer is functioning correctly
-- Emergency stop is a hard cutoff, not a software request
+Motor drivers, motors, encoders, and other robot hardware will be integrated in later stages.
 
-**Phase 01+ (hardware additions):**
-- Interrupt-level hardware emergency stop
-- Per-joint current sensing as an independent overload signal
+### Mini-Projects
+
+Small subsystem experiments are being used to validate individual capabilities before integrating the complete arm.
+
+These exercises will cover areas such as:
+
+* Embedded communication
+* Motor and actuator control
+* Sensor interfaces
+* Data collection
+* Control concepts
+* Hardware/software interfaces
+
+### Mechanical Design
+
+Mechanical development has not yet begun. The next major stage will establish:
+
+* Joint architecture
+* Workspace and payload requirements
+* Actuator and transmission selection
+* Link geometry
+* Bearings and structural interfaces
+* CAD and manufacturing documentation
 
 ---
 
 ## System Architecture
 
-> **Status:** Design intent — not yet implemented end-to-end.
+**Design intent — not yet implemented end-to-end.**
 
-```
-┌─────────────────────────────────────────────────┐
-│                  Operator Input                  │
-└───────────────────────┬─────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────┐
-│             MoveIt 2 (Planning Layer)            │
-│  · Collision avoidance                          │
-│  · IK solving                                   │
-│  · Path feasibility check                       │
-└───────────────────────┬─────────────────────────┘
-                        │ validated trajectory
-                        ▼
-┌─────────────────────────────────────────────────┐
-│         robot_control Node (Control Layer)       │
-│  · Joint limit enforcement                      │
-│  · Velocity / acceleration clamping             │
-│  · Command validation before dispatch           │
-└──────────┬────────────────────────┬─────────────┘
-           │                        │
-           ▼                        ▼
-┌──────────────────┐     ┌──────────────────────┐
-│  Watchdog Node   │     │  Simulated Joints     │
-│  · Command       │     │  (Gazebo · Phase 00)  │
-│    freshness     │     │                       │
-│  · Safe stop     │     │  Physical Joints      │
-│    on timeout    │     │  (Phase 01+)          │
-└──────────────────┘     └──────────────────────┘
-           │
-           ▼
-┌──────────────────────────────────────────────┐
-│              Telemetry / Logging             │
-│  · Joint states (position, velocity, effort) │
-│  · Command stream with timestamps            │
-│  · Fault and watchdog events                 │
-└──────────────────────────────────────────────┘
+```text
+        Operator / Host Computer
+                  │
+                  ▼
+       Motion / Planning Software
+                  │
+                  ▼
+          Embedded Controller
+             Teensy 4.1
+                  │
+                  ▼
+         Motor Driver / Actuator
+                  │
+                  ▼
+              Robot Joint
+                  │
+                  ▼
+          Position Feedback
+                  │
+                  └──────► Telemetry / Logging
 ```
 
-*Hardware path (Phase 01+) replaces simulated joints. Architecture otherwise unchanged.*
+The final software architecture may incorporate ROS 2, simulation, motion planning, and additional controllers as the project progresses.
 
 ---
 
-## Design Constraints
+## Safety
 
-| Constraint | Value |
-|---|---|
-| Degrees of freedom | 6 (serial manipulator) |
-| Target payload | TBD — primary driver for joint and actuator selection |
-| Control loop target | ≥ 50 Hz |
-| Safety posture | Fail-stop (halt on any unresolved fault) |
-| Gate rule | No phase advances before prior phase exit criteria are met |
+Safety is being treated as a system-level requirement from the beginning.
+
+**Planned protections include:**
+
+* Joint position limits
+* Velocity and acceleration limits
+* Command validation
+* Communication watchdogs
+* Hardware emergency-stop functionality
+* Motor/driver fault handling
+* Independent overload protection where applicable
+
+These are **design requirements**, not claims of currently implemented safety functionality.
 
 ---
 
-## Project Phases
+## Development Phases
 
-| Phase | Focus | Status |
-|---|---|---|
-| Phase 00 | Simulation and architecture | 🟡 In progress |
-| Phase 01 | Physical arm build and basic control | 🔲 Planned |
-| Phase 02 | Trajectory planning | 🔲 Planned |
-| Phase 03 | Telemetry and logging | 🔲 Planned |
-| Phase 04+ | Advanced capabilities | 🔲 Scoped as prior phases close |
+| Phase     | Focus                                            | Status            |
+| --------- | ------------------------------------------------ | ----------------- |
+| Phase 00  | Architecture, environment, and embedded bring-up | 🔄 Current        |
+| Phase 01  | Subsystem mini-projects and validation           | 🔄 Current / next |
+| Phase 02  | Mechanical arm design                            | 🔲 Planned        |
+| Phase 03  | Single-joint hardware integration                | 🔲 Planned        |
+| Phase 04  | Multi-joint integration                          | 🔲 Planned        |
+| Phase 05  | Kinematics and trajectory control                | 🔲 Planned        |
+| Phase 06  | Full 6-DOF integration and validation            | 🔲 Planned        |
+| Phase 07+ | Advanced robotics capabilities                   | 🔲 Future         |
 
-Phases beyond 03 are not fully defined yet. That is intentional — scope is defined when it is earned, not pre-planned into imaginary detail.
+Later phases will be refined as earlier stages establish validated requirements and test results.
+
+---
+
+## Collaboration
+
+This is a collaborative project between **Nicholas Skiba** and **Zachary Skiba**.
+
+Current areas of contribution include:
+
+**Nicholas Skiba**
+
+* Embedded/Teensy development
+* Hardware bring-up and testing
+* Subsystem development
+* Mechanical design and physical integration
+
+**Zachary Skiba**
+
+* Simulation development
+* Data science and analysis
+* Computational development
+
+The project is maintained collaboratively, with individual contributions tracked through the repository history and project documentation.
 
 ---
 
 ## Repository Structure
 
-```
+```text
 Robot/
-├── .devcontainer/          # VS Code + Docker dev environment
+├── .devcontainer/
+├── Overall-Project/
+├── Phase00-Plan/
+├── Phase01-Arm/
+├── Phase02-Trajectory/
+├── Phase03-Optimize/
+├── Phase04-Learning/
+├── Phase05-Vision/
+├── Phase06-Autonomy/
 ├── src/
-│   └── robot_control/      # ROS 2 package: nodes, launch files, configs
 ├── docs/
-│   ├── overall_project/    # System vision, constraints, risk log
-│   ├── phase_00/           # Simulation planning and architecture docs
-│   ├── phase_01/           # Physical build planning
-│   └── phase_02+/          # Later phase roadmap docs
+├── archive/
 └── README.md
 ```
 
----
-
-## Recommended Reading Order
-
-1. [`docs/overall_project/README.md`](docs/overall_project/README.md) — scope, constraints, safety philosophy
-2. [`docs/overall_project/system_overview.md`](docs/overall_project/system_overview.md) — architecture and component relationships
-3. [`docs/phase_00/README.md`](docs/phase_00/README.md) — current simulation work and validation plan
-4. [`docs/phase_01/overview.md`](docs/phase_01/overview.md) — physical build planning
-
----
-
-## Professional Context
-
-This repository is developed with the discipline expected in a production robotics environment:
-
-- Requirements and risk documentation written before implementation begins
-- Containerized, reproducible development workflow
-- Explicit exit criteria per phase — no phase advances without demonstrated evidence
-- Commit history reflecting deliberate, traceable progress
-- Honest separation of what is designed, what is planned, and what is running
-
-The goal is not to show a robot that moves. It is to demonstrate the ability to operate inside a real engineering process — and to close that gap into working code phase by phase.
+The repository contains active development, engineering documentation, experiments, and archived work.
 
 ---
 
 ## Contact
 
-[Nicholas Skiba · nskiba@hawk.illinoistech.edu · [LinkedIn](www.linkedin.com/in/nicholas-skiba-477b6b287) · portfolio]  
-[Zachary Skiba · zskiba@hawk.illinoistech.edu · LinkedIn · portfolio]
+**Nicholas Skiba**
+Mechanical Engineering · Illinois Institute of Technology
+[LinkedIn](https://www.linkedin.com/in/nicholas-skiba-477b6b287) · [GitHub](https://github.com/NickSki17)
+
+**Zachary Skiba**
+[LinkedIn] · [GitHub / Portfolio]
+
+---
