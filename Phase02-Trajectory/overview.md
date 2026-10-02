@@ -13,7 +13,7 @@
 
 ## Plan
 
-#### STEP 2.1 — Define Motion Goals & Metrics (Days 1–3)
+#### STEP 2.1 - Define Motion Goals & Metrics (Days 1–3)
 
 **Together**
 - Decide:  
@@ -48,7 +48,7 @@
 
 ---
 
-#### STEP 2.2 — Trajectory Parameterization (Days 4–7)
+#### STEP 2.2 - Trajectory Parameterization (Days 4–7)
 
 **Together**
 - Choose trajectory form:  
@@ -73,7 +73,7 @@
 
 ---
 
-#### STEP 2.3 — Execute & Log Trajectories on Hardware (Days 8–12)
+#### STEP 2.3 - Execute & Log Trajectories on Hardware (Days 8–12)
 
 **Zach**
 - Send parameterized trajectories to arm  
@@ -102,7 +102,7 @@
 
 ---
 
-#### STEP 2.4 — Optimization Loop (Days 13–20)
+#### STEP 2.4 - Optimization Loop (Days 13–20)
 
 **Together**
 - Decide:  
@@ -129,7 +129,7 @@
 
 ---
 
-#### STEP 2.5 — Validation & Comparison (Days 21–26)
+#### STEP 2.5 - Validation & Comparison (Days 21–26)
 
 **Zach**
 - Compare:  
@@ -149,7 +149,7 @@
 
 ---
 
-#### STEP 2.6 — Phase 2 Deliverables (Days 27–30)
+#### STEP 2.6 - Phase 2 Deliverables (Days 27–30)
 
 **Together**
 - Prepare:  

@@ -1,4 +1,4 @@
-# MMAE 497 — 16-Week Robotic Arm Work Plan
+# MMAE 497 - 16-Week Robotic Arm Work Plan
 
 ## Semester Objective
 
@@ -104,9 +104,9 @@ J2–J6 do **not** need to be fully fabrication-ready.
 
 # 16-Week Schedule
 
-## Phase 1 — Requirements and Mechanical Architecture
+## Phase 1 - Requirements and Mechanical Architecture
 
-### Week 1 — Requirements, Hardware, and Inventor Setup
+### Week 1 - Requirements, Hardware, and Inventor Setup
 
 **Goal:** Set up the project correctly before spending time on detailed geometry.
 
@@ -159,7 +159,7 @@ The objective is establishing the overall design framework, not detailed geometr
 
 ---
 
-## Week 2 — Kinematic Architecture
+## Week 2 - Kinematic Architecture
 
 **Goal:** Make sure the proposed arm geometry works before designing detailed mechanical components.
 
@@ -202,9 +202,9 @@ If not, fix the architecture now.
 
 ---
 
-# Phase 2 — Detailed J1 Engineering Design
+# Phase 2 - Detailed J1 Engineering Design
 
-## Week 3 — J1 Mechanical Architecture
+## Week 3 - J1 Mechanical Architecture
 
 **Goal:** Determine exactly how J1 should work mechanically.
 
@@ -244,7 +244,7 @@ Focus on mechanical function rather than cosmetic detail.
 
 ---
 
-## Week 4 — J1 Motor, Encoder, and Transmission
+## Week 4 - J1 Motor, Encoder, and Transmission
 
 **Goal:** Turn the J1 concept into a physically plausible actuator.
 
@@ -301,7 +301,7 @@ This is only the payload contribution. The mass of the arm and other components 
 
 ---
 
-## Week 5 — J1 Structural CAD
+## Week 5 - J1 Structural CAD
 
 **Goal:** Develop the actual structural components around the calculated loads.
 
@@ -339,7 +339,7 @@ Evaluate:
 
 ---
 
-## Week 6 — Complete J1 Assembly
+## Week 6 - Complete J1 Assembly
 
 **Goal:** Turn the individual J1 components into a complete subsystem.
 
@@ -390,7 +390,7 @@ Electronics themselves are outside the primary MMAE 497 scope.
 
 ---
 
-## Week 7 — J1 Engineering Validation and Revision
+## Week 7 - J1 Engineering Validation and Revision
 
 **Goal:** Verify that J1 is mechanically credible.
 
@@ -445,9 +445,9 @@ At the end of Week 7:
 
 ---
 
-# Phase 3 — J2 and J3 Development
+# Phase 3 - J2 and J3 Development
 
-## Week 8 — J2 Preliminary Design
+## Week 8 - J2 Preliminary Design
 
 **Goal:** Develop the shoulder architecture.
 
@@ -484,7 +484,7 @@ Do not try to make J2 as detailed as J1.
 
 ---
 
-## Week 9 — J3 Preliminary Design
+## Week 9 - J3 Preliminary Design
 
 **Goal:** Develop the elbow architecture.
 
@@ -517,7 +517,7 @@ Check:
 
 ---
 
-## Week 10 — J1–J3 Integration
+## Week 10 - J1–J3 Integration
 
 **Goal:** Create the first mechanically coherent 3-DOF section of the robot.
 
@@ -556,9 +556,9 @@ You should be able to show:
 
 ---
 
-# Phase 4 — Complete the 6-DOF Architecture
+# Phase 4 - Complete the 6-DOF Architecture
 
-## Week 11 — J4 Preliminary Design
+## Week 11 - J4 Preliminary Design
 
 **Goal:** Extend the arm into the wrist section.
 
@@ -584,7 +584,7 @@ Focus on architecture rather than detail.
 
 ---
 
-## Week 12 — J5 + J6 Preliminary Design
+## Week 12 - J5 + J6 Preliminary Design
 
 **Goal:** Complete the mechanical architecture of the final two joints.
 
@@ -620,9 +620,9 @@ At this point, the entire arm should exist in CAD.
 
 ---
 
-# Phase 5 — Full-Arm Parametric Integration
+# Phase 5 - Full-Arm Parametric Integration
 
-## Week 13 — Parametric CAD Refinement
+## Week 13 - Parametric CAD Refinement
 
 **Goal:** Turn the individual joint designs into a coherent parametric robotic-arm assembly.
 
@@ -665,7 +665,7 @@ Look for:
 
 ---
 
-# Week 14 — CAD → URDF / Initial Simulation
+# Week 14 - CAD → URDF / Initial Simulation
 
 **Goal:** Verify that the mechanical CAD architecture translates correctly into the robot's kinematic model.
 
@@ -700,13 +700,13 @@ Begin adding J4–J6.
 
 ---
 
-# Weeks 15–16 — Documentation and Wrap-Up
+# Weeks 15–16 - Documentation and Wrap-Up
 
 The final two weeks are intentionally protected from major new engineering work.
 
 ---
 
-## Week 15 — Documentation and Final CAD Cleanup
+## Week 15 - Documentation and Final CAD Cleanup
 
 ### CAD
 
@@ -752,7 +752,7 @@ Update:
 
 ---
 
-## Week 16 — Final Review and Course Wrap-Up
+## Week 16 - Final Review and Course Wrap-Up
 
 ### Technical Review
 

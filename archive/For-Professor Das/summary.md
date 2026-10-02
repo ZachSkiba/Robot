@@ -1,4 +1,4 @@
-# 🔹 6-DOF Robotic Arm — Project Overview
+# 🔹 6-DOF Robotic Arm - Project Overview
 
 This project is a **research-grade, 6-DOF robotic arm** designed for safe, repeatable motion experiments, targeting high repeatability and precision. It combines modular mechanical design, robust electronics, and a split-brain control architecture, supporting both autonomous and teleoperated operation. The platform serves as a testbed for trajectory optimization, control experiments, and data-driven analysis.
 
@@ -7,11 +7,11 @@ Main summary: https://github.com/ZachSkiba/Robot/blob/main/Overall_Project/specs
 
 ## Current Maturity (Detailed)
 
-* **Architecture & Planning:** Mature — system architecture, task split/governance, risks/constraints, and phase roadmaps fully documented.
-* **Simulation:** Moderate — mini-project simulation exists (single-motor + 2-link/3D dynamics) with multiple logged datasets (e.g., March 6, 2026) showing repeatable virtual test runs.
-* **Procurement:** Moderate-to-high — BOMs and component selections developed; staged purchasing plans in place.
-* **Software Environment:** High — ROS2/Gazebo/devcontainer workflows documented and scaffolded; application-level robot packages mostly skeletons/TODOs.
-* **Mechanical:** Early — no CAD assets checked in, and no finalized 3-DOF or 6-DOF mechanical model yet.
+* **Architecture & Planning:** Mature - system architecture, task split/governance, risks/constraints, and phase roadmaps fully documented.
+* **Simulation:** Moderate - mini-project simulation exists (single-motor + 2-link/3D dynamics) with multiple logged datasets (e.g., March 6, 2026) showing repeatable virtual test runs.
+* **Procurement:** Moderate-to-high - BOMs and component selections developed; staged purchasing plans in place.
+* **Software Environment:** High - ROS2/Gazebo/devcontainer workflows documented and scaffolded; application-level robot packages mostly skeletons/TODOs.
+* **Mechanical:** Early - no CAD assets checked in, and no finalized 3-DOF or 6-DOF mechanical model yet.
 
 ## Team & Task Split
 
@@ -23,7 +23,7 @@ Main summary: https://github.com/ZachSkiba/Robot/blob/main/Overall_Project/specs
 ## Mechanical & Electronics Overview
 
 * Modular 6-DOF arm, capable of **~2 kg payload**.
-* **Motors:** J1/J2 — NEMA23, J3/J4 — NEMA17, J5/J6 — NEMA11.
+* **Motors:** J1/J2 - NEMA23, J3/J4 - NEMA17, J5/J6 - NEMA11.
 * **Sensors:** Encoders on all joints; Phase 1 active feedback on elbow (J3) for load/stall detection.
 * **Electronics:** Teensy 4.1 handles real-time step generation and safety limits; ESP32-C3 provides Wi-Fi telemetry; Python on PC performs kinematics and trajectory planning.
 * **Safety Features:** Hardware E-stop, watchdog on Teensy, motion limit enforcement, and autonomous deceleration in case of failure.

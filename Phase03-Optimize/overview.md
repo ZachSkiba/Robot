@@ -14,7 +14,7 @@
 
 ## Plan
 
-#### STEP 3.1 — Add State Feedback (Days 1–4)
+#### STEP 3.1 - Add State Feedback (Days 1–4)
 
 **Together**
 - Decide how you’ll measure “actual” state:  
@@ -40,7 +40,7 @@
 
 ---
 
-#### STEP 3.2 — Define Error Models (Days 5–7)
+#### STEP 3.2 - Define Error Models (Days 5–7)
 
 **Together**
 - Define:  
@@ -66,7 +66,7 @@
 
 ---
 
-#### STEP 3.3 — Data Collection Campaign (Days 8–14)
+#### STEP 3.3 - Data Collection Campaign (Days 8–14)
 
 **Zach**
 - Automate experiments:  
@@ -88,7 +88,7 @@
 
 ---
 
-#### STEP 3.4 — Learn Error Corrections (Days 15–22)
+#### STEP 3.4 - Learn Error Corrections (Days 15–22)
 
 **Together**
 - Decide learning approach:  
@@ -112,7 +112,7 @@
 
 ---
 
-#### STEP 3.5 — Apply Corrections & Evaluate (Days 23–27)
+#### STEP 3.5 - Apply Corrections & Evaluate (Days 23–27)
 
 **Zach**
 - Apply learned correction to commands  
@@ -130,7 +130,7 @@
 
 ---
 
-#### STEP 3.6 — Phase 3 Deliverables (Days 28–30)
+#### STEP 3.6 - Phase 3 Deliverables (Days 28–30)
 
 **Together**
 - Prepare:  

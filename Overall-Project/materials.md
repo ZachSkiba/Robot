@@ -1,10 +1,10 @@
-# 🟢 Phase 0 — Materials Checklist (Simulation & Planning Only)
+# 🟢 Phase 0 - Materials Checklist (Simulation & Planning Only)
 
 ## Hardware
 - Laptop / desktop computer  
 - Notebook + pen (for sketches & derivations)  
 
-✅ No physical hardware added — this is correct and intentional.
+✅ No physical hardware added - this is correct and intentional.
 
 ## Software
 - Python (3.10+)  
@@ -37,12 +37,12 @@ Materials, components, and tools required for the robotic arm project, organized
 |------|---------|------|
 | Project notebook / digital documentation | 1 | For design sketches, calculations, and testing logs |
 | CAD software (Fusion 360 / SolidWorks / FreeCAD) | 1 | For link, joint, and gripper design |
-| ❌ Arduino Mega / ESP32 | — | Removed — Phase 0 is virtual-only |
-| ❌ Breadboard | — | Removed — no hardware prototyping in Phase 0 |
-| ❌ Jumper wires | — | Removed — hardware-gated |
-| ❌ Test servos (SG90 or similar) | — | Removed — architecture uses steppers only |
-| ❌ Sensors (rotary encoder, IMU) | — | Removed — simulated sensors only |
-| ❌ 3D printer / filament | — | Removed — no physical builds in Phase 0 |
+| ❌ Arduino Mega / ESP32 | - | Removed - Phase 0 is virtual-only |
+| ❌ Breadboard | - | Removed - no hardware prototyping in Phase 0 |
+| ❌ Jumper wires | - | Removed - hardware-gated |
+| ❌ Test servos (SG90 or similar) | - | Removed - architecture uses steppers only |
+| ❌ Sensors (rotary encoder, IMU) | - | Removed - simulated sensors only |
+| ❌ 3D printer / filament | - | Removed - no physical builds in Phase 0 |
 | Multimeter | 1 | Optional verification tool only |
 | Basic hand tools | 1 set | Optional, not required |
 
@@ -63,7 +63,7 @@ Materials, components, and tools required for the robotic arm project, organized
 | Shaft collars | 4–6 | Motor to joint connection |
 | Base plate (metal) | 1 | Rigid, grounded |
 | End-effector mounting plate | 1 | Tool interface |
-| 3D printer filament | 1–2 spools | Optional — non-load-bearing parts only |
+| 3D printer filament | 1–2 spools | Optional - non-load-bearing parts only |
 
 **Mini-projects in Phase 1:**  
 - Dry-fit mechanical joints (no power).  
@@ -75,7 +75,7 @@ Materials, components, and tools required for the robotic arm project, organized
 
 | Item | Quantity | Notes |
 |------|---------|------|
-| ❌ High-torque servos | — | Removed — not used in the current architecture |
+| ❌ High-torque servos | - | Removed - not used in the current architecture |
 | NEMA 23 stepper motors | 2 | J1, J2 |
 | NEMA 17 stepper motors | 2 | J3, J4 |
 | NEMA 11 stepper motors | 2 | J5, J6 |

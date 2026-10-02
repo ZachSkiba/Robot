@@ -1,4 +1,4 @@
-# Phase 0 — Task Split
+# Phase 0 - Task Split
 
 ## Purpose
 

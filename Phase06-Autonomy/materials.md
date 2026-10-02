@@ -1,4 +1,4 @@
-# Phase 6 — Materials Checklist
+# Phase 6 - Materials Checklist
 
 ## Required
 

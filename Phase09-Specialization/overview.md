@@ -1,4 +1,4 @@
-# Phase 9 — Specialization, Differentiation & Career Leverage
+# Phase 9 - Specialization, Differentiation & Career Leverage
 
 **Duration:** Optional / open-ended  
 **Goal:** Turn your system into a clear identity that aligns with exactly the roles you want (robotics, controls, ML, research, startup).
@@ -18,7 +18,7 @@
 
 ---
 
-## Track A — Learning & Intelligence Focus (DS-Heavy, Still Robotics)
+## Track A - Learning & Intelligence Focus (DS-Heavy, Still Robotics)
 
 **Theme:** *Learning-based robotic manipulation*
 
@@ -45,7 +45,7 @@
 
 ---
 
-##  Track B — Control, Optimization & Mechanics Focus (MechE-Heavy)
+##  Track B - Control, Optimization & Mechanics Focus (MechE-Heavy)
 
 **Theme:** *High-performance robotic manipulation*
 
@@ -72,7 +72,7 @@
 
 ---
 
-##  Track C — Perception & Autonomy Focus (Balanced)
+##  Track C - Perception & Autonomy Focus (Balanced)
 
 **Theme:** *Perception-driven autonomy*
 
@@ -99,7 +99,7 @@
 
 ---
 
-## Track D — Product / Startup / Systems Focus (Industry Signal)
+## Track D - Product / Startup / Systems Focus (Industry Signal)
 
 **Theme:** *Deployable robotic system*
 

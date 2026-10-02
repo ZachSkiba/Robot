@@ -23,7 +23,7 @@ We do not just "help each other." We act as **checks and balances**.
 
 ---
 
-## 2. Mechanical Engineering (ME) — "The Body & Reflex"
+## 2. Mechanical Engineering (ME) - "The Body & Reflex"
 The ME builds the physical machine and the hard real-time firmware that protects it.
 
 ### A. Hardware & Electronics
@@ -42,7 +42,7 @@ The ME builds the physical machine and the hard real-time firmware that protects
 
 ---
 
-## 3. Data Science (DS) — "The Brain & Conscience"
+## 3. Data Science (DS) - "The Brain & Conscience"
 The DS acts as the pilot (sending commands) and the auditor (grading performance).
 
 ### A. Control Strategy (Python)

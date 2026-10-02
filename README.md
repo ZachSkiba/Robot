@@ -1,8 +1,8 @@
 # 6-DOF Robotic Arm Platform
 
-**Status:** Early-stage development — planning complete, simulation implementation beginning
+**Status:** Early-stage development - planning complete, simulation implementation beginning
 
-A staged robotics project for designing, simulating, and building a 6-degree-of-freedom robotic arm. The focus is safety-first design, structured telemetry, and disciplined systems engineering — demonstrated through process and documentation now, and through running code as each phase completes.
+A staged robotics project for designing, simulating, and building a 6-degree-of-freedom robotic arm. The focus is safety-first design, structured telemetry, and disciplined systems engineering - demonstrated through process and documentation now, and through running code as each phase completes.
 
 > **Documentation rule:** Anything not yet implemented or evidenced in this repository is explicitly labeled *design intent* or *planned*. No capability is claimed without qualification until it exists.
 
@@ -23,14 +23,14 @@ A staged robotics project for designing, simulating, and building a 6-degree-of-
 
 ## Why This Project
 
-Most hobby robot arms are built bottom-up: buy motors, wire things, hope it works. This project inverts that. Design starts with constraints, safety margins, and a validation plan — then works toward hardware.
+Most hobby robot arms are built bottom-up: buy motors, wire things, hope it works. This project inverts that. Design starts with constraints, safety margins, and a validation plan - then works toward hardware.
 
 Engineering priorities, in order:
 
-1. **Safety** — defined at the architecture level before any motion command is written
-2. **Observability** — every joint state and command logged with timestamps
-3. **Staged validation** — simulation before hardware; hardware-in-the-loop before deployment
-4. **Reproducibility** — fully containerized dev environment; anyone can build it
+1. **Safety** - defined at the architecture level before any motion command is written
+2. **Observability** - every joint state and command logged with timestamps
+3. **Staged validation** - simulation before hardware; hardware-in-the-loop before deployment
+4. **Reproducibility** - fully containerized dev environment; anyone can build it
 
 ---
 
@@ -41,7 +41,7 @@ Engineering priorities, in order:
 | Repository structure and planning docs | ✅ Present |
 | ROS 2 package scaffold (`robot_control`) | ✅ Builds in container |
 | Dev container environment | ✅ Operational |
-| Safety architecture | 📄 Designed — not yet implemented |
+| Safety architecture | 📄 Designed - not yet implemented |
 | Simulation (Gazebo + URDF) | 🔲 Planned |
 | Active ROS 2 control nodes | 🔲 Not yet implemented |
 | Hardware integration | 🔲 Planned (Phase 01+) |
@@ -56,7 +56,7 @@ Engineering priorities, in order:
 
 ## Phase 00 Exit Criteria
 
-Phase 00 closes when all of the following are demonstrated — not just planned:
+Phase 00 closes when all of the following are demonstrated - not just planned:
 
 - [ ] ROS 2 workspace builds reproducibly in the dev container
 - [ ] Gazebo launches with a URDF robot model loaded
@@ -71,7 +71,7 @@ Phase 01 does not begin until every box is checked.
 
 ## Safety Architecture
 
-> **Status:** Designed and documented — not yet implemented in code.
+> **Status:** Designed and documented - not yet implemented in code.
 
 The intended safety model is layered. No single layer is trusted alone.
 
@@ -82,13 +82,13 @@ The intended safety model is layered. No single layer is trusted alone.
 3. **Watchdog node:** monitors command stream freshness; triggers safe stop on timeout or interruption
 
 **Safety envelope variables:**
-- Joint position limits — defined in URDF, enforced at the controller level
-- Velocity and acceleration limits — clamped before any command is issued
-- Workspace constraints — MoveIt planning scene boundaries
-- Command timeout — stale or interrupted commands trigger halt, not continuation
+- Joint position limits - defined in URDF, enforced at the controller level
+- Velocity and acceleration limits - clamped before any command is issued
+- Workspace constraints - MoveIt planning scene boundaries
+- Command timeout - stale or interrupted commands trigger halt, not continuation
 
 **Failure behavior (design intent):**
-- All faults default to **stop and hold** — not uncontrolled release
+- All faults default to **stop and hold** - not uncontrolled release
 - No layer assumes a higher layer is functioning correctly
 - Emergency stop is a hard cutoff, not a software request
 
@@ -100,7 +100,7 @@ The intended safety model is layered. No single layer is trusted alone.
 
 ## System Architecture
 
-> **Status:** Design intent — not yet implemented end-to-end.
+> **Status:** Design intent - not yet implemented end-to-end.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -150,7 +150,7 @@ The intended safety model is layered. No single layer is trusted alone.
 | Constraint | Value |
 |---|---|
 | Degrees of freedom | 6 (serial manipulator) |
-| Target payload | TBD — primary driver for joint and actuator selection |
+| Target payload | TBD - primary driver for joint and actuator selection |
 | Control loop target | ≥ 50 Hz |
 | Safety posture | Fail-stop (halt on any unresolved fault) |
 | Gate rule | No phase advances before prior phase exit criteria are met |
@@ -167,7 +167,7 @@ The intended safety model is layered. No single layer is trusted alone.
 | Phase 03 | Telemetry and logging | 🔲 Planned |
 | Phase 04+ | Advanced capabilities | 🔲 Scoped as prior phases close |
 
-Phases beyond 03 are not fully defined yet. That is intentional — scope is defined when it is earned, not pre-planned into imaginary detail.
+Phases beyond 03 are not fully defined yet. That is intentional - scope is defined when it is earned, not pre-planned into imaginary detail.
 
 ---
 
@@ -190,10 +190,10 @@ Robot/
 
 ## Recommended Reading Order
 
-1. [`docs/overall_project/README.md`](docs/overall_project/README.md) — scope, constraints, safety philosophy
-2. [`docs/overall_project/system_overview.md`](docs/overall_project/system_overview.md) — architecture and component relationships
-3. [`docs/phase_00/README.md`](docs/phase_00/README.md) — current simulation work and validation plan
-4. [`docs/phase_01/overview.md`](docs/phase_01/overview.md) — physical build planning
+1. [`docs/overall_project/README.md`](docs/overall_project/README.md) - scope, constraints, safety philosophy
+2. [`docs/overall_project/system_overview.md`](docs/overall_project/system_overview.md) - architecture and component relationships
+3. [`docs/phase_00/README.md`](docs/phase_00/README.md) - current simulation work and validation plan
+4. [`docs/phase_01/overview.md`](docs/phase_01/overview.md) - physical build planning
 
 ---
 
@@ -203,11 +203,11 @@ This repository is developed with the discipline expected in a production roboti
 
 - Requirements and risk documentation written before implementation begins
 - Containerized, reproducible development workflow
-- Explicit exit criteria per phase — no phase advances without demonstrated evidence
+- Explicit exit criteria per phase - no phase advances without demonstrated evidence
 - Commit history reflecting deliberate, traceable progress
 - Honest separation of what is designed, what is planned, and what is running
 
-The goal is not to show a robot that moves. It is to demonstrate the ability to operate inside a real engineering process — and to close that gap into working code phase by phase.
+The goal is not to show a robot that moves. It is to demonstrate the ability to operate inside a real engineering process - and to close that gap into working code phase by phase.
 
 ---
 

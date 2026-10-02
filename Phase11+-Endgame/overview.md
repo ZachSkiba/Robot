@@ -1,4 +1,4 @@
-# Phase 11 — Impact, Mentorship & Long-Term Signal
+# Phase 11 - Impact, Mentorship & Long-Term Signal
 
 **Duration:** Optional / low-maintenance  
 **Goal:** Turn your work into lasting external signal that compounds over time, even when you’re busy with school or jobs.
@@ -103,7 +103,7 @@
 
 ---
 
-### Phase 11 — Materials Checklist
+### Phase 11 - Materials Checklist
 - [ ] Final stable system
 - [ ] Clean documentation
 - [ ] Diagrams & visuals
@@ -112,7 +112,7 @@
 
 ---
 
-## Phase 12 — Personalization, Ownership & Next-Generation Spin-Offs
+## Phase 12 - Personalization, Ownership & Next-Generation Spin-Offs
 
 **Duration:** Optional / long-term  
 **Goal:** Turn the project into multiple futures you can branch from, depending on where your careers go.
@@ -169,7 +169,7 @@
 - Share datasets  
 - Set compatibility rules  
 
-> One person can push forward without blocking the other — mimics real engineering teams.
+> One person can push forward without blocking the other - mimics real engineering teams.
 
 ---
 
@@ -201,7 +201,7 @@
 
 ---
 
-### Phase 12 — Materials Checklist
+### Phase 12 - Materials Checklist
 - [ ] Stable shared codebase
 - [ ] Clear module boundaries
 - [ ] Defined ownership docs
@@ -212,7 +212,7 @@
 # Phase 13 - Real-World Adoption, Proof & Exit Options
 
 **Duration:** Optional / opportunistic  
-**Goal:** Move from “personal platform” to external adoption, validation, or transition — without locking yourselves into one path.  
+**Goal:** Move from “personal platform” to external adoption, validation, or transition - without locking yourselves into one path.  
 
 This phase is about closing the loop with the real world.
 
@@ -229,7 +229,7 @@ This phase is about closing the loop with the real world.
 
 ## Step-by-Step Plan
 
-### STEP 13.1 — Choose an External Context (Pick ONE)
+### STEP 13.1 - Choose an External Context (Pick ONE)
 
 You deliberately place the system into a real context:
 
@@ -238,11 +238,11 @@ You deliberately place the system into a real context:
 - Education (teaching platform, robotics club)
 - Startup concept (narrow, focused use case)
 
-You’re not committing forever — just testing fit.
+You’re not committing forever - just testing fit.
 
 ---
 
-### STEP 13.2 — Adapt to External Constraints
+### STEP 13.2 - Adapt to External Constraints
 
 **Together**  
 Handle constraints you didn’t choose:  
@@ -256,7 +256,7 @@ This is where maturity shows.
 
 ---
 
-### STEP 13.3 — External Evaluation
+### STEP 13.3 - External Evaluation
 
 **Zach (DS)**  
 - Measure performance under new conditions  
@@ -272,7 +272,7 @@ This is where maturity shows.
 
 ---
 
-### STEP 13.4 — Decide the Exit Path
+### STEP 13.4 - Decide the Exit Path
 
 Explicitly choose one:
 
@@ -285,7 +285,7 @@ Choosing to stop is also success.
 
 ---
 
-### STEP 13.5 — Final Signal
+### STEP 13.5 - Final Signal
 
 Produce one clean artifact:
 
@@ -299,14 +299,14 @@ Produce one clean artifact:
 
 | Area                    | Zach (DS) | Nicholas (MechE) |
 |-------------------------|-----------|-----------------|
-| External evaluation      | Yes      | —               |
-| Adaptation & robustness  | —        | Yes             |
+| External evaluation      | Yes      | -               |
+| Adaptation & robustness  | -        | Yes             |
 | System integration       | Yes      | Yes             |
 | Decision making          | Yes      | Yes             |
 
 ---
 
-## Phase 13 — Materials Checklist
+## Phase 13 - Materials Checklist
 
 - [ ] Stable final system  
 - [ ] Willing external context  

@@ -1,4 +1,4 @@
-# Phase 0 — System Overview
+# Phase 0 - System Overview
 
 ## Purpose
 
@@ -75,7 +75,7 @@ Error Metrics Plot & Save
 
 > Phase 0 proves the concept virtually. Hardware decisions, trajectory planning, safety constraints, and data collection strategies must flow directly from this validated simulation.
 
-# Phase 0 — Timeline (Adjusted for Availability)
+# Phase 0 - Timeline (Adjusted for Availability)
 
 ## Combined Availability
 

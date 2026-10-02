@@ -20,7 +20,7 @@ These are the simplifications we accept to make the math solvable.
   \[
   < 60\% \text{ of its holding torque rating}
   \]  
-  The spring does not need to be perfect—only sufficient to prevent thermal overload.
+  The spring does not need to be perfect-only sufficient to prevent thermal overload.
 
 - **Planar Base**  
   The mounting surface is assumed to be perfectly rigid and level.  
@@ -112,7 +112,7 @@ Violating any constraint risks hardware damage or safety failure.
 - **Latency Budget**
   - USB round-trip: **< 5 ms (average)**
   - Wi-Fi telemetry: **< 50 ms**  
-    *(Acceptable for data only — forbidden for control loops)*
+    *(Acceptable for data only - forbidden for control loops)*
 
 ---
 
@@ -149,6 +149,6 @@ Explicit behaviors the system **does not** support.
   Doing so risks immediate driver destruction.
 
 - **No Waterproofing**  
-  The system is rated **IP20** — indoor / laboratory use only.
+  The system is rated **IP20** - indoor / laboratory use only.
 
 ---

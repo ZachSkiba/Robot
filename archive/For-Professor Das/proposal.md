@@ -1,4 +1,4 @@
-# 🔹 6-DOF Robotic Arm — 2-Credit Project Summary (One Pager)
+# 🔹 6-DOF Robotic Arm - 2-Credit Project Summary (One Pager)
 
 ### Project Title
 **Incremental CAD Design and Simulation of a 6-DOF Robotic Arm**

@@ -123,7 +123,7 @@ The manipulator will:
   Verify packet parsing and buffer logic without motors attached.
 
 - **Integration Tests**  
-  *The Shake Test* — validate connectors and EMI shielding under maximum vibration.
+  *The Shake Test* - validate connectors and EMI shielding under maximum vibration.
 
 - **System Identification**  
   Measure and record real friction, gravity, and inertia to update the software model.
@@ -168,7 +168,7 @@ Upon completion, the system should:
 ## 9. Non-Goals (Explicitly Out of Scope)
 
 - **Toy Servos**  
-  No PWM hobby servos — only steppers with defined steps.
+  No PWM hobby servos - only steppers with defined steps.
 
 - **Blind Motion**  
   No motion without enforced safety limits.

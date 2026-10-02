@@ -5,7 +5,7 @@ This project is a high-fidelity engineering initiative to design, build, and gov
 
 Unlike typical hobbyist builds, this system treats hardware as an industrial platform. It uses a **"Split-Brain" Architecture** where real-time safety guarantees (Teensy 4.1) are decoupled from high-level trajectory planning (Python/PC), linked by a strict data contract.
 
-The intent is not just to make motors move, but to create a scalable engineering system that enforces **ME/DS parity**—where mechanical limits and data science verification hold equal authority.
+The intent is not just to make motors move, but to create a scalable engineering system that enforces **ME/DS parity**-where mechanical limits and data science verification hold equal authority.
 
 ---
 

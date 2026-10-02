@@ -1,4 +1,4 @@
-## 🧰 Phase 1 — Materials Checklist
+## 🧰 Phase 1 - Materials Checklist
 
 ### Required
 

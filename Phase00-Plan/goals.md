@@ -1,4 +1,4 @@
-# 🤖 6-DOF Robotic Arm — Phase 0 Planning & Goals
+# 🤖 6-DOF Robotic Arm - Phase 0 Planning & Goals
 
 **Project Phase 0: Planning, Simulation, and Pre-Hardware Validation**  
 *Research-grade, safety-conscious, and resume-worthy.*

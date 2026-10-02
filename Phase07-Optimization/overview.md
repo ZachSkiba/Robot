@@ -15,7 +15,7 @@
 
 ## Plan
 
-#### STEP 7.1 — System Identification & Modeling (Weeks 1–2)
+#### STEP 7.1 - System Identification & Modeling (Weeks 1–2)
 
 **Together**
 - Define what to model:  
@@ -39,7 +39,7 @@
 
 ---
 
-#### STEP 7.2 — Hybrid Control (Classical + Learning) (Weeks 3–5)
+#### STEP 7.2 - Hybrid Control (Classical + Learning) (Weeks 3–5)
 
 **Together**
 - Define control stack:  
@@ -61,7 +61,7 @@
 
 ---
 
-#### STEP 7.3 — Robustness & Generalization (Weeks 6–7)
+#### STEP 7.3 - Robustness & Generalization (Weeks 6–7)
 
 **Together**
 - Test under:  
@@ -82,7 +82,7 @@
 
 ---
 
-#### STEP 7.4 — Optimization at the System Level (Weeks 8–9)
+#### STEP 7.4 - Optimization at the System Level (Weeks 8–9)
 
 **Optimize**
 - energy usage  
@@ -102,7 +102,7 @@
 
 ---
 
-#### STEP 7.5 — Evaluation & Benchmarking (Weeks 10–11)
+#### STEP 7.5 - Evaluation & Benchmarking (Weeks 10–11)
 
 **Together**
 - Define metrics:  
@@ -123,7 +123,7 @@
 
 ---
 
-#### STEP 7.6 — Documentation and Presentation (Weeks 12+)
+#### STEP 7.6 - Documentation and Presentation (Weeks 12+)
 
 **Together**
 - Create:  

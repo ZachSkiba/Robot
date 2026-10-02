@@ -1,4 +1,4 @@
-# Phase 3 — Materials Checklist
+# Phase 3 - Materials Checklist
 
 ## Required
 

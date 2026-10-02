@@ -50,7 +50,7 @@
 ---
 
 ## **Notes**
-- Materials are scoped for **Phase 0 mini-projects only** — Phase 1 full-arm hardware is **not included**.  
+- Materials are scoped for **Phase 0 mini-projects only** - Phase 1 full-arm hardware is **not included**.  
 - Mini-Project A and B **reuse the same motor, driver, and wiring** wherever possible.  
 - Keep a few **spare wires, connectors, and resistors**; early testing often requires adjustments.  
 - Tools listed are **hand tools only**; no heavy machinery required.  

@@ -1,4 +1,4 @@
-# Phase 0 — Risks & Unknowns
+# Phase 0 - Risks & Unknowns
 
 ## **General Risks**
 - **Overcomplexity:** Spending too much time refining simulation, FK/IK, or trajectory planning can delay Phase 1.  

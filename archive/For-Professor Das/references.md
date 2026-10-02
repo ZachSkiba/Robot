@@ -4,11 +4,11 @@ Project references grouped by topic.
 
 ## Mechanical & Structural
 
-- **Thor 6-DOF Robotic Arm — Hackaday.io**
+- **Thor 6-DOF Robotic Arm - Hackaday.io**
   https://hackaday.io/project/12989-thor
   Reference for full-arm mechanical architecture and joint distribution. Used for baseline comparison of structural layout and load distribution strategies in multi-DOF arms.
 
-- **DIY 3D Printed Drive Comparison — How To Mechatronics**
+- **DIY 3D Printed Drive Comparison - How To Mechatronics**
   https://howtomechatronics.com/how-it-works/what-is-the-best-3d-printed-drive-for-your-next-robotic-project/
 
   Reference for comparative analysis of 3D-printed drivetrain architectures, including belt drives, planetary gearboxes, and cycloidal reducers. Used as a design-level benchmark for evaluating efficiency, backlash, torque transmission, manufacturability, and wear behavior in additively manufactured robotic transmission systems.
@@ -33,11 +33,11 @@ Project references grouped by topic.
 
 ## Hardware & Datasheets
 
-- **AS5600 Magnetic Encoder — AMS OSRAM**
+- **AS5600 Magnetic Encoder - AMS OSRAM**
   https://ams-osram.com/products/sensor-solutions/position-sensors/ams-as5600-position-sensor
   Defines encoder resolution, interface constraints, and timing limitations; informs sampling strategy and fault detection logic.
 
-- **TMC2209 Stepper Driver — Analog Devices**
+- **TMC2209 Stepper Driver - Analog Devices**
   https://www.analog.com/en/products/tmc2209.html
   Defines motor control behavior, microstepping configuration, and electrical noise constraints for actuator design.
 

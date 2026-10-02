@@ -1,4 +1,4 @@
-# Phase 8 — Materials Checklist
+# Phase 8 - Materials Checklist
 
 ## Required
 

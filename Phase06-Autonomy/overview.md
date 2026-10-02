@@ -14,7 +14,7 @@
 
 ## Plan
 
-#### STEP 6.1 — Mobile Base Design (Weeks 1–2)
+#### STEP 6.1 - Mobile Base Design (Weeks 1–2)
 
 **Together**
 - Decide platform:  
@@ -38,7 +38,7 @@
 
 ---
 
-#### STEP 6.2 — Base Control & Odometry (Weeks 3–4)
+#### STEP 6.2 - Base Control & Odometry (Weeks 3–4)
 
 **Together**
 - Define:  
@@ -60,7 +60,7 @@
 
 ---
 
-#### STEP 6.3 — Navigation & Planning (Weeks 5–6)
+#### STEP 6.3 - Navigation & Planning (Weeks 5–6)
 
 **Together**
 - Define environment:  
@@ -82,7 +82,7 @@
 
 ---
 
-#### STEP 6.4 — Arm + Base Coordination (Weeks 7–8)
+#### STEP 6.4 - Arm + Base Coordination (Weeks 7–8)
 
 **Together**
 - Define behaviors:  
@@ -103,7 +103,7 @@
 
 ---
 
-#### STEP 6.5 — Autonomous Task Demo (Weeks 9–10)
+#### STEP 6.5 - Autonomous Task Demo (Weeks 9–10)
 
 **Together**
 - Pick one clean demo:  
@@ -126,7 +126,7 @@
 
 ---
 
-#### STEP 6.6 — Final System Polish (Weeks 11–12)
+#### STEP 6.6 - Final System Polish (Weeks 11–12)
 
 **Together**
 - Deliver:  

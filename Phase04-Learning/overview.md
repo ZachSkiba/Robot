@@ -17,7 +17,7 @@
 
 ## Plan
 
-#### STEP 4.1 — Define the RL Problem (Days 1–4)
+#### STEP 4.1 - Define the RL Problem (Days 1–4)
 
 **Together**
 - Lock down one simple but meaningful task:  
@@ -40,11 +40,11 @@
 - Sanity-check reward realism  
 
 **Coordination**
-- Reward shaping is joint work — this is critical
+- Reward shaping is joint work - this is critical
 
 ---
 
-#### STEP 4.2 — Build a Simulator from Real Data (Days 5–10)
+#### STEP 4.2 - Build a Simulator from Real Data (Days 5–10)
 
 **Together**
 - Decide fidelity level:  
@@ -65,7 +65,7 @@
 
 ---
 
-#### STEP 4.3 — Train RL in Simulation (Days 11–20)
+#### STEP 4.3 - Train RL in Simulation (Days 11–20)
 
 **Zach**
 - Implement RL algorithm: PPO or SAC (recommended)  
@@ -82,7 +82,7 @@
 
 ---
 
-#### STEP 4.4 — Safe Sim-to-Real Transfer (Days 21–26)
+#### STEP 4.4 - Safe Sim-to-Real Transfer (Days 21–26)
 
 **Together**
 - Define safety envelope:  
@@ -103,7 +103,7 @@
 
 ---
 
-#### STEP 4.5 — Compare Against Baselines (Days 27–32)
+#### STEP 4.5 - Compare Against Baselines (Days 27–32)
 
 **Zach**
 - Quantitative comparison:  
@@ -123,7 +123,7 @@
 
 ---
 
-#### STEP 4.6 — Phase 4 Deliverables (Days 33–40)
+#### STEP 4.6 - Phase 4 Deliverables (Days 33–40)
 
 **Together**
 - Produce:  

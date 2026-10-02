@@ -1,4 +1,4 @@
-# Phase 10 — Materials Checklist
+# Phase 10 - Materials Checklist
 
 - [ ] Stable final system  
 - [ ] Clean GitHub repo  

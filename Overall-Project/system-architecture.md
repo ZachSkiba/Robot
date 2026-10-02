@@ -1,4 +1,4 @@
-# 🤖 6-DOF Robotic Arm — Final Master Blueprint
+# 🤖 6-DOF Robotic Arm - Final Master Blueprint
 
 Split-Brain, Hard Real-Time, Safety-Critical
 

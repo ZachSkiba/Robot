@@ -1,4 +1,4 @@
-# Phase 9 — Materials Checklist
+# Phase 9 - Materials Checklist
 
 ## Required
 

@@ -1,4 +1,4 @@
-# Phase 10 — Mastery, Legacy & Long-Term Leverage
+# Phase 10 - Mastery, Legacy & Long-Term Leverage
 
 **Duration:** Ongoing / as needed  
 **Goal:** Turn this project into a career anchor you reuse, reference, and extend for years.
@@ -16,7 +16,7 @@
 
 ### Step-by-Step Plan
 
-#### STEP 10.1 — Establish a Stable System Snapshot
+#### STEP 10.1 - Establish a Stable System Snapshot
 
 **Together**
 - Pick a stable snapshot:  
@@ -30,7 +30,7 @@
 
 ---
 
-#### STEP 10.2 — Convert the Project into Career Assets
+#### STEP 10.2 - Convert the Project into Career Assets
 
 **Zach (DS)**
 - Resume bullets (ML, optimization, autonomy)  
@@ -49,7 +49,7 @@
 
 ---
 
-#### STEP 10.3 — Interview & Whiteboard Readiness
+#### STEP 10.3 - Interview & Whiteboard Readiness
 
 **Together**
 - Practice explaining:  
@@ -62,7 +62,7 @@
 
 ---
 
-#### STEP 10.4 — Reuse the Platform
+#### STEP 10.4 - Reuse the Platform
 
 Your robot is now a sandbox:  
 - New ML algorithm? → test it here  
@@ -71,7 +71,7 @@ Your robot is now a sandbox:
 
 ---
 
-#### STEP 10.5 — External Signal (Optional but Powerful)
+#### STEP 10.5 - External Signal (Optional but Powerful)
 
 Options:  
 - Open-source release  
@@ -80,7 +80,7 @@ Options:
 - Student competition  
 - Startup pitch / concept  
 
-> You don’t need all of these — one is enough.
+> You don’t need all of these - one is enough.
 
 ---
 

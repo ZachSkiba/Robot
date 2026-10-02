@@ -1,4 +1,4 @@
-# 6-DOF Robotic Arm — Professional Software Setup
+# 6-DOF Robotic Arm - Professional Software Setup
 
 Supported development environment for this repository.
 
@@ -78,7 +78,7 @@ Professional rule:
 
 If you need extra ROS packages, add them to the devcontainer image instead of dropping downloaded binaries into the repo.
 
-## Phase 0 — Host Prerequisites
+## Phase 0 - Host Prerequisites
 
 Install these on Windows:
 
@@ -103,7 +103,7 @@ Expected:
 
 If you want smoother Gazebo performance under WSLg, keep GPU drivers current and reboot after driver updates.
 
-## Phase 1 — WSL2 Baseline
+## Phase 1 - WSL2 Baseline
 
 If Ubuntu 22.04 is not installed yet:
 
@@ -127,7 +127,7 @@ Apply changes:
 wsl --shutdown
 ```
 
-## Phase 2 — Clone And Open The Repo
+## Phase 2 - Clone And Open The Repo
 
 Clone the repository, then open the `Robot` folder in VS Code.
 
@@ -154,7 +154,7 @@ If you need a new dependency:
 
 Then rebuild the container instead of committing installed outputs.
 
-## Phase 3 — Verify The Container
+## Phase 3 - Verify The Container
 
 Open a terminal in the container and confirm you are in the repo root:
 
@@ -186,7 +186,7 @@ Expected:
 
 This is the first hard gate. If this does not pass, do not move on to Gazebo, MoveIt, Teensy, or Foxglove yet.
 
-## Phase 4 — Daily Development Rules
+## Phase 4 - Daily Development Rules
 
 Inside the container:
 
@@ -210,7 +210,7 @@ Related docs:
 - [how-to-commit.md](./how-to-commit.md)
 - [colaborating-dev-container.md](./colaborating-dev-container.md)
 
-## Phase 5 — Optional Simulation Readiness
+## Phase 5 - Optional Simulation Readiness
 
 Only do this after Phase 3 passes.
 
@@ -239,7 +239,7 @@ What it does not prove:
 
 Those are repo implementation milestones, not machine setup milestones.
 
-## Phase 6 — Optional Hardware / Teensy Readiness
+## Phase 6 - Optional Hardware / Teensy Readiness
 
 Only do this after Phase 3 passes.
 

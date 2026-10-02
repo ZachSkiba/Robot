@@ -1,6 +1,6 @@
 # Robotic Arm Project
 
-## Mini-Projects — Production-Grade Foundations
+## Mini-Projects - Production-Grade Foundations
 
 **ME + DS Parity · 6-DOF-Ready · Virtual → Hardware-Gated**
 
@@ -97,7 +97,7 @@ This architecture **never changes**.
 
 ---
 
-## Mini-Project 1 — Single-Axis Control + Data Contract
+## Mini-Project 1 - Single-Axis Control + Data Contract
 
 *(Foundation of the Entire Robot)*
 
@@ -116,9 +116,9 @@ If one joint is not **provably stable**, the arm is fiction.
 
 ---
 
-### Phase 0 — Virtual Execution
+### Phase 0 - Virtual Execution
 
-#### ME Responsibilities — Control & Safety Authority *(Virtual)*
+#### ME Responsibilities - Control & Safety Authority *(Virtual)*
 
 * Define theoretical actuator envelope:
 
@@ -147,7 +147,7 @@ If one joint is not **provably stable**, the arm is fiction.
 
 ---
 
-#### DS Responsibilities — Truth & Acceptance Authority *(Virtual)*
+#### DS Responsibilities - Truth & Acceptance Authority *(Virtual)*
 
 * Define logging schema before motion
 * Build plots:
@@ -170,9 +170,9 @@ If one joint is not **provably stable**, the arm is fiction.
 
 ---
 
-### Phase 1 — Hardware Execution *(Unlocked Only After Phase 0 Gate)*
+### Phase 1 - Hardware Execution *(Unlocked Only After Phase 0 Gate)*
 
-#### ME Responsibilities — Physical Control & Safety
+#### ME Responsibilities - Physical Control & Safety
 
 * Wire motor, driver, encoder
 * Implement control logic (PID / stepper profiles)
@@ -191,7 +191,7 @@ If one joint is not **provably stable**, the arm is fiction.
 
 ---
 
-#### DS Responsibilities — Physical Validation
+#### DS Responsibilities - Physical Validation
 
 * Log real sensor data:
 
@@ -223,32 +223,32 @@ Failure blocks all progression.
 
 ---
 
-## Mini-Project 2 — Multi-Joint Coordination + Model Validation
+## Mini-Project 2 - Multi-Joint Coordination + Model Validation
 
 *(Math ↔ Physics Contract)*
 
-### Phase 0 — Virtual Coordination
+### Phase 0 - Virtual Coordination
 
 * ME implements FK / IK for 2–3 joints
 * DS validates predicted vs simulated behavior
 * Error bounds defined by DS
 
-### Phase 1 — Hardware Coordination
+### Phase 1 - Hardware Coordination
 
 * ME executes coordinated trajectories
 * DS validates lag, drift, correlation error
 
 ---
 
-## Mini-Project 3 — Integration, Replay, and System Judgment
+## Mini-Project 3 - Integration, Replay, and System Judgment
 
-### Phase 0 — Judgment System
+### Phase 0 - Judgment System
 
 * Simulated motion buffering
 * Heartbeat timeout logic
 * Trajectory replay validation
 
-### Phase 1 — Hardware Integrity
+### Phase 1 - Hardware Integrity
 
 * EMI robustness
 * E-stop dominance
