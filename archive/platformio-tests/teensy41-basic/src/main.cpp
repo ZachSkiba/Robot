@@ -249,7 +249,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 1 — CHOOSE THE PROGRAM
+// STEP 1 - CHOOSE THE PROGRAM
 // ============================================================
 //
 // Change the active #include above and the function called
@@ -263,7 +263,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 2 — BUILD THE CODE
+// STEP 2 - BUILD THE CODE
 // ============================================================
 //
 // 🟧 VS CODE DEV CONTAINER
@@ -286,7 +286,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 3 — COPY THE NEW HEX OUT OF DOCKER
+// STEP 3 - COPY THE NEW HEX OUT OF DOCKER
 // ============================================================
 //
 // 🟦 WINDOWS POWERSHELL
@@ -314,7 +314,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 4 — COPY THE HEX INTO WSL
+// STEP 4 - COPY THE HEX INTO WSL
 // ============================================================
 //
 // 🟦 WINDOWS POWERSHELL
@@ -323,7 +323,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 5 — PUT TEENSY INTO PROGRAMMING MODE
+// STEP 5 - PUT TEENSY INTO PROGRAMMING MODE
 // ============================================================
 //
 // Physical Teensy:
@@ -340,7 +340,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 6 — ATTACH HALF KAY TO WSL
+// STEP 6 - ATTACH HALF KAY TO WSL
 // ============================================================
 //
 // 🟦 WINDOWS POWERSHELL
@@ -363,7 +363,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 7 — FLASH THE NEW FIRMWARE
+// STEP 7 - FLASH THE NEW FIRMWARE
 // ============================================================
 //
 // 🟩 UBUNTU WSL
@@ -385,7 +385,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 8 — REATTACH THE RUNNING TEENSY
+// STEP 8 - REATTACH THE RUNNING TEENSY
 //
 // ============================================================
 //
@@ -406,7 +406,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 9 — VERIFY THE SERIAL DEVICE
+// STEP 9 - VERIFY THE SERIAL DEVICE
 //
 // ============================================================
 //
@@ -430,7 +430,7 @@ void loop()
 //
 // ============================================================
 //
-// STEP 10 — RUN THE PYTHON TEST RUNNER
+// STEP 10 - RUN THE PYTHON TEST RUNNER
 //
 // ============================================================
 //

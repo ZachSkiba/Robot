@@ -14,7 +14,7 @@
 
 ## Plan
 
-#### STEP 8.1 — Reliability & Stress Testing
+#### STEP 8.1 - Reliability & Stress Testing
 
 **Together**
 - Define stress tests:  
@@ -34,7 +34,7 @@
 
 ---
 
-#### STEP 8.2 — Safety & Fault Handling
+#### STEP 8.2 - Safety & Fault Handling
 
 **Together**
 - Define failure modes:  
@@ -54,7 +54,7 @@
 
 ---
 
-#### STEP 8.3 — System Modularization (Engineering Hygiene)
+#### STEP 8.3 - System Modularization (Engineering Hygiene)
 
 **Together**
 - Refactor architecture into:  
@@ -76,7 +76,7 @@
 
 ---
 
-#### STEP 8.4 — Automation & Experiment Management
+#### STEP 8.4 - Automation & Experiment Management
 
 **Together**
 - Define “push-button” experiments  
@@ -93,7 +93,7 @@
 
 ---
 
-#### STEP 8.5 — Presentation & External Validation
+#### STEP 8.5 - Presentation & External Validation
 
 **Together**
 - Create:  

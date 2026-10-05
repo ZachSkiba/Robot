@@ -1,4 +1,4 @@
-# Dev Container Onboarding — Partner Guide
+# Dev Container Onboarding - Partner Guide
 
 ## What Your Partner Needs Installed (One-Time, On Their Machine)
 
@@ -24,7 +24,7 @@ Then in VS Code:
 - Wait for the container to build
 - Run `colcon build` to verify everything works
 
-If the build fails — inspect the logs, run a clean build, then tell you. Do not install or modify dependencies to fix it. That's a repo problem, not a local one.
+If the build fails - inspect the logs, run a clean build, then tell you. Do not install or modify dependencies to fix it. That's a repo problem, not a local one.
 
 **Clean build (if needed):**
 ```bash
@@ -60,8 +60,8 @@ git push
 - Pull before touching anything
 - If `git pull` results in conflicts, stop and coordinate before resolving them
 - Never commit `build/`, `install/`, or `log/`
-- Branches may be broken temporarily — that's acceptable
-- `main` must always build — that is non-negotiable
+- Branches may be broken temporarily - that's acceptable
+- `main` must always build - that is non-negotiable
 - PRs must build cleanly before merging
 
 ---
@@ -88,7 +88,7 @@ Some files aren't in the repo intentionally. If something is missing:
 3. Fill in the local values
 4. Do not commit the real file
 
-**If a file is not meant for Git and has no template, stop and ask before creating it.** Calibration files, hardware-specific YAMLs, test configs — all of these count. Silent local divergence is how environments fall out of sync without anyone noticing.
+**If a file is not meant for Git and has no template, stop and ask before creating it.** Calibration files, hardware-specific YAMLs, test configs - all of these count. Silent local divergence is how environments fall out of sync without anyone noticing.
 
 ---
 

@@ -125,4 +125,4 @@ Phase 0 consists of **mini-projects** designed to unlock core skills, verify har
 
 **Notes:**  
 - Mini-projects are **skill unlocks, not optional warm-ups**.
-- Stop immediately once objectives are achieved — **do not optimize endlessly**.
+- Stop immediately once objectives are achieved - **do not optimize endlessly**.

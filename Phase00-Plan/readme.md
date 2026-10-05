@@ -1,4 +1,4 @@
-# Phase 0 — README
+# Phase 0 - README
 
 ## Overview
 
@@ -29,35 +29,35 @@ At the end of Phase 0, you should have:
 
 ## Step-by-Step Plan & Roles
 
-### Step 0.1 — Define the Arm (Day 1–2)
+### Step 0.1 - Define the Arm (Day 1–2)
 **Together:** DOF layout, joint types, link lengths, joint limits  
 **Zach (DS):** Coordinate frames, variable names, assumptions document  
 **Nicholas (MechE):** Sketches, feasibility, torque directions, motor placement  
 
-### Step 0.2 — Coordinate Frames & Math (Day 3–4)
+### Step 0.2 - Coordinate Frames & Math (Day 3–4)
 **Together:** Agree on base frame, axes, and rotation conventions  
 **Zach:** Implement FK in Python  
 **Nicholas:** Derive FK on paper and check rotations  
 
-### Step 0.3 — First Simulation (Day 5–6)
+### Step 0.3 - First Simulation (Day 5–6)
 **Zach:** 2D/3D visualization, animate motion  
 **Nicholas:** Verify physical realism, suggest adjustments to link lengths  
 
-### Step 0.4 — Define Data Schema (Day 7)
+### Step 0.4 - Define Data Schema (Day 7)
 **Together:** Decide on fields for telemetry and logging  
 **Zach:** Consider ML, plotting, and analysis needs  
 **Nicholas:** Ensure physical measurability and sanity checks  
 
-### Step 0.5 — Inverse Kinematics (Intro Only) (Day 8–10)
+### Step 0.5 - Inverse Kinematics (Intro Only) (Day 8–10)
 **Together:** Analytical vs numerical IK discussion  
 **Zach:** Implement numerical IK  
 **Nicholas:** Check joint limits, singularities, feasibility  
 
-### Step 0.6 — Metrics & Plots (Day 11–12)
+### Step 0.6 - Metrics & Plots (Day 11–12)
 **Zach:** Generate plots and save results  
 **Nicholas:** Interpret motion realism, oscillations, and anomalies  
 
-### Step 0.7 — Phase 0 Deliverables (Day 13–14)
+### Step 0.7 - Phase 0 Deliverables (Day 13–14)
 **Together:** Prepare README, documented design, and demo scripts  
 **Deliverables:**  
 * Documented arm design  

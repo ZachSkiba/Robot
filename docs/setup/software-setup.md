@@ -1,4 +1,4 @@
-# 6-DOF Robotic Arm — Development Environment Setup
+# 6-DOF Robotic Arm - Development Environment Setup
 > **Stack:** ROS 2 Humble · Gazebo Fortress · MoveIt2 · ros2_control · Foxglove · WSL2 · VS Code Dev Container
 
 ---
@@ -20,7 +20,7 @@
 
 ---
 
-## Phase 0 — Windows Preflight
+## Phase 0 - Windows Preflight
 
 ### 0.1 Confirm Windows Version
 ```
@@ -41,7 +41,7 @@ GPU acceleration is mandatory for Gazebo Fortress. Update to latest drivers and 
 
 ---
 
-## Phase 1 — Clean WSL2 Install
+## Phase 1 - Clean WSL2 Install
 
 ### 1.1 Install Ubuntu 22.04
 ```bash
@@ -62,7 +62,7 @@ wsl --set-version Ubuntu-22.04 2
 
 ---
 
-## Phase 2 — Resource Allocation
+## Phase 2 - Resource Allocation
 
 Create `C:\Users\<you>\.wslconfig`:
 
@@ -85,11 +85,11 @@ wsl --shutdown
 
 ---
 
-## Phase 2.5 — WSL Clock Sync
+## Phase 2.5 - WSL Clock Sync
 
 WSL2 clocks drift and will break TF trees and timestamps.
 
-### Primary Method — ntpdate safeguard in `~/.bashrc`
+### Primary Method - ntpdate safeguard in `~/.bashrc`
 ```bash
 sudo apt install ntpdate
 ```
@@ -102,7 +102,7 @@ if grep -qi microsoft /proc/version; then
 fi
 ```
 
-### Plan B — Hardware Clock
+### Plan B - Hardware Clock
 ```bash
 sudo hwclock -s
 ```
@@ -110,7 +110,7 @@ Use if RViz or TF tree shows drift.
 
 ---
 
-## Phase 3 — Ubuntu Base Setup
+## Phase 3 - Ubuntu Base Setup
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -122,7 +122,7 @@ sudo apt install -y \
 
 ---
 
-## Phase 4 — GPU Acceleration Check
+## Phase 4 - GPU Acceleration Check
 
 ```bash
 glxinfo -B
@@ -133,7 +133,7 @@ Do not proceed to Gazebo until this passes.
 
 ---
 
-## Phase 5 — Python Environment
+## Phase 5 - Python Environment
 
 ```bash
 mkdir -p ~/robot_ws
@@ -149,7 +149,7 @@ deactivate
 
 ---
 
-## Phase 6 — Teensy USB Handling
+## Phase 6 - Teensy USB Handling
 
 ### 6.1 Install usbipd (Windows)
 ```bash
@@ -194,7 +194,7 @@ teensy_loader_cli --mcu=TEENSY41 -w firmware.hex
 
 ---
 
-## Phase 7 — ROS 2 Humble Setup
+## Phase 7 - ROS 2 Humble Setup
 
 ### 7.1 Add ROS 2 Repository
 ```bash
@@ -237,7 +237,7 @@ source ~/.bashrc
 
 ---
 
-## Phase 8 — Gazebo Fortress Smoke Test
+## Phase 8 - Gazebo Fortress Smoke Test
 
 ```bash
 gz sim
@@ -247,7 +247,7 @@ Confirms GPU acceleration and Ignition Fortress integration with ros2_control. I
 
 ---
 
-## Phase 9 — ROS Workspace & colcon
+## Phase 9 - ROS Workspace & colcon
 
 ```bash
 sudo apt install -y python3-colcon-common-extensions
@@ -265,14 +265,14 @@ robot_ws/
 │   ├── robot_control/
 │   ├── robot_description/
 │   └── robot_bringup/
-├── build/         # generated — never commit
-├── install/       # generated — never commit
-└── log/           # generated — never commit
+├── build/         # generated - never commit
+├── install/       # generated - never commit
+└── log/           # generated - never commit
 ```
 
 ---
 
-## Phase 10 — Telemetry: PlotJuggler + Foxglove
+## Phase 10 - Telemetry: PlotJuggler + Foxglove
 
 ### PlotJuggler
 ```bash
@@ -289,7 +289,7 @@ Teammates connect via browser → 3D robot state, camera feeds, diagnostics.
 
 ---
 
-## Phase 11 — VS Code Dev Container
+## Phase 11 - VS Code Dev Container
 
 ### Install VS Code (Windows)
 Extensions required: **Remote – WSL**, **Python**, **ROS**, **C/C++**, **GitLens**
@@ -370,7 +370,7 @@ RUN git lfs install
 
 ---
 
-## Phase 12 — GitHub + Git LFS
+## Phase 12 - GitHub + Git LFS
 
 ```bash
 cd ~/robot_ws
@@ -386,7 +386,7 @@ git push -u origin main
 
 ---
 
-## Phase 13 — GitHub Workflow Guardrails
+## Phase 13 - GitHub Workflow Guardrails
 
 ### 13.1 Repo Root Structure
 
@@ -470,7 +470,7 @@ Merge:    Merge to main
 
 ---
 
-## Phase 14 — Pair Programming with VS Code Live Share
+## Phase 14 - Pair Programming with VS Code Live Share
 
 ### 14.1 Add Extension
 
@@ -511,7 +511,7 @@ Rebuild the container after adding it.
 
 ---
 
-## Phase 15 — URDF / XACRO Robot Description
+## Phase 15 - URDF / XACRO Robot Description
 
 ### 15.1 Create the Package
 ```bash
@@ -525,7 +525,7 @@ mkdir -p my_arm_description/meshes
 
 Define 6 links (physical segments) and 6 joints (motor axes) with positions, rotation axes, and limits.
 
-Example — Joint 1 → Joint 2:
+Example - Joint 1 → Joint 2:
 ```xml
 <link name="link1">
   <visual>
@@ -556,7 +556,7 @@ The arm should appear in Foxglove or RViz.
 
 ---
 
-## Phase 16 — ros2_control Hardware Interface
+## Phase 16 - ros2_control Hardware Interface
 
 ### 16.1 Create the Package
 ```bash
@@ -597,8 +597,8 @@ Use modern ROS 2 Humble + Gazebo Fortress syntax. Replace any legacy `<transmiss
 ### 16.3 C++ Hardware Interface
 
 Implement two methods:
-- `read()` — pull current joint states from simulation or hardware
-- `write()` — send velocity/position commands with safety checks and joint limits
+- `read()` - pull current joint states from simulation or hardware
+- `write()` - send velocity/position commands with safety checks and joint limits
 
 > When swapping from simulation to real hardware, only the plugin target changes. MoveIt2 is untouched.
 
@@ -611,7 +611,7 @@ The arm now holds position and accepts commands in simulation.
 
 ---
 
-## Phase 17 — Motion Planning & Telemetry
+## Phase 17 - Motion Planning & Telemetry
 
 ### 17.1 MoveIt2 Setup
 ```bash

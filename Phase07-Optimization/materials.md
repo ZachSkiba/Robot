@@ -1,4 +1,4 @@
-# Phase 7 — Materials Checklist
+# Phase 7 - Materials Checklist
 
 ## Required
 

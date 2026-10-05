@@ -73,7 +73,7 @@ MATLAB | Paid (unless your university provides a license). MATLAB Engine for Pyt
 
 **Hardware:**
 
-For now, you don’t need to buy hardware — simulation works fully on software.
+For now, you don’t need to buy hardware - simulation works fully on software.
 
 Later, the Teensy 4.1, stepper motors, encoders, drivers, and power supply are extra costs (hundreds of dollars depending on quality).
 
@@ -83,7 +83,7 @@ Later, the Teensy 4.1, stepper motors, encoders, drivers, and power supply are e
 
 - **Long-Term Support (LTS):**  
 Ubuntu 22.04 LTS is supported until 2027. Security updates and package stability are guaranteed.  
-Other distributions (Fedora, Arch) update constantly — ROS2 and Gazebo can break with minor updates.
+Other distributions (Fedora, Arch) update constantly - ROS2 and Gazebo can break with minor updates.
 
 - **ROS2 & Gazebo Compatibility:**  
 ROS2 Humble officially targets Ubuntu 22.04.  
@@ -118,7 +118,7 @@ For a professional, reproducible robotics setup, Ubuntu is the safest bet.
 
 You can start with a virtual setup for all development and simulations, then switch to a proper dual-boot Ubuntu installation later for hardware bring-up. Here’s how to plan it:
 
-**Phase 1 — Start on a Virtual System**
+**Phase 1 - Start on a Virtual System**
 
 **Setup:**
 
@@ -132,7 +132,7 @@ You can start with a virtual setup for all development and simulations, then swi
 - Building and debugging ROS2 nodes.  
 - Simulating the 6‑DOF arm in Gazebo (expect slower 3D rendering).  
 
-No hardware needed yet — everything is software-only.
+No hardware needed yet - everything is software-only.
 
 **Advantages:**
 
@@ -140,7 +140,7 @@ No hardware needed yet — everything is software-only.
 - Both partners can use the same VM image to ensure identical environments.  
 - You can push/pull code using Git safely.
 
-**Phase 2 — Switch to Dual-Boot Ubuntu**
+**Phase 2 - Switch to Dual-Boot Ubuntu**
 
 **When to switch:**
 
@@ -156,14 +156,14 @@ No hardware needed yet — everything is software-only.
 
 **Transition tips:**
 
-- Keep your VM as a backup — you can always test scripts there before running on real hardware.  
+- Keep your VM as a backup - you can always test scripts there before running on real hardware.  
 - Use Git to migrate all code, configs, and URDFs.  
-- Reinstall Docker and VS Code extensions in native Ubuntu — container configs usually transfer with minor changes.  
+- Reinstall Docker and VS Code extensions in native Ubuntu - container configs usually transfer with minor changes.  
 - Keep the Python venv or recreate it with the same versions to ensure consistency.
 
 ✅ **Bottom Line**  
 
-Start in a VM now — low-risk, fast start, both partners can code and simulate.  
+Start in a VM now - low-risk, fast start, both partners can code and simulate.  
 Switch to dual-boot when you want full Gazebo performance or to connect and control the actual arm.
 
 This workflow lets you develop 80% of the software stack before hardware arrives, so the hardware bring-up is just verification and tuning.

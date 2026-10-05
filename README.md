@@ -1,6 +1,6 @@
 # 6-DOF Robotic Arm Platform
 
-**Status:** Early-stage development — embedded bring-up and subsystem development in progress
+**Status:** Early-stage development - embedded bring-up and subsystem development in progress
 
 A collaborative robotics project focused on designing, simulating, and eventually building a 6-degree-of-freedom robotic arm. Development follows a staged approach: establish the system architecture, validate individual subsystems, design the mechanical system, and progressively integrate hardware and software.
 
@@ -98,7 +98,7 @@ Mechanical development has not yet begun. The next major stage will establish:
 
 ## System Architecture
 
-**Design intent — not yet implemented end-to-end.**
+**Design intent - not yet implemented end-to-end.**
 
 ```text
         Operator / Host Computer

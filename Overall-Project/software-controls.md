@@ -1,8 +1,8 @@
-# Production-Grade 6-DOF Robot — Complete Setup, Rationale, and Runbook
+# Production-Grade 6-DOF Robot - Complete Setup, Rationale, and Runbook
 
 Software controls architecture notes for the current WSL2-first plan.
 
-Single document you can drop into your repo as `ARCHITECTURE.md` or `README.md`. Clean, exact, and actionable — all critical choices locked in.
+Single document you can drop into your repo as `ARCHITECTURE.md` or `README.md`. Clean, exact, and actionable - all critical choices locked in.
 
 ## Summary
 
@@ -16,12 +16,12 @@ Use Teensy 4.1 + PlatformIO for all hard real-time motor control and ROS2 + Pyth
 - Final system architecture
 - Hardware & OS requirements (includes WSL2 workflow)
 - Repo layout & dev environment (Dev Container / WSL2 notes)
-- Firmware (PlatformIO) — timing and code skeleton
-- PC side (ROS2 + Python) — nodes & roles
-- Communication protocol — byte level (final)
+- Firmware (PlatformIO) - timing and code skeleton
+- PC side (ROS2 + Python) - nodes & roles
+- Communication protocol - byte level (final)
 - Control law & PID tuning method (per joint)
 - Encoder sampling & filtering strategy
-- Safety system — hardware + firmware rules
+- Safety system - hardware + firmware rules
 - Single-joint bring-up checklist (step-by-step)
 - CI / workflow / tests
 - Appendices: snippets, constants, quick reference
@@ -29,7 +29,7 @@ Use Teensy 4.1 + PlatformIO for all hard real-time motor control and ROS2 + Pyth
 
 ---
 
-## 1 — Goals & Design Rules
+## 1 - Goals & Design Rules
 
 - **Separation:** Python/ROS2 never implements hard real-time loops. MCU (Teensy) does.  
 - **Determinism:** MCU runs control at kHz; PC sends high-level joint targets.  
@@ -39,7 +39,7 @@ Use Teensy 4.1 + PlatformIO for all hard real-time motor control and ROS2 + Pyth
 
 ---
 
-## 2 — Final System Architecture
+## 2 - Final System Architecture
 
 **PC (Ubuntu 22.04 or WSL2 Ubuntu)**  
 ├─ VS Code + Dev Container (ROS2, Python, PlatformIO)  
@@ -61,7 +61,7 @@ Use Teensy 4.1 + PlatformIO for all hard real-time motor control and ROS2 + Pyth
 
 ---
 
-## 3 — Hardware & OS Requirements
+## 3 - Hardware & OS Requirements
 
 - **Host OS (primary):**  
   - **Default** (team / lab machines): Ubuntu 22.04 LTS (bare-metal preferred).  
@@ -76,7 +76,7 @@ Use Teensy 4.1 + PlatformIO for all hard real-time motor control and ROS2 + Pyth
 
 ---
 
-## 4 — Repo Layout & Dev Container
+## 4 - Repo Layout & Dev Container
 
 ```text
 robot-arm/
@@ -120,7 +120,7 @@ robot-arm/
 
 Note (WSL2): If using WSL2, enable Docker for WSL integration or use the Dockerfile and devcontainer.json to build within WSL2. For USB passthrough use usbipd to attach /dev/ttyACM0 into WSL and then pass that device into PlatformIO tasks in the WSL environment (no special --device needed for devcontainer in WSL since VS Code runs inside WSL).
 
-## 5 — Firmware (PlatformIO) — Timing & Skeleton
+## 5 - Firmware (PlatformIO) - Timing & Skeleton
 
 ### `platformio.ini`
 
@@ -169,7 +169,7 @@ ISR(control_timer) {
 
 Use hardware timers for step pulses.
 
-## 6 — PC Side (ROS2 + Python) — Nodes & Responsibilities
+## 6 - PC Side (ROS2 + Python) - Nodes & Responsibilities
 
 - **trajectory_node:** Generate smooth joint trajectories with jerk/acceleration limits.  
 - **kinematics_node:** Perform inverse kinematics and coordinate transforms (MoveIt2).  
@@ -184,7 +184,7 @@ Use hardware timers for step pulses.
 
 ---
 
-## 7 — Communication Protocol (Binary, Final)
+## 7 - Communication Protocol (Binary, Final)
 
 - **Transport:** TCP/IP preferred; fallback USB CDC for bring-up (works in WSL2 with `usbipd`)  
 - **Endianness:** Little-endian  
@@ -226,7 +226,7 @@ Use hardware timers for step pulses.
 
 ---
 
-## 8 — Control Law & PID Tuning (Per Joint)
+## 8 - Control Law & PID Tuning (Per Joint)
 
 **Discrete PID (dt = 0.0002 s / 5 kHz)**
 
@@ -264,7 +264,7 @@ u[k] = P + I + D
 
 ---
 
-## 9 — Encoder Sampling & Filtering (Exact)
+## 9 - Encoder Sampling & Filtering (Exact)
 
 - **Raw read:** 10 kHz (hardware interrupt/DMA if available).  
 - **Control loop uses:** filtered reading @ 5 kHz.
@@ -291,7 +291,7 @@ u[k] = P + I + D
 
 On any violation → disable joint, set fault flag, require manual reset.
 
-## 10 — Safety System (Hardware + Firmware)
+## 10 - Safety System (Hardware + Firmware)
 
 ### Hardware
 
@@ -309,7 +309,7 @@ On any violation → disable joint, set fault flag, require manual reset.
 
 ---
 
-## 11 — Single-Joint Bring-Up Checklist (Execute exactly)
+## 11 - Single-Joint Bring-Up Checklist (Execute exactly)
 
 1. Power off. Wire motor driver, encoder, limit switch, E-Stop relay. Verify wiring and fuses.  
 2. Power on (no motor enabled). Verify MCU boots and sends heartbeat.  
@@ -325,7 +325,7 @@ On any violation → disable joint, set fault flag, require manual reset.
 
 ---
 
-## 12 — CI / Workflow / Tests
+## 12 - CI / Workflow / Tests
 
 - **CI:** Build firmware (PlatformIO) on each PR (no auto-flash).  
 - **Unit tests:** Trajectory generation & IK offline.  
@@ -341,7 +341,7 @@ Run ROS2 nodes (trajectory_node, hardware_interface_node)
 Execute single-joint tests → full-arm plan
 ```
 
-## 13 — Appendices / Quick Reference
+## 13 - Appendices / Quick Reference
 
 ### Constants & Recommended Starts
 
@@ -375,7 +375,7 @@ ros2 run arm_control hardware_interface_node --ros-args
 - Per-joint limits and E-Stop tested in simulator.
 - Single-joint tuning completed and documented for each joint.
 
-## 14 — Complexity & Daily Workflow
+## 14 - Complexity & Daily Workflow
 
 | Aspect | Difficulty | Notes |
 |--------|------------|-------|
@@ -388,7 +388,7 @@ ros2 run arm_control hardware_interface_node --ros-args
 
 Takeaway: First 1–2 days are heavy setup; afterward, simulations and logging are straightforward.
 
-## 15 — Safety Considerations
+## 15 - Safety Considerations
 
 ### PC / Software Safety
 
@@ -419,7 +419,7 @@ Takeaway: First 1–2 days are heavy setup; afterward, simulations and logging a
 - Collaboration: Excellent with Dev Container + Git + Live Share.
 - Time saved: Hundreds of hours by avoiding troubleshooting after first setup.
 
-## 16 — Software Setup: WSL2-First (Flow X16) — Step-by-step (exact commands)
+## 16 - Software Setup: WSL2-First (Flow X16) - Step-by-step (exact commands)
 
 ### A. Enable WSL2 (PowerShell as Admin)
 
@@ -515,7 +515,7 @@ Use devcontainer.json to open the repo in container inside WSL.
 - PC loopback TCP latency inside WSL2 is sub-ms.
 - For most development and 250–500 Hz streaming, this is acceptable. Use native Ubuntu only if you require lower jitter or direct GPU for Gazebo.
 
-## 17 — Final Checklist (WSL2-aware)
+## 17 - Final Checklist (WSL2-aware)
 
 - Confirm `/dev/ttyACM0` inside WSL and PlatformIO can upload.
 - Confirm `ros2 run arm_control hardware_interface_node` inside WSL connects to MCU.

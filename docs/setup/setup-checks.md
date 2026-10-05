@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────
-# 6-DOF Arm Dev Container — Setup Verification
+# 6-DOF Arm Dev Container - Setup Verification
 # ─────────────────────────────────────────────
 
 PASS=0
@@ -33,7 +33,7 @@ check_val() {
 
 echo ""
 echo "════════════════════════════════════════"
-echo "  6-DOF ARM — ENVIRONMENT VERIFICATION"
+echo "  6-DOF ARM - ENVIRONMENT VERIFICATION"
 echo "════════════════════════════════════════"
 
 # ── 1. OS ─────────────────────────────────

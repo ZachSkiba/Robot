@@ -1,4 +1,4 @@
-# Phase 1 — Physical Arm Build + Telemetry
+# Phase 1 - Physical Arm Build + Telemetry
 
 **Duration:** ~3–4 weeks  
 **Goal:** Build a real 3-DOF robotic arm that moves repeatably, homes safely, and logs data automatically.
@@ -19,7 +19,7 @@
 
 ## Step-by-Step Plan (With Roles)
 
-### STEP 1.1 — Translate Simulation → Physical Design (Days 1–3)
+### STEP 1.1 - Translate Simulation → Physical Design (Days 1–3)
 
 **Together**
 - Lock:
@@ -47,7 +47,7 @@
 
 ---
 
-### STEP 1.2 — Mechanical Assembly (Days 4–7)
+### STEP 1.2 - Mechanical Assembly (Days 4–7)
 
 **Nicholas (Lead)**
 - 3D print / fabricate links
@@ -66,7 +66,7 @@
 
 ---
 
-### STEP 1.3 — Electronics & Wiring (Days 8–10)
+### STEP 1.3 - Electronics & Wiring (Days 8–10)
 
 **Together**
 - Decide:
@@ -94,7 +94,7 @@
 
 ---
 
-### STEP 1.4 — Homing & Safety (Days 11–13)
+### STEP 1.4 - Homing & Safety (Days 11–13)
 
 **Together**
 - Decide homing direction per joint
@@ -116,7 +116,7 @@
 
 ---
 
-### STEP 1.5 — Motion Execution (Days 14–17)
+### STEP 1.5 - Motion Execution (Days 14–17)
 
 **Zach**
 - Send joint-space commands from Python
@@ -140,7 +140,7 @@
 
 ---
 
-### STEP 1.6 — Telemetry & Logging (Days 18–21)
+### STEP 1.6 - Telemetry & Logging (Days 18–21)
 
 **Together**
 - Finalize data schema (from Phase 0)
@@ -163,7 +163,7 @@
 
 ---
 
-### STEP 1.7 — Phase 1 Deliverables (Days 22–24)
+### STEP 1.7 - Phase 1 Deliverables (Days 22–24)
 
 **Together**
 - README:

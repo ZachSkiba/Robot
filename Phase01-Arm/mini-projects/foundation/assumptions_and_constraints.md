@@ -1,4 +1,4 @@
-# Mini-Projects — Assumptions & Constraints  
+# Mini-Projects - Assumptions & Constraints  
 *(Aligned with Governed, Virtual → Hardware-Gated Architecture)*
 
 ---
@@ -14,13 +14,13 @@
   - **ME** provides feasibility analysis and safety mechanisms.
   - **DS** defines truth, metrics, and go / no-go decisions.
 - **Python** is available as the primary orchestration, logging, and analysis environment.
-- All motion—scripted or human—passes through the **same command, filtering, and safety pipeline**.
+- All motion-scripted or human-passes through the **same command, filtering, and safety pipeline**.
 - The MCU is treated as a **behavioral contract**, not an implementation detail.
 - All safety logic (limits, E-stop dominance, halts) is **modeled before hardware exists**.
 
 ---
 
-### Mini-Project 1 — Single-Axis Control + Data Contract
+### Mini-Project 1 - Single-Axis Control + Data Contract
 
 - One actuator (stepper + driver) and one joint are sufficient to expose:
   - Stability limits
@@ -40,7 +40,7 @@
 
 ---
 
-### Mini-Project 2 — Multi-Joint Coordination + Model Validation
+### Mini-Project 2 - Multi-Joint Coordination + Model Validation
 
 - Forward and inverse kinematics for **2–3 joints** are sufficient to:
   - Validate mathematical models
@@ -50,7 +50,7 @@
 
 ---
 
-### Mini-Project 3 — Integration, Replay, and System Judgment
+### Mini-Project 3 - Integration, Replay, and System Judgment
 
 - Logged trajectories are sufficient to:
   - Reconstruct system behavior

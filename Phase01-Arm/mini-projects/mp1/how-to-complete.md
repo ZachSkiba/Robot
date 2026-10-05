@@ -184,7 +184,7 @@ Each run must emit:
 }
 ```
 
-# Mini-Project 3 (MP3) — Governance & Failure Enforcement Requirements
+# Mini-Project 3 (MP3) - Governance & Failure Enforcement Requirements
 
 > **No file → no automation → no MP3.**
 

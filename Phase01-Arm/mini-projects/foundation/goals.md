@@ -81,5 +81,5 @@
 ## Key Notes
 - Mini-projects are **skill-focused, not design-focused**.
 - **Gatekeeping:** no Phase 1 hardware work until Phase 0 goals are validated.
-- Deliverables: **datasets, plots, code, joint reports** — all carry forward to full arm.
+- Deliverables: **datasets, plots, code, joint reports** - all carry forward to full arm.
 - Phase 0 → Phase 1 workflow ensures **safety, governance, and reproducibility**.

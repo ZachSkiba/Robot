@@ -61,9 +61,9 @@ Phase 0 is primarily **simulation, planning, and design verification**. Physical
   - Can be partially skipped if only planning in software.
 
 - **Cart 2: Heavy Metal / Mechanical Kit (~$378)**  
-  - **Not needed in Phase 0** — only required for Phase 1 hardware assembly.
+  - **Not needed in Phase 0** - only required for Phase 1 hardware assembly.
 
 > **Key Takeaways:**  
 > - Capacitors are critical for driver stability even in small test circuits.  
 > - Ferrite beads help prevent USB/power EMI in simulation test setups.  
-> - No heavy motors or drivers required yet — focus on planning, calculations, and software validation.
+> - No heavy motors or drivers required yet - focus on planning, calculations, and software validation.

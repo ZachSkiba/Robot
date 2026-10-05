@@ -1,14 +1,14 @@
-# Part 2 — How to connect the Teensy
+# Part 2 - How to connect the Teensy
 
-## Step 1 — Plug in the Teensy
+## Step 1 - Plug in the Teensy
 Connect the USB cable to your Windows computer.
 
 Do not press the program button yet.
 
-## Step 2 — Attach to WSL
+## Step 2 - Attach to WSL
 Open Windows PowerShell and run the following.
 
-### PowerShell — one paste
+### PowerShell - one paste
 
 ```powershell
 usbipd list
@@ -46,10 +46,10 @@ Attached
 
 The official USB/IP workflow is documented by Microsoft: Connect USB devices to WSL.
 
-## Step 3 — Verify in Ubuntu WSL
+## Step 3 - Verify in Ubuntu WSL
 Run this in your normal Ubuntu WSL terminal, not the Docker dev container.
 
-### Ubuntu WSL — one paste
+### Ubuntu WSL - one paste
 
 ```bash
 echo "=== TEENSY USB ==="
@@ -80,7 +80,7 @@ If the port is `/dev/ttyACM1` instead of `/dev/ttyACM0`, use the actual port.
 
 Do not assume the port number is permanent.
 
-# Part 3 — Open the correct project in VS Code
+# Part 3 - Open the correct project in VS Code
 Your Teensy project is located here:
 
 ```text
@@ -89,7 +89,7 @@ Your Teensy project is located here:
 
 This is inside your Docker dev container.
 
-## Step 1 — Open VS Code
+## Step 1 - Open VS Code
 Open your Robot project:
 
 ```text
@@ -104,9 +104,9 @@ You should see a terminal similar to:
 (.venv) devuser@...:/workspace/Robot$
 ```
 
-## Step 2 — Navigate to the Teensy project
+## Step 2 - Navigate to the Teensy project
 
-### Docker dev container — one paste
+### Docker dev container - one paste
 
 ```bash
 cd /workspace/Robot/archive/platformio-tests/teensy41-basic
@@ -131,7 +131,7 @@ src/main.cpp
 
 Important: Edit the `src/main.cpp` file. That is the source file we will use for the firmware.
 
-# Part 4 — Teensy Firmware Update: Final Reference
+# Part 4 - Teensy Firmware Update: Final Reference
 
 ## What Part 4 accomplished
 
@@ -167,7 +167,7 @@ Do not try to flash the Teensy from the Docker container.
 
 ---
 
-## Step 1 — Edit the firmware
+## Step 1 - Edit the firmware
 
 ### VS Code Dev Container
 
@@ -181,7 +181,7 @@ Make your firmware changes.
 
 ---
 
-## Step 2 — Build the new firmware
+## Step 2 - Build the new firmware
 
 ### VS Code Dev Container
 
@@ -217,7 +217,7 @@ You create a new firmware whenever you change the source code and successfully r
 
 ---
 
-## Step 3 — Copy the firmware out of Docker
+## Step 3 - Copy the firmware out of Docker
 
 ### Windows PowerShell
 
@@ -261,7 +261,7 @@ Get-Item "$HOME\teensy-flash\firmware.hex"
 
 ---
 
-## Step 4 — Copy the firmware into WSL
+## Step 4 - Copy the firmware into WSL
 
 ### Windows PowerShell
 
@@ -291,7 +291,7 @@ This was the mistake we caught during this update.
 
 ---
 
-## Step 5 — Make sure Teensy is connected to WSL
+## Step 5 - Make sure Teensy is connected to WSL
 
 ### Windows PowerShell
 
@@ -323,7 +323,7 @@ Microsoft's current WSL documentation uses this same `usbipd list` → `usbipd a
 
 ---
 
-## Step 6 — Verify Teensy in WSL
+## Step 6 - Verify Teensy in WSL
 
 ### Ubuntu WSL
 
@@ -353,7 +353,7 @@ You want:
 
 ---
 
-## Step 7 — Put Teensy into programming mode
+## Step 7 - Put Teensy into programming mode
 
 ### Physical Teensy
 
@@ -377,7 +377,7 @@ If the device disappears from WSL, that is normal in your setup.
 
 ---
 
-## Step 8 — Reattach after the button press
+## Step 8 - Reattach after the button press
 
 ### Windows PowerShell
 
@@ -417,7 +417,7 @@ You want:
 
 ---
 
-## Step 9 — Flash the firmware
+## Step 9 - Flash the firmware
 
 ### Ubuntu WSL
 
@@ -443,7 +443,7 @@ Do not press the Program button again.
 
 ---
 
-## Step 10 — Reattach the Teensy after flashing
+## Step 10 - Reattach the Teensy after flashing
 
 This is an important part of your particular Windows → WSL setup.
 
@@ -497,7 +497,7 @@ You should have:
 
 ---
 
-## Step 11 — Verify the new firmware
+## Step 11 - Verify the new firmware
 
 ### Ubuntu WSL
 

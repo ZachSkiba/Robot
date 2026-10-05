@@ -13,7 +13,7 @@
 
 ## Plan
 
-#### STEP 5.1 — Add Vision Hardware & Calibration (Days 1–7)
+#### STEP 5.1 - Add Vision Hardware & Calibration (Days 1–7)
 
 **Together**
 - Decide camera setup:  
@@ -38,7 +38,7 @@
 
 ---
 
-#### STEP 5.2 — Hand–Eye Calibration (Days 8–14)
+#### STEP 5.2 - Hand–Eye Calibration (Days 8–14)
 
 **Together**
 - Define coordinate frames:  
@@ -61,7 +61,7 @@
 
 ---
 
-#### STEP 5.3 — Object Detection & Localization (Days 15–22)
+#### STEP 5.3 - Object Detection & Localization (Days 15–22)
 
 **Together**
 - Choose task objects:  
@@ -86,7 +86,7 @@
 
 ---
 
-#### STEP 5.4 — Vision → Motion Integration (Days 23–30)
+#### STEP 5.4 - Vision → Motion Integration (Days 23–30)
 
 **Together**
 - Define pipeline:  
@@ -109,7 +109,7 @@
 
 ---
 
-#### STEP 5.5 — Autonomous Task Demo (Days 31–40)
+#### STEP 5.5 - Autonomous Task Demo (Days 31–40)
 
 **Together**
 - Pick one clean autonomous task:  
@@ -132,7 +132,7 @@
 
 ---
 
-#### STEP 5.6 — Phase 5 Deliverables (Days 41–45)
+#### STEP 5.6 - Phase 5 Deliverables (Days 41–45)
 
 **Together**
 - Produce:  

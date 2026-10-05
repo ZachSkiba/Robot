@@ -2,11 +2,11 @@
 
 ## The Concept
 
-Your 6-DOF arm is already controlled by Python/Teensy. The upgrade is adding OpenPLC on the Mega 2560 as an **industrial-style supervisory controller** that manages the overall machine cycle — exactly how real robot cells work in factories.
+Your 6-DOF arm is already controlled by Python/Teensy. The upgrade is adding OpenPLC on the Mega 2560 as an **industrial-style supervisory controller** that manages the overall machine cycle - exactly how real robot cells work in factories.
 
 In every real manufacturing cell at Daifuku, CNH, or Caterpillar:
 
-- The PLC is the master — it manages states, safety, and sequencing
+- The PLC is the master - it manages states, safety, and sequencing
 - The robot controller executes motion
 - They talk to each other via I/O signals
 
@@ -17,7 +17,7 @@ You'd be replicating that architecture exactly, at your desk, for free.
 ## What It Looks Like Physically
 
 ```
-[Limit Switch — Part Present]
+[Limit Switch - Part Present]
          ↓
     [Mega 2560 / OpenPLC]  ←→  [E-Stop Button]
          ↓ (digital signal)
@@ -52,15 +52,15 @@ All hardware already in your inventory.
 
 ---
 
-## PLC Logic — Five-State Machine
+## PLC Logic - Five-State Machine
 
 All programmed in Ladder Logic on the Mega 2560 via OpenPLC:
 
-1. **IDLE** — waiting for part present signal from limit switch
-2. **CYCLE START** — sends "go" signal to Teensy, starts cycle timer
-3. **IN CYCLE** — monitors watchdog timer; if Teensy doesn't complete motion in time → FAULT
-4. **CYCLE COMPLETE** — increments counter, logs cycle, returns to IDLE
-5. **FAULT / E-STOP** — cuts enable signal to all drivers, requires manual reset
+1. **IDLE** - waiting for part present signal from limit switch
+2. **CYCLE START** - sends "go" signal to Teensy, starts cycle timer
+3. **IN CYCLE** - monitors watchdog timer; if Teensy doesn't complete motion in time → FAULT
+4. **CYCLE COMPLETE** - increments counter, logs cycle, returns to IDLE
+5. **FAULT / E-STOP** - cuts enable signal to all drivers, requires manual reset
 
 This state machine is exactly what a Daifuku engineer writes every day. It demonstrates industrial control logic from first principles.
 
@@ -70,11 +70,11 @@ This state machine is exactly what a Daifuku engineer writes every day. It demon
 
 It demonstrates five things simultaneously that no other single project can:
 
-- **PLC programming** — Ladder Logic, state machine, I/O handling
-- **Robot control** — 6-DOF kinematics, trajectory planning, Teensy firmware
-- **System integration** — two controllers talking to each other via I/O signals
-- **Safety engineering** — E-stop authority, watchdog timer, fault handling
-- **Industrial architecture** — replication of a real manufacturing cell layout
+- **PLC programming** - Ladder Logic, state machine, I/O handling
+- **Robot control** - 6-DOF kinematics, trajectory planning, Teensy firmware
+- **System integration** - two controllers talking to each other via I/O signals
+- **Safety engineering** - E-stop authority, watchdog timer, fault handling
+- **Industrial architecture** - replication of a real manufacturing cell layout
 
 When a Daifuku or CNH interviewer asks *"have you worked with industrial robot cells?"* you say:
 
@@ -86,9 +86,9 @@ When a Daifuku or CNH interviewer asks *"have you worked with industrial robot c
 
 Three things that make this portfolio-ready:
 
-1. **Video** — arm executing a full pick-and-place cycle, E-stop test, fault recovery. 60–90 seconds, clean and edited
-2. **Architecture diagram** — one page showing PLC ↔ Teensy ↔ hardware signal flow
-3. **README** — explains the industrial analogy explicitly. Don't make recruiters guess why it matters
+1. **Video** - arm executing a full pick-and-place cycle, E-stop test, fault recovery. 60–90 seconds, clean and edited
+2. **Architecture diagram** - one page showing PLC ↔ Teensy ↔ hardware signal flow
+3. **README** - explains the industrial analogy explicitly. Don't make recruiters guess why it matters
 
 ---
 

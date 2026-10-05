@@ -1,5 +1,5 @@
 # ============================================================
-# 6DOF Robot Arm — ROS2 Humble + MoveIt2 Dev Container
+# 6DOF Robot Arm - ROS2 Humble + MoveIt2 Dev Container
 # Production-Ready, USB & GUI Safe
 # ============================================================
 
