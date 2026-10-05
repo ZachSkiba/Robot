@@ -62,13 +62,67 @@ Build the physical robot and full mechanical structure.
 
 ---
 
+### **🛒 Cart 3: “Other”**
+
+**Objective:**  
+Miscellaneous hardware, bearings, and sensors needed for the robot.
+
+**Total:** **~$84**
+
+| Item | Qty | Status | Product Name (Search Key) | Est. Price | Why |
+|----|----:|----|----|----:|----|
+| M4 Screw Kit | 1 | Have | [560PCS M4 Grade 12.9 Alloy Steel Screw Assortment, 6–30mm](https://www.amazon.com/Metric-Assortment-Screws-Socket-Washers/dp/B0FQNV11TB/) | ~$15 | Main mechanical fastener assortment for assembling the robot |
+| M4 Heat Set Inserts | 1 | Have | [Ktehloy 100Pcs M4x6x6mm Brass Heat Set Inserts](https://www.amazon.com/Ktehloy-Inserts-Printing-Components-M4xL6xD6/dp/B0D3VS3F76/) | ~$8 | Creates reusable M4 threaded mounting points in 3D-printed parts |
+| 608 2RS Ball Bearings | 1 | Have | [SHKI 20 Pcs 608 2RS Ball Bearings, 8×22×7mm](https://www.amazon.com/SHKI/dp/B09PKD8QZZ/) | ~$14 | Supports rotating shafts and printed pulley/gear assemblies |
+| 608 2RS Ball Bearings | 1 | **Buy Later** | [SHKI 12 Pcs 6001 Ball Bearings, 12×28×8mm](https://www.amazon.com/SHKI/dp/B0BRQRD5HR/) | ~$9 | Additional bearing supply for the robot |
+| MPU-6050 IMU | 1 | Have | [HiLetgo 3pcs GY-521 MPU-6050 6-DOF Accelerometer/Gyroscope](https://www.amazon.com/HiLetgo-MPU-6050-Accelerometer-Gyroscope-Converter/dp/B00LP25V1A/) | ~$12 | Measures robot acceleration and angular velocity for motion/orientation feedback |
+| VL53L0X ToF Sensors | 1 | Have | [DWEII 4pcs VL53L0X Time-of-Flight Distance Sensors](https://www.amazon.com/DWEII-VL53L0X-Distance-Measurement-Breakout/dp/B09VB5KDV2/) | ~$10 | Short-range distance sensing and obstacle detection |
+| Thin Film Pressure Sensors | 1 | Have | [2Pcs RP-S40-ST Thin Film Pressure Sensors](https://www.amazon.com/RP-S40-ST-Pressure-Accuracy-Resistor-Intelligent/dp/B0DKJPNR2N/) | ~$16 | Detects contact/force at the robot's feet or mechanical interfaces |
+
+**Estimated Buy-Later Total:** **~$61**
+
+---
+
+## 🛒 Cart 4: “Already Have”
+
+| Item | Qty | Status | Product Name (Search Key) | Est. Price | Why |
+|----|----:|----|----|----:|----|
+| Neodymium Magnets | 1 | Have | [SRENMSMT 290-Pack Small Neodymium Magnets, 7 Sizes](https://www.amazon.com/SRENMSMT-Refrigerator-Different-Whiteboard-Billboard/dp/B0DMVK88W1/) | ~$14 | Useful for removable covers, magnetic fixtures, and position/closure mechanisms |
+| 8-Channel Relay Module | 1 | Have | [ELEGOO 8 Channel DC 5V Relay Module with Optocoupler](https://www.amazon.com/ELEGOO-Channel-Optocoupler-Compatible-Raspberry/dp/B09ZQRLD95/) | ~$9 | Provides switched outputs for higher-current or electrically isolated loads |
+| Jumper Wire & Test Lead Kit | 1 | Have | [840Pcs Breadboard Jumper Wire Kit + 4Pcs Alligator Clip Test Leads](https://www.amazon.com/Breadboard-Minidodoca-Magnetic-Assortment-Alligator/dp/B0BT82DH1Q/) | ~$9 | Provides assorted jumper wires and alligator leads for prototyping and electrical testing |
+| 16 AWG Power Cord | 1 | Have | [Vockjour 3 ft 16/3 Pigtail Replacement Power Tool Cord](https://www.amazon.com/Vockjour-Appliance-Replacement-Pigtail-Listed/dp/B0FKTBKS9L/) | ~$4 | Provides a robust AC power connection for bench equipment |
+| Solderless Breadboard Kit | 1 | Have | [ELEGOO 4PC Solderless Breadboard Kit, 830 & 400 Tie Points](https://www.amazon.com/ELEGOO-Breadboard-Solderless-Breadboards-Electronics/dp/B0CXF1B6GB/) | ~$9 | Allows rapid prototyping and testing of robot electronics |
+| Universal Power Adapter | 1 | Have | [Wefomey Universal Variable 3–24V 3A 72W Power Supply](https://www.amazon.com/Universal-Adjustable-Variable-100V-240V-Converter/dp/B0DMSDX732/) | ~$14 | Provides adjustable DC power for testing electronics and components |
+
+**Estimated Total:** **~$59**
+
+---
+
+## 🛠️ Cart 5: “Tools” (Have)
+
+**Objective:**  
+Essential tools for building, wiring, testing, and troubleshooting the robot.
+
+**Estimated Total:** **~$80**
+
+| Item | Qty | Status | Product Name (Search Key) | Est. Price | Why |
+|----|----:|----|----|----:|----|
+| Soldering Iron Kit | 1 | Have | [Plusivo 21-in-1 60W Digital Soldering Iron Kit](https://www.amazon.com/Soldering-Iron-Kit-Desoldering-Heatshrink/dp/B0D92PVDQH/) | ~$23 | Soldering, desoldering, and general electronics assembly |
+| Digital Multimeter | 1 | Have | [KAIWEETS 20,000-Count Auto-Ranging Digital Multimeter](https://www.amazon.com/KAIWEETS-Multimeter-Auto-Ranging-Capacitance-Temperature/dp/B0B7WFPB4T/) | ~$43 | Measures voltage, current, resistance, continuity, capacitance, and frequency |
+| Variable DC Power Supply | 1 | Have | [Wefomey Universal Variable 3–24V 3A 72W Power Supply](https://www.amazon.com/Universal-Adjustable-Variable-100V-240V-Converter/dp/B0DMSDX732/) | ~$14 | Adjustable bench power source for testing motors, sensors, and electronics |
+
+**Estimated Total:** **~$80**
+
+---
+
 ## 💰 Grand Total
 
 | Phase | Estimated Cost |
 |----|----:|
 | Cart 1 — Electronics / Brain | ~$364 |
 | Cart 2 — Mechanics / Structure | ~$153 |
-| **Total Project Cost** | **~$517** |
+| Cart 3 - Other | ~$84 |
+| **Total Project Cost** | **~$601** |
 
 ---
 
