@@ -15,6 +15,7 @@
 ## PLC & CAN
 
 * Explore **CANKing** for CAN-bus communication, monitoring, and diagnostics.
+* Explore **SavvyCAN** for CAN-bus communication, monitoring, and diagnostics.
 * Explore **OpenPLC** for PLC programming and industrial control.
 * Potentially integrate **CAN communication and PLC control** into the robot to demonstrate industrial automation and controls experience.
 
@@ -28,3 +29,4 @@
   * Machining
   * Design-for-manufacturing
   * Manufacturing process planning
+ 
