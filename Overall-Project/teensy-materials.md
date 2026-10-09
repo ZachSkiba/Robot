@@ -120,10 +120,9 @@ Essential tools for building, wiring, testing, and troubleshooting the robot.
 
 | Phase | Estimated Cost |
 |----|----:|
-| Cart 1 - Electronics / Brain | ~$364 |
-| Cart 2 - Mechanics / Structure | ~$153 |
-| Cart 3 - Other | ~$84 |
-| **Total Project Cost** | **~$601** |
+| Cart 1 — Electronics / Brain | ~$364 |
+| Cart 2 — Mechanics / Structure | ~$153 |
+| **Total Project Cost** | **~$517** |
 
 ---
 
