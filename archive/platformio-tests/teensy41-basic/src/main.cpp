@@ -270,11 +270,7 @@ void loop()
 //
 // Run:
 //
-//     cd /workspace/Robot/archive/platformio-tests/teensy41-basic
-//
-//     export PATH="$HOME/.platformio/penv/bin:$PATH"
-//
-//     pio run
+//     cd /workspace/Robot/archive/platformio-tests/teensy41-basic && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio run
 //
 // Wait for:
 //
@@ -299,9 +295,7 @@ void loop()
 //
 // Example:
 //
-//     docker cp `
-//   Then copy
-//       53a87d23ff37:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex `
+//     docker cp `d678ef2f0ae0:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex `
 //   Press enter
 //       "$HOME\teensy-flash\firmware.hex"
 //
@@ -438,8 +432,7 @@ void loop()
 //
 // Run from WSL or the development environment:
 //
-//     cd /workspace/Robot/archive/platformio-tests
-//     python3 ~/teensy-test.py
+//     cd /workspace/Robot/archive/platformio-tests && python3 teensy-test.py
 //
 // The program will identify the firmware currently flashed and then:
 //

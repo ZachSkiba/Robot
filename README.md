@@ -210,8 +210,10 @@ The repository contains active development, engineering documentation, experimen
 ## Contact
 
 **Nicholas Skiba**
+
 Mechanical Engineering · Illinois Institute of Technology
-[LinkedIn](https://www.linkedin.com/in/nicholas-skiba-477b6b287) · [GitHub](https://github.com/NickSki17)
+
+[LinkedIn](https://www.linkedin.com/in/nicholas-skiba-477b6b287) · [GitHub](https://github.com/NickSki17) · [Portfolio](https://nickski17.github.io/Portfolio/)
 
 **Zachary Skiba**
 [LinkedIn] · [GitHub / Portfolio]

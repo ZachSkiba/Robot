@@ -33,6 +33,7 @@
     "--device=/dev/dri:/dev/dri",
     "--device=/dev/bus/usb:/dev/bus/usb",
     "--device=/dev/hidraw0:/dev/hidraw0",
+    "--device=/dev/ttyACM0",
     "-e",
     "DISPLAY=${localEnv:DISPLAY}",
     "-e",
