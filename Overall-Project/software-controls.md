@@ -131,7 +131,7 @@ board = teensy41
 framework = arduino
 build_flags = -O3 -DUSB_SERIAL
 lib_deps = teensyduino
-monitor_speed = 115200
+monitor_speed = 2500000
 ```
 
 ### Timing Table (firmware tasks)

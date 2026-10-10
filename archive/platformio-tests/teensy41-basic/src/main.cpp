@@ -41,10 +41,10 @@
 
 // #define RUN_LATENCY_BENCHMARK
 // #define RUN_LOOP_TIMING_TEST
-// #define RUN_SERIAL_THROUGHPUT_TEST
+ #define RUN_SERIAL_THROUGHPUT_TEST
 // #define RUN_CALCULATION_SPEED_TEST
 // #define RUN_DIAGNOSTIC_FIRMWARE
- #define RUN_UNIVERSAL_BOARD_TEST
+// #define RUN_UNIVERSAL_BOARD_TEST
 
 #if defined(RUN_LATENCY_BENCHMARK)
 #include "latency_test.h"
@@ -68,8 +68,8 @@
 // ============================================================
 
 // CHANGE THIS: Serial speed
-// Common: 9600, 115200
-constexpr uint32_t SERIAL_BAUD = 115200;
+// Common: 9600, 2500000
+constexpr uint32_t SERIAL_BAUD = 2500000;
 
 // CHANGE THIS: startup delay
 // Unit: milliseconds
@@ -435,7 +435,7 @@ void loop()
 //
 // Example:
 //
-//     Opening /dev/ttyACM0 at 115200 baud...
+//     Opening /dev/ttyACM0 at 2500000 baud...
 //
 //     =================================
 //     Board Test Runner

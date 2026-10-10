@@ -21,7 +21,7 @@ constexpr uint32_t PACKET_PERIOD_MS = 10UL;
 constexpr size_t PACKET_SIZE = 32;
 
 // Serial speed for UART-based boards.
-constexpr uint32_t SERIAL_BAUD = 115200UL;
+constexpr uint32_t SERIAL_BAUD = 2500000UL;
 
 // ============================================================
 // PACKET FORMAT

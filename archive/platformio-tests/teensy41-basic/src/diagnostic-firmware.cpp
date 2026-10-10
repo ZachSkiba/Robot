@@ -14,7 +14,7 @@
 // For USB CDC serial boards such as some Teensy and Leonardo
 // boards, the baud rate may not affect the USB connection.
 // It is still useful for normal UART-based boards.
-constexpr uint32_t SERIAL_BAUD = 115200UL;
+constexpr uint32_t SERIAL_BAUD = 2500000UL;
 
 // Timing intervals.
 constexpr uint32_t HEARTBEAT_PERIOD_MS = 1000UL;

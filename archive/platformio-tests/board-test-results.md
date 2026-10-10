@@ -156,7 +156,7 @@ UNIVERSAL SERIAL THROUGHPUT TEST
 Packet format: fixed-size binary packet
 Packet size:          32 bytes
 Target packet period: 10 ms
-Configured baud:      115200
+Configured baud:      2500000
 
 Elapsed time:         10.000 s
 Packets sent:         1000
@@ -282,6 +282,287 @@ Overall: PASS WITH SKIPPED TESTS
 
 ## ESP 32
 
+================================
+Calculation Speed Benchmark
+================================
 
+Portable Arduino-style benchmark
+Higher iterations/sec = faster
+
+Benchmark duration: 5 seconds
+Batch size:         100
+
+
+================================
+DETAILED RESULTS
+================================
+
+Integer arithmetic
+  Duration:          5.000 s
+  Iterations:        23159000
+  Batches:           231590
+  Iterations/sec:    4631789.00
+  Average iteration: 0.215899 us
+  Minimum batch:     20 us
+  Maximum batch:     46 us
+  Average batch:     20.294 us
+  Batch avg/iter:    0.202940 us
+
+32-bit floating point
+  Duration:          5.000 s
+  Iterations:        12482100
+  Batches:           124821
+  Iterations/sec:    2496412.00
+  Average iteration: 0.400575 us
+  Minimum batch:     38 us
+  Maximum batch:     71 us
+  Average batch:     38.793 us
+  Batch avg/iter:    0.387928 us
+
+Trigonometry
+  Duration:          5.000 s
+  Iterations:        3291100
+  Batches:           32911
+  Iterations/sec:    658211.81
+  Average iteration: 1.519268 us
+  Minimum batch:     130 us
+  Maximum batch:     255 us
+  Average batch:     150.625 us
+  Batch avg/iter:    1.506247 us
+
+Robot-style math
+  Duration:          5.000 s
+  Iterations:        4793700
+  Batches:           47937
+  Iterations/sec:    958727.69
+  Average iteration: 1.043049 us
+  Minimum batch:     102 us
+  Maximum batch:     118 us
+  Average batch:     103.047 us
+  Batch avg/iter:    1.030469 us
+
+================================
+SUMMARY
+================================
+
+Benchmark             Iterations/sec
+----------------------------------------
+Integer arithmetic    4631789.00
+32-bit float          2496412.00
+Trigonometry          658211.81
+Robot-style math      958727.69
+
+NOTES:
+- Results are benchmark iterations/sec.
+- They are not CPU instruction counts.
+- The same source can run on many Arduino boards.
+- Timer resolution differs between processors.
+- Compiler optimization affects the results.
+- Robot-style math is not complete 6-DOF kinematics.
+
+=== TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+================================
+UNIVERSAL FIRMWARE TIMING TEST
+================================
+
+Timing source: Arduino micros()
+Workload: portable integer firmware loop
+
+Test duration:       5.000 s
+Batch size:          1000
+Batches:             104147
+Total iterations:    104147000
+
+Timer resolution:    4 us
+Timer overhead:      0 us
+
+Iterations/second:   20829184.00
+Average iteration:   0.048010 us
+
+Minimum batch:       46 us
+Maximum batch:       54 us
+Average batch:       46.804 us
+Batch average/iter:  0.046804 us
+Minimum iter est.:   0.046000 us
+Maximum iter est.:   0.054000 us
+
+INTERPRETATION:
+- Higher iterations/sec is faster.
+- Batch timing reduces timer-resolution error.
+- Results include benchmark and timer overhead.
+- This is not complete sensor-to-motor latency.
+- Compare boards using the same compiler settings.
+
+=== TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+================================
+UNIVERSAL LOOP TIMING TEST
+================================
+
+Timing source: Arduino micros()
+Test duration:       5.000 s
+Target loop period:  1000 us
+Timer resolution:    5 us
+Timer overhead:      0 us
+
+Samples:             3717500
+Minimum period:      1 us
+Maximum period:      13 us
+Average period:      1.345 us
+Average loop rate:   743500.125 Hz
+Worst positive jitter: 11.655 us
+Periods over target:  0
+Miss percentage:      0.000%
+
+Timing histogram:
+  < 1x target:        3717500
+  1x to 2x target:    0
+  2x to 3x target:    0
+  3x to 4x target:    0
+  4x to 5x target:    0
+  5x to 10x target:   0
+  10x to 100x target: 0
+  > 100x target:      0
+
+INTERPRETATION:
+- This measures loop period, not pure execution time.
+- micros() overhead is included in each measurement.
+- Timer resolution differs between boards.
+- LED timing is disabled by default.
+- Interrupts and background tasks affect jitter.
+- A missed period is not automatically a missed control deadline.
+- Use the real robot control loop for final validation.
+
+=== LOOP TIMING TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+================================
+UNIVERSAL SERIAL THROUGHPUT TEST
+================================
+
+Packet format: fixed-size binary packet
+Packet size:          32 bytes
+Target packet period: 10 ms
+Configured baud:      2500000
+
+Elapsed time:         10.000 s
+Packets sent:         1000
+Scheduled packets:    1000
+Bytes accepted:       32000
+Missed packet slots:  0
+
+Bytes/second:         3200.00
+Bits/second:          25600.00
+Kilobytes/second:     3.200
+Packets/second:       100.00
+Effective bit rate:   25.600 kbit/s
+
+INTERPRETATION:
+- Bytes accepted is the number returned by Serial.write().
+- Serial.write() may queue bytes instead of transmitting them.
+- Serial.flush() waits for queued serial data to finish.
+- Results depend on baud rate, buffers, USB, and host behavior.
+- This measures serial transport, not robot-control latency.
+- Binary packets avoid variable-length text overhead.
+
+=== SERIAL THROUGHPUT TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+========================================
+UNIVERSAL BOARD TEST SUITE
+========================================
+[PASS] Boot / self-test
+[PASS] Command parser self-test
+[PASS] Packet serialization + checksum self-test
+  integer ops: 100000 iterations in 11761 us
+  approx 8502678.34 ops/sec
+[INFO] Integer calculation benchmark
+  float ops: 20000 iterations in 2532 us
+[INFO] Floating-point calculation benchmark
+  trig calls: 15000 in 13962 us
+[INFO] Trigonometry benchmark
+[PASS] Numerical correctness
+  min/avg/max (us): 0 / 0.63 / 1
+  p50/p95/p99 (us): 1 / 1 / 1
+  (timer granularity/overhead, not a control-loop period - see run_realtime for that)
+[INFO] Timing primitive characterization
+  target: 1000 us/cycle (1000 Hz)
+  exec min/avg/max (us): 2 / 2.15 / 17
+  exec p50/p95/p99 (us): 2 / 2 / 2
+  deadline misses (finish time > scheduled start + period): 0 / 100
+  max consecutive misses: 0
+  worst start-time lateness (us): 5
+  worst finish-time lateness (us): 0
+  (lateness figures are worst-case only, not full percentile distributions - a deliberate scope limit)
+  (missed-deadline count is the real answer, not PASS/FAIL - see file header)
+[INFO] Control workload timing
+.
+
+  296104 mixed-workload iterations in 2000 ms
+  dual-accumulator check: consistent
+  iteration-rate samples (per ~200ms window): first=29484 last=29625
+[PASS] CPU sustained workload test
+[PASS] Defensive logic / fault handling
+  soak duration: 5000 ms
+  loop iterations: 179418
+  max single-iteration time (us): 36
+  packet errors: 0
+  calc errors: 0
+  control-state dual-accumulator mismatches: 0
+  timing outliers (>20x this run's own average): 0
+[PASS] Long-duration soak (5s demo run)
+
+---- Board Capability Report ----
+sizeof(char):      1
+sizeof(short):     2
+sizeof(int):       4
+sizeof(long):      4
+sizeof(long long): 8
+sizeof(float):     4
+sizeof(double):    8
+sizeof(void*):     4
+sizeof(size_t):    4
+sizeof(uint8_t):   1
+sizeof(uint16_t):  2
+sizeof(uint32_t):  4
+sizeof(uint64_t):  8
+FLT_EPSILON:       0.0000001192
+FLT_MAX:           ovf
+FLT_MIN:           0.0000000000
+sizeof(TestPacket) [raw, may include padding]: 32
+Serialized packet body size [padding-free]:    26
+byte order:        little-endian
+F_CPU (Hz):        240000000
+compiler version:  8.4.0
+Arduino core ver:  10812
+toolchain macro:   ESP32
+---- End Report ----
+
+---- Needs a per-core adapter (not included - see file header) ----
+[SKIP] Memory / heap stability - no portable free-RAM API
+[SKIP] Watchdog configure + recovery - register/API differs per core; resets the board
+[SKIP] Reset-reason decode - register/API differs per core
+[SKIP] Internal EEPROM/flash/FS test - API differs per core; destructive by design, skipped
+  hardware cycle counter unavailable for this core
+[SKIP] CPU cycle-counter timing - hardware cycle counter adapter unavailable on this core
+[SKIP] Die temperature - not exposed on most cores
+[SKIP] Stack usage / stack canary - stack layout/introspection differs per core
+
+========================================
+SUMMARY
+Passed:  7
+Failed:  0
+Skipped: 7
+Info:    5
+Overall: PASS WITH SKIPPED TESTS
+@TEST_RESULT=PASS_WITH_SKIPS
+@TEST_COMPLETE
 
 ## Arduino Mega
