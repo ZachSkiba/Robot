@@ -1,3 +1,11 @@
+# Historical benchmark captures
+
+These are saved Teensy 4.1 measurements from the individual legacy benchmark
+firmware modes, not results from the current universal-suite default. They
+document neither an ESP32 nor an AVR build or physical test. Benchmark values
+depend on the flashed source revision, compiler, framework, and measurement
+conditions; do not use them as current cross-board comparisons.
+
 ## Teensy 4.1
 # Latency Test
 ================================

@@ -34,22 +34,10 @@ constexpr uint32_t SERIAL_BAUD = 115200UL;
 // Bytes 8-11:  Firmware timestamp in milliseconds
 // Bytes 12-15: Test identifier
 // Bytes 16-31: Deterministic payload
+// The four 32-bit fields are serialized little-endian.
 //
 // Fixed-size binary packets make byte counting reliable.
 //
-
-struct SerialPacket
-{
-    uint32_t magic;
-    uint32_t sequence;
-    uint32_t timestampMs;
-    uint32_t testId;
-    uint8_t payload[16];
-};
-
-static_assert(
-    sizeof(SerialPacket) == PACKET_SIZE,
-    "SerialPacket must be exactly PACKET_SIZE bytes");
 
 // ============================================================
 // RESULTS
@@ -72,19 +60,30 @@ struct ThroughputResults
 // PACKET CREATION
 // ============================================================
 
+void writeUint32LE(
+    uint8_t *output,
+    size_t offset,
+    uint32_t value)
+{
+    output[offset] = static_cast<uint8_t>(value);
+    output[offset + 1] = static_cast<uint8_t>(value >> 8);
+    output[offset + 2] = static_cast<uint8_t>(value >> 16);
+    output[offset + 3] = static_cast<uint8_t>(value >> 24);
+}
+
 void createPacket(
-    SerialPacket &packet,
+    uint8_t *packet,
     uint32_t sequence,
     uint32_t timestampMs)
 {
-    packet.magic = 0x524F424FUL; // "ROBO"
-    packet.sequence = sequence;
-    packet.timestampMs = timestampMs;
-    packet.testId = 0x00000001UL;
+    writeUint32LE(packet, 0, 0x524F424FUL); // "ROBO"
+    writeUint32LE(packet, 4, sequence);
+    writeUint32LE(packet, 8, timestampMs);
+    writeUint32LE(packet, 12, 0x00000001UL);
 
-    for (uint8_t i = 0; i < sizeof(packet.payload); i++)
+    for (uint8_t i = 0; i < 16; i++)
     {
-        packet.payload[i] =
+        packet[16 + i] =
             static_cast<uint8_t>(
                 (sequence + i) & 0xFFU);
     }
@@ -98,7 +97,7 @@ ThroughputResults runThroughputTest()
 {
     ThroughputResults results;
 
-    SerialPacket packet;
+    uint8_t packet[PACKET_SIZE];
 
     const uint32_t startMs = millis();
 
@@ -120,7 +119,7 @@ ThroughputResults runThroughputTest()
             // Count the actual bytes accepted by Serial.write().
             const size_t bytesWritten =
                 Serial.write(
-                    reinterpret_cast<const uint8_t *>(&packet),
+                    packet,
                     sizeof(packet));
 
             results.bytesSent +=

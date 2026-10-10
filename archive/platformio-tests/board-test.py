@@ -8,6 +8,7 @@ compile-time test selected in main.cpp.
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 import time
 from typing import Optional
@@ -21,15 +22,8 @@ except ImportError as exc:
     ) from exc
 
 
-BAUD_RATE = 115200
-DEFAULT_TIMEOUT = 0.25
-
-LEGACY_MODES = {
-    "latency": "Latency benchmark",
-    "loop": "Loop timing test",
-    "serial": "Serial throughput test",
-    "calculation": "Calculation speed benchmark",
-}
+DEFAULT_BAUD_RATE = 115200
+DEFAULT_READ_TIMEOUT = 0.25
 
 PROTOCOL_MODES = {
     "latency": ("benchmark", "latency"),
@@ -49,6 +43,7 @@ UNIVERSAL_COMMANDS = {
     "faults": "run_faults",
     "numeric": "run_numeric",
     "packet": "run_packet",
+    "soak": "run_soak",
     "report": "report",
 }
 
@@ -59,7 +54,9 @@ def find_ports() -> list[str]:
     preferred = [
         port.device
         for port in ports
-        if "ACM" in port.device or "USB" in port.device
+        if "acm" in port.device.lower()
+        or "usb" in port.device.lower()
+        or "usbmodem" in port.device.lower()
     ]
     remaining = [port.device for port in ports if port.device not in preferred]
     return preferred + remaining
@@ -72,8 +69,8 @@ def choose_port(requested: Optional[str]) -> str:
     ports = find_ports()
     if not ports:
         raise SystemExit(
-            "No serial ports found. Attach the board and check /dev/ttyACM* or "
-            "/dev/ttyUSB*."
+            "No serial ports found. Attach the board, specify --port explicitly, "
+            "or check the OS serial-port list."
         )
 
     if len(ports) == 1:
@@ -91,20 +88,6 @@ def choose_port(requested: Optional[str]) -> str:
             print("Enter one of the listed numbers.")
             continue
         return selected
-
-
-def read_lines(board: serial.Serial, duration: float) -> list[str]:
-    """Read and print lines for a bounded period."""
-    lines: list[str] = []
-    deadline = time.monotonic() + duration
-    while time.monotonic() < deadline:
-        raw = board.readline()
-        if not raw:
-            continue
-        line = raw.decode("utf-8", errors="replace").rstrip("\r\n")
-        print(line, flush=True)
-        lines.append(line)
-    return lines
 
 
 def read_until(
@@ -161,24 +144,40 @@ def read_protocol(board: serial.Serial, timeout: float) -> Optional[dict[str, st
 
 
 def result_code(result: str) -> int:
-    if result == "PASS":
+    if result in ("PASS", "PASS_WITH_SKIPS", "INFO", "INFO_WITH_SKIPS", "SKIP"):
         return 0
     if result == "FAIL":
         return 1
     return 2
 
 
+
 def read_result(board: serial.Serial, timeout: float) -> int:
-    """Print output until a machine-readable result arrives."""
+    """Read and validate the final machine-readable test result."""
     found, lines = read_until(board, ("@TEST_COMPLETE",), timeout)
+
     if not found:
-        print("Timed out waiting for @TEST_RESULT and @TEST_COMPLETE.", file=sys.stderr)
+        print(
+            "Timed out waiting for @TEST_COMPLETE.",
+            file=sys.stderr,
+        )
         return 2
-    for line in reversed(lines):
-        if line.startswith("@TEST_RESULT="):
-            return result_code(line.split("=", 1)[1])
-    print("Completed without a machine-readable result.", file=sys.stderr)
-    return 2
+
+    results = [
+        line.split("=", 1)[1]
+        for line in lines
+        if line.startswith("@TEST_RESULT=")
+    ]
+
+    if len(results) != 1:
+        print(
+            f"Expected exactly one @TEST_RESULT marker; got {len(results)}.",
+            file=sys.stderr,
+        )
+        return 2
+
+    return result_code(results[0])
+
 
 
 def run_legacy(board: serial.Serial, timeout: float = 30.0) -> int:
@@ -223,6 +222,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", help="Serial port, for example /dev/ttyACM0")
     parser.add_argument(
+        "--baud",
+        type=int,
+        default=DEFAULT_BAUD_RATE,
+        help="Serial baud rate (default: 115200)",
+    )
+    parser.add_argument(
         "--mode",
         choices=["auto", *PROTOCOL_MODES],
         default="auto",
@@ -234,10 +239,15 @@ def parse_args() -> argparse.Namespace:
         help="Universal-suite command alias, such as all or timing",
     )
     parser.add_argument(
+        "--duration",
+        type=int,
+        help="Duration in seconds for stress/soak commands (1-86400)",
+    )
+    parser.add_argument(
         "--timeout",
         type=float,
-        default=30.0,
-        help="Seconds to collect output after starting a test",
+        default=120.0,
+        help="Maximum seconds to collect test output (default: 120)",
     )
     return parser.parse_args()
 
@@ -245,16 +255,35 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
+    if args.baud <= 0:
+        raise SystemExit("--baud must be a positive integer")
+
+    if not math.isfinite(args.timeout) or args.timeout <= 0:
+        raise SystemExit("--timeout must be a finite positive number of seconds")
     if args.command and args.mode not in ("auto", "universal"):
         raise SystemExit("--command can only be used with --mode universal")
+    if args.duration is not None:
+        if args.command not in ("stress", "soak"):
+            raise SystemExit("--duration can only be used with --command stress or soak")
+        if not 1 <= args.duration <= 86400:
+            raise SystemExit("--duration must be between 1 and 86400 seconds")
+        if args.timeout <= args.duration:
+            raise SystemExit("--timeout must exceed --duration for stress/soak commands")
 
     command = UNIVERSAL_COMMANDS.get(args.command or "all", "run_all")
+    if args.duration is not None:
+        command = f"{command} {args.duration}"
 
     port = choose_port(args.port)
-    print(f"Opening {port} at {BAUD_RATE} baud...")
+    print(f"Opening {port} at {args.baud} baud...")
 
     try:
-        with serial.Serial(port, BAUD_RATE, timeout=DEFAULT_TIMEOUT) as board:
+        with serial.Serial(
+            port,
+            args.baud,
+            timeout=DEFAULT_READ_TIMEOUT,
+            write_timeout=2.0,
+        ) as board:
             # Opening a native USB serial port often resets the board.
             time.sleep(2.0)
             board.reset_input_buffer()

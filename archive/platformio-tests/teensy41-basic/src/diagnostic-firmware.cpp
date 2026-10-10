@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
-
 #include "diagnostic-firmware.h"
 #include "test_protocol.h"
 
@@ -61,6 +60,7 @@ uint32_t lastLedToggleMs = 0;
 
 char commandBuffer[COMMAND_BUFFER_SIZE];
 size_t commandLength = 0;
+bool commandOverflowed = false;
 
 // ============================================================
 // LED CONTROL
@@ -279,7 +279,13 @@ void readSerial()
         if (character == '\n' ||
             character == '\r')
         {
-            if (commandLength > 0)
+            if (commandOverflowed)
+            {
+                commandOverflowed = false;
+                commandLength = 0;
+                commandBuffer[0] = '\0';
+            }
+            else if (commandLength > 0)
             {
                 commandBuffer[commandLength] = '\0';
 
@@ -303,6 +309,11 @@ void readSerial()
             continue;
         }
 
+        if (commandOverflowed)
+        {
+            continue;
+        }
+
         // Store the character if there is room.
         if (commandLength <
             COMMAND_BUFFER_SIZE - 1)
@@ -315,8 +326,8 @@ void readSerial()
         }
         else
         {
-            // Reset the current command so a long or malformed
-            // command cannot permanently block the parser.
+            // Discard the entire oversized frame, not a suffix of it.
+            commandOverflowed = true;
             commandLength = 0;
             commandBuffer[0] = '\0';
 

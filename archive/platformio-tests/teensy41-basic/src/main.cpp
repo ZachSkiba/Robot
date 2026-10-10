@@ -43,8 +43,8 @@
 // #define RUN_LOOP_TIMING_TEST
 // #define RUN_SERIAL_THROUGHPUT_TEST
 // #define RUN_CALCULATION_SPEED_TEST
-#define RUN_DIAGNOSTIC_FIRMWARE
-// #define RUN_UNIVERSAL_BOARD_TEST
+// #define RUN_DIAGNOSTIC_FIRMWARE
+#define RUN_UNIVERSAL_BOARD_TEST
 
 #if defined(RUN_LATENCY_BENCHMARK)
 #include "latency_test.h"
@@ -291,16 +291,11 @@ void loop()
 //
 //     docker ps
 //
-// Use the CONTAINER ID for 6-DOF-Robotic-Arm.
+// Replace <container-id> with the ID reported by `docker ps`.
 //
-// Example:
+//     docker cp <container-id>:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex "$HOME\teensy-flash\firmware.hex"
 //
-//     docker cp `d678ef2f0ae0:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex `
-//   Press enter
-//       "$HOME\teensy-flash\firmware.hex"
-//
-// IMPORTANT:
-// Replace 53a87d23ff37 with the current container ID.
+// Current: docker cp b06b33600832:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex "$HOME\teensy-flash\firmware.hex"
 //
 // Verify the file:
 //
@@ -313,7 +308,7 @@ void loop()
 //
 // 🟦 WINDOWS POWERSHELL
 //
-//     wsl cp /mnt/c/Users/Nick/teensy-flash/firmware.hex /home/nicks/teensy-flash/firmware.hex
+//     wsl cp /mnt/c/Users/<windows-user>/teensy-flash/firmware.hex ~/teensy-flash/firmware.hex
 //
 // ============================================================
 //
@@ -345,13 +340,8 @@ void loop()
 //
 //     16c0:0478    USB Input Device
 //
-// Then attach it:
-//
-//     usbipd attach --wsl --busid 2-2
-//
-// Replace YOUR_BUS_ID with the actual BUSID.
-//
-// Example:
+// Then attach it
+// Replace <bus-id> with the actual BUSID:
 //
 //     usbipd attach --wsl --busid 2-2
 //
@@ -432,14 +422,16 @@ void loop()
 //
 // Run from WSL or the development environment:
 //
-//     cd /workspace/Robot/archive/platformio-tests && python3 teensy-test.py
+//     cd /workspace/Robot/archive/platformio-tests && python3 board-test.py
 //
-// The program will identify the firmware currently flashed and then:
+// The program identifies the firmware currently flashed and then:
 //
 //     1. Find and open the board's serial port.
-//     2. Start a benchmark using READY/YES.
-//     3. Ask diagnostic firmware for status, or send run_all to the universal suite.
-//     4. Return a PASS/FAIL result from the machine-readable protocol.
+//     2. Send the default universal-suite command, or the command selected
+//        with --command.
+//     3. Return the result from the machine-readable protocol. INFO-only
+//        commands report measurements without claiming a correctness PASS.
+//        PASS_WITH_SKIPS indicates that some capabilities were skipped.
 //
 // Example:
 //
@@ -490,13 +482,13 @@ void loop()
 //     → wsl cp ...
 //     → press PROGRAM button
 //     → usbipd list
-//     → usbipd attach --wsl --busid ...
+//     → usbipd attach --wsl --busid <bus-id>
 //
 // 🟩 UBUNTU WSL
 //     teensy_loader_cli ...
 //     → reattach if necessary
 //     → cd /workspace/Robot/archive/platformio-tests
-//     → python3 teensy-test.py
+//     → python3 board-test.py
 //
 // ============================================================
 //

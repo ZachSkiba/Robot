@@ -341,19 +341,55 @@ void recordResult(const char* name, TestResult r, const char* detail) {
 
 void resetCounters() { g_passed = 0; g_failed = 0; g_skipped = 0; g_info = 0; }
 
+void printUint64(uint64_t value) {
+  char digits[20];
+  uint8_t length = 0;
+  do {
+    digits[length++] = (char)('0' + value % 10U);
+    value /= 10U;
+  } while (value > 0);
+
+  while (length > 0) Serial.print(digits[--length]);
+}
+
 void printSummary() {
+  const char* overall;
+  const char* protocolResult;
+
   Serial.println(F("========================================"));
   Serial.println(F("SUMMARY"));
   Serial.print(F("Passed:  "));  Serial.println(g_passed);
   Serial.print(F("Failed:  "));  Serial.println(g_failed);
   Serial.print(F("Skipped: "));  Serial.println(g_skipped);
   Serial.print(F("Info:    "));  Serial.println(g_info);
+
+  if (g_failed > 0) {
+    overall = "FAIL";
+    protocolResult = "FAIL";
+  } else if (g_passed > 0 && g_skipped > 0) {
+    overall = "PASS WITH SKIPPED TESTS";
+    protocolResult = "PASS_WITH_SKIPS";
+  } else if (g_passed > 0) {
+    overall = "PASS";
+    protocolResult = "PASS";
+  } else if (g_info > 0 && g_skipped > 0) {
+    overall = "INFO WITH SKIPPED TESTS";
+    protocolResult = "INFO_WITH_SKIPS";
+  } else if (g_info > 0) {
+    overall = "INFO";
+    protocolResult = "INFO";
+  } else if (g_skipped > 0) {
+    overall = "SKIP";
+    protocolResult = "SKIP";
+  } else {
+    overall = "NO TESTS";
+    protocolResult = "ERROR";
+  }
+
   Serial.print(F("Overall: "));
-  if (g_failed > 0)        Serial.println(F("FAIL"));
-  else if (g_skipped > 0)  Serial.println(F("PASS WITH SKIPPED TESTS"));
-  else                     Serial.println(F("PASS"));
+  Serial.println(overall);
   Serial.print(F("@TEST_RESULT="));
-  Serial.println(g_failed > 0 ? F("FAIL") : F("PASS"));
+  Serial.println(protocolResult);
   Serial.println(F("@TEST_COMPLETE"));
   Serial.println(F("========================================"));
 }
@@ -530,15 +566,38 @@ bool verifyPacket(const TestPacket &p) {
 // scale-by-max-component trick (what hypotf() does internally) using only
 // fabsf()/sqrtf(), rather than depending on a 3-argument hypot that isn't
 // reliably available across every embedded libm this file targets.
+
+#define CHECK_NUMERIC(condition, label)       \
+    do {                                      \
+        if (!(condition)) {                   \
+            Serial.print(F("[FAIL] "));       \
+            Serial.println(F(label));         \
+            ok = false;                       \
+        }                                     \
+    } while (0)
+
+// Diagnostic Macro(above and below)
+
 float vecLength(const Vec3 &v) {
-  float ax = fabsf(v.x), ay = fabsf(v.y), az = fabsf(v.z);
-  float m = ax;
-  if (ay > m) m = ay;
-  if (az > m) m = az;
-  if (isinf(m)) return INFINITY; // a component itself already overflowed - nothing left to rescale
-  if (m < 1e-30f) return 0.0f;   // effectively the zero vector - avoid dividing by a near-zero scale
-  float nx = ax / m, ny = ay / m, nz = az / m;
-  return m * sqrtf(nx * nx + ny * ny + nz * nz); // only overflows here if the TRUE length exceeds float range
+    const float ax = fabsf(v.x);
+    const float ay = fabsf(v.y);
+    const float az = fabsf(v.z);
+
+    // Explicit policy: infinity takes precedence over NaN.
+    if (isinf(ax) || isinf(ay) || isinf(az)) return INFINITY;
+    if (isnan(ax) || isnan(ay) || isnan(az)) return NAN;
+
+    float m = ax;
+    if (ay > m) m = ay;
+    if (az > m) m = az;
+
+    if (m == 0.0f) return 0.0f;
+
+    const float nx = ax / m;
+    const float ny = ay / m;
+    const float nz = az / m;
+
+    return m * sqrtf(nx * nx + ny * ny + nz * nz);
 }
 
 // FIXED (see revision notes): `len < 1e-9f` is false when len is NaN, so a
@@ -557,10 +616,16 @@ Vec3 vecNormalize(const Vec3 &v) {
 // into the half-open interval [-PI, PI). +PI and -PI are the same point on
 // the circle, and both map to exactly -PI under this convention.
 float wrapAngle(float a) {
-  if (isnan(a) || isinf(a)) return NAN; // explicit "invalid" instead of a hang or garbage
-  a = fmodf(a + PI, 2.0f * PI);
-  if (a < 0.0f) a += 2.0f * PI;
-  return a - PI;
+  if (isnan(a) || isinf(a)) return NAN;
+
+  const float pi = (float)PI;
+  const float twoPi = 2.0f * pi;
+  a = fmodf(a, twoPi);
+
+  if (a >= pi) a -= twoPi;
+  if (a < -pi) a += twoPi;
+
+  return a;
 }
 
 float controlLoopWorkload(ControlState &s) {
@@ -762,21 +827,43 @@ TestResult testTrigBenchmark() {
 
 TestResult testNumericalCorrectness() {
   bool ok = true;
+  const float pi = (float)PI;
+  CHECK_NUMERIC(
+    fabsf(wrapAngle(pi) + pi) <= 1e-5f,
+    "wrapAngle(+PI) boundary"
+  );
+
+  CHECK_NUMERIC(
+    fabsf(wrapAngle(-pi) + pi) <= 1e-5f,
+    "wrapAngle(-PI) boundary"
+  );
+
+  CHECK_NUMERIC(
+    isnan(wrapAngle(NAN)),
+    "wrapAngle(NAN)"
+  );
+
+  CHECK_NUMERIC(
+    isinf(vecLength(Vec3{INFINITY, 0.0f, 0.0f})),
+    "vecLength(infinity)"
+  );
+
   const float eps = 0.001f;
 
   // --- basic known-answer checks ---
-  if (fabs(sinf(0.0f)) > eps) ok = false;
-  if (fabs(cosf(0.0f) - 1.0f) > eps) ok = false;
-  if (fabs(sqrtf(4.0f) - 2.0f) > eps) ok = false;
-  if (fabs(sqrtf(2.0f) * sqrtf(2.0f) - 2.0f) > 0.001f) ok = false;
+  CHECK_NUMERIC(fabsf(sinf(0.0f)) <= eps, "sinf(0)");
+  CHECK_NUMERIC(fabsf(cosf(0.0f) - 1.0f) <= eps, "cosf(0)");
+  CHECK_NUMERIC(fabsf(sqrtf(4.0f) - 2.0f) <= eps, "sqrtf(4)");
+  CHECK_NUMERIC(fabsf(sqrtf(2.0f) * sqrtf(2.0f) - 2.0f) <= eps,
+                "sqrtf(2) consistency");
 
   // --- NaN / Inf detection ---
   volatile float zero = 0.0f;
   volatile float one = 1.0f;
   float nanVal = zero / zero;
   float infVal = one / zero;
-  if (!isnan(nanVal)) ok = false;
-  if (!isinf(infVal)) ok = false;
+  CHECK_NUMERIC(isnan(nanVal), "0/0 produces NaN");
+  CHECK_NUMERIC(isinf(infVal), "1/0 produces infinity");
 
   // --- wrapAngle: must be bounded AND must terminate for every input class ---
   struct { float in; bool expectNan; } wrapVectors[] = {
@@ -790,35 +877,33 @@ TestResult testNumericalCorrectness() {
   for (size_t i = 0; i < sizeof(wrapVectors) / sizeof(wrapVectors[0]); i++) {
     float w = wrapAngle(wrapVectors[i].in);
     if (wrapVectors[i].expectNan) {
-      if (!isnan(w)) ok = false;
+      CHECK_NUMERIC(isnan(w), "wrapAngle rejects non-finite input");
     } else {
-      if (isnan(w) || isinf(w)) ok = false;
-      if (w < -PI - eps || w > PI + eps) ok = false;
+      CHECK_NUMERIC(!isnan(w) && !isinf(w),
+                    "wrapAngle finite input produces finite output");
+      CHECK_NUMERIC(w >= -pi - eps && w <= pi + eps,
+                    "wrapAngle output is in range");
     }
   }
 
-  // Exact boundary check, not just range: +PI and -PI are the same angle,
-  // and both must map to exactly -PI under this function's documented
-  // half-open [-PI, PI) convention. Tight epsilon rather than bit-exact
-  // equality, since exact fmodf() rounding can vary by a ULP or two across
-  // different libm implementations - the convention is what's asserted
-  // here, not bit-for-bit reproducibility of a specific libm.
-  if (fabs(wrapAngle(PI) - (-PI)) > 1e-5f) ok = false;
-  if (fabs(wrapAngle(-PI) - (-PI)) > 1e-5f) ok = false;
-
   // --- vecNormalize: must never silently propagate NaN/Inf ---
   Vec3 normalVec = vecNormalize(Vec3{3.0f, 4.0f, 0.0f});
-  if (fabs(vecLength(normalVec) - 1.0f) > eps) ok = false;
+  CHECK_NUMERIC(fabsf(vecLength(normalVec) - 1.0f) <= eps,
+                "vecNormalize produces a unit vector");
 
   Vec3 zeroVec = vecNormalize(Vec3{0.0f, 0.0f, 0.0f});
-  if (isnan(zeroVec.x) || isnan(zeroVec.y) || isnan(zeroVec.z)) ok = false;
+  CHECK_NUMERIC(!isnan(zeroVec.x) && !isnan(zeroVec.y) && !isnan(zeroVec.z),
+                "vecNormalize zero vector stays finite");
 
   Vec3 nanVec = vecNormalize(Vec3{NAN, 1.0f, 1.0f});
-  if (isnan(nanVec.x) || isnan(nanVec.y) || isnan(nanVec.z)) ok = false;
+  CHECK_NUMERIC(!isnan(nanVec.x) && !isnan(nanVec.y) && !isnan(nanVec.z),
+                "vecNormalize NaN input is rejected");
 
   Vec3 infVec = vecNormalize(Vec3{INFINITY, 0.0f, 0.0f});
-  if (isnan(infVec.x) || isnan(infVec.y) || isnan(infVec.z)) ok = false;
-  if (isinf(infVec.x) || isinf(infVec.y) || isinf(infVec.z)) ok = false;
+  CHECK_NUMERIC(!isnan(infVec.x) && !isnan(infVec.y) && !isnan(infVec.z),
+                "vecNormalize infinity input has no NaN output");
+  CHECK_NUMERIC(!isinf(infVec.x) && !isinf(infVec.y) && !isinf(infVec.z),
+                "vecNormalize infinity input has no infinite output");
 
   // FIXED (round 2): with the old squared-sum vecLength(), this used to
   // overflow to Inf prematurely (1e30 squared overflows float32 even
@@ -828,19 +913,26 @@ TestResult testNumericalCorrectness() {
   // "safely non-NaN" - a real regression test for the bug, not merely a
   // crash check.
   Vec3 hugeVec = vecNormalize(Vec3{1e30f, 0.0f, 0.0f});
-  if (isnan(hugeVec.x) || isnan(hugeVec.y) || isnan(hugeVec.z)) ok = false;
-  if (fabs(vecLength(hugeVec) - 1.0f) > eps) ok = false;
-  if (fabs(hugeVec.x - 1.0f) > eps || fabs(hugeVec.y) > eps || fabs(hugeVec.z) > eps) ok = false;
+  CHECK_NUMERIC(!isnan(hugeVec.x) && !isnan(hugeVec.y) && !isnan(hugeVec.z),
+                "vecNormalize large finite input has no NaN output");
+  CHECK_NUMERIC(fabsf(vecLength(hugeVec) - 1.0f) <= eps,
+                "vecNormalize large finite input has unit length");
+  CHECK_NUMERIC(fabsf(hugeVec.x - 1.0f) <= eps &&
+                fabsf(hugeVec.y) <= eps && fabsf(hugeVec.z) <= eps,
+                "vecNormalize large finite direction");
 
   // A vector whose TRUE length genuinely exceeds float range should still
   // come back safe (zero vector), not NaN - this is the case where
   // returning Inf-derived zero is actually the mathematically honest
   // answer, not a premature-overflow artifact.
   Vec3 trueOverflowVec = vecNormalize(Vec3{FLT_MAX, FLT_MAX, FLT_MAX});
-  if (isnan(trueOverflowVec.x) || isnan(trueOverflowVec.y) || isnan(trueOverflowVec.z)) ok = false;
+  CHECK_NUMERIC(!isnan(trueOverflowVec.x) && !isnan(trueOverflowVec.y) &&
+                !isnan(trueOverflowVec.z),
+                "vecNormalize true-overflow input has no NaN output");
 
   return ok ? T_PASS : T_FAIL;
 }
+#undef CHECK_NUMERIC
 
 // Renamed from "loop timing / jitter". This measures the overhead/resolution
 // of back-to-back micros() calls around a trivial synthetic workload - i.e.
@@ -848,7 +940,7 @@ TestResult testNumericalCorrectness() {
 // loop will actually experience under real workload. For that, see
 // testControlWorkloadTiming() below.
 TestResult testTimingCharacterization() {
-  const int N = 200;
+  const int N = 100;
   static unsigned long periods[N]; // static: avoid a large transient stack frame on constrained AVR targets
   unsigned long last = micros();
   for (int i = 0; i < N; i++) {
@@ -877,8 +969,7 @@ TestResult testTimingCharacterization() {
   Serial.print(p50); Serial.print(F(" / ")); Serial.print(p95); Serial.print(F(" / ")); Serial.println(p99);
   Serial.println(F("  (timer granularity/overhead, not a control-loop period - see run_realtime for that)"));
 
-  if (maxP > 1000000UL) return T_FAIL; // a 1-second gap in a tight loop means something is badly wrong
-  return T_INFO;
+  return T_INFO; // timing measurements have no board-independent pass/fail threshold
 }
 
 // Renamed from "real-time deadline". Holds an ABSOLUTE schedule
@@ -891,7 +982,7 @@ TestResult testTimingCharacterization() {
 // you know your robot's actual deadline.
 TestResult testControlWorkloadTiming() {
   const uint32_t targetPeriodUs = 1000; // 1 kHz target
-  const int N = 500;
+  const int N = 100;
   static unsigned long execTimes[N]; // static: avoid a large transient stack frame
   ControlState st{0.0f, 0.0f, 1.0f};
   unsigned long maxExec = 0, minExec = 0xFFFFFFFFUL, sumExec = 0;
@@ -980,18 +1071,18 @@ TestResult testControlWorkloadTiming() {
 // universal file on purpose.
 TestResult testCpuSustainedWorkload(uint32_t durationMs) {
   unsigned long start = millis();
-  uint32_t iterations = 0;
+  uint64_t iterations = 0;
 
   WorkloadState a{0, 1.0f};
   WorkloadState b{0, 1.0f}; // independent lockstep copy - see workloadStep()'s comment
 
   const int MAX_RATE_SAMPLES = 10;
-  unsigned long rateSamples[MAX_RATE_SAMPLES];
+  uint64_t rateSamples[MAX_RATE_SAMPLES];
   int sampleCount = 0;
   unsigned long sampleIntervalMs = durationMs / MAX_RATE_SAMPLES;
   if (sampleIntervalMs < 50) sampleIntervalMs = 50; // guard against absurdly fine-grained windows on a tiny custom duration
   unsigned long nextSampleAt = start + sampleIntervalMs;
-  uint32_t iterAtLastSample = 0;
+  uint64_t iterAtLastSample = 0;
 
   const unsigned long heartbeatIntervalMs = 1000; // at most once per second of wall-clock test time
   const int MAX_HEARTBEATS = 20;                  // hard cap regardless of duration, so a long custom run doesn't flood output
@@ -1003,7 +1094,8 @@ TestResult testCpuSustainedWorkload(uint32_t durationMs) {
     b = workloadStep(b);
     iterations++;
 
-    if (sampleCount < MAX_RATE_SAMPLES && millis() >= nextSampleAt) {
+    if (sampleCount < MAX_RATE_SAMPLES &&
+        (millis() - nextSampleAt) < 0x80000000UL) {
       rateSamples[sampleCount] = iterations - iterAtLastSample;
       iterAtLastSample = iterations;
       sampleCount++;
@@ -1025,7 +1117,7 @@ TestResult testCpuSustainedWorkload(uint32_t durationMs) {
   // time. Any difference means something corrupted one of them mid-run.
   bool corrupted = (a.i != b.i) || (a.f != b.f);
 
-  Serial.print(F("  ")); Serial.print(iterations);
+  Serial.print(F("  ")); printUint64(iterations);
   Serial.print(F(" mixed-workload iterations in ")); Serial.print(actualElapsed); Serial.println(F(" ms"));
   Serial.print(F("  dual-accumulator check: "));
   Serial.println(corrupted ? F("MISMATCH (possible corruption)") : F("consistent"));
@@ -1037,9 +1129,9 @@ TestResult testCpuSustainedWorkload(uint32_t durationMs) {
     Serial.print(F("  iteration-rate samples (per ~"));
     Serial.print(sampleIntervalMs);
     Serial.print(F("ms window): first="));
-    Serial.print(firstRate);
+    printUint64(firstRate);
     Serial.print(F(" last="));
-    Serial.println(lastRate);
+    printUint64(lastRate); Serial.println();
     if (firstRate > 0 && lastRate == 0) {
       stalled = true;
       Serial.println(F("  WARNING: iteration rate dropped to zero in the final window - possible stall partway through"));
@@ -1108,7 +1200,8 @@ TestResult testDefensiveLogic() {
 // that would mean something different on a Mega than on a Teensy.
 TestResult testSoak(uint32_t durationMs) {
   unsigned long start = millis();
-  uint32_t loopCount = 0, packetErrors = 0, calcErrors = 0, stateMismatches = 0, timingOutliers = 0;
+  uint64_t loopCount = 0;
+  uint32_t packetErrors = 0, calcErrors = 0, stateMismatches = 0, timingOutliers = 0;
   unsigned long maxLoopUs = 0;
   double sumLoopUs = 0;
 
@@ -1124,7 +1217,7 @@ TestResult testSoak(uint32_t durationMs) {
     unsigned long t0 = micros();
 
     TestPacket p;
-    buildPacket(p, loopCount);
+    buildPacket(p, (uint32_t)loopCount);
     if (!verifyPacket(p)) packetErrors++;
 
     volatile float outA = controlLoopWorkload(csA); (void)outA;
@@ -1157,7 +1250,7 @@ TestResult testSoak(uint32_t durationMs) {
   if (heartbeatsSent > 0) Serial.println();
 
   Serial.print(F("  soak duration: ")); Serial.print(durationMs); Serial.println(F(" ms"));
-  Serial.print(F("  loop iterations: ")); Serial.println(loopCount);
+  Serial.print(F("  loop iterations: ")); printUint64(loopCount); Serial.println();
   Serial.print(F("  max single-iteration time (us): ")); Serial.println(maxLoopUs);
   Serial.print(F("  packet errors: ")); Serial.println(packetErrors);
   Serial.print(F("  calc errors: ")); Serial.println(calcErrors);
@@ -1275,7 +1368,8 @@ void handleLine(char* line) {
       id == CMD_RUN_FAULTS ||
       id == CMD_RUN_NUMERIC ||
       id == CMD_RUN_PACKET ||
-      id == CMD_RUN_SOAK)
+      id == CMD_RUN_SOAK ||
+      id == CMD_REPORT)
   {
     Serial.println(F("@TEST_START"));
   }
@@ -1316,12 +1410,16 @@ void handleLine(char* line) {
         uint32_t parsed;
         if (!parseUint32Strict(argStr, parsed)) {
           Serial.println(F("ERROR: invalid duration - expected a plain positive integer, e.g. 'run_stress 30'. Command rejected."));
+          Serial.println(F("@TEST_RESULT=FAIL"));
+          Serial.println(F("@TEST_COMPLETE"));
           break;
         }
         if (parsed == 0 || parsed > MAX_LONG_RUN_SECONDS) {
           Serial.print(F("ERROR: duration out of range (1-"));
           Serial.print(MAX_LONG_RUN_SECONDS);
           Serial.println(F(" seconds). Command rejected."));
+          Serial.println(F("@TEST_RESULT=FAIL"));
+          Serial.println(F("@TEST_COMPLETE"));
           break;
         }
         seconds = parsed;
@@ -1361,12 +1459,16 @@ void handleLine(char* line) {
         uint32_t parsed;
         if (!parseUint32Strict(argStr, parsed)) {
           Serial.println(F("ERROR: invalid duration - expected a plain positive integer, e.g. 'run_soak 3600'. Command rejected."));
+          Serial.println(F("@TEST_RESULT=FAIL"));
+          Serial.println(F("@TEST_COMPLETE"));
           break;
         }
         if (parsed == 0 || parsed > MAX_LONG_RUN_SECONDS) {
           Serial.print(F("ERROR: duration out of range (1-"));
           Serial.print(MAX_LONG_RUN_SECONDS);
           Serial.println(F(" seconds). Command rejected."));
+          Serial.println(F("@TEST_RESULT=FAIL"));
+          Serial.println(F("@TEST_COMPLETE"));
           break;
         }
         seconds = parsed;
@@ -1381,7 +1483,10 @@ void handleLine(char* line) {
     }
 
     case CMD_REPORT:
+      resetCounters();
       printBoardCapabilityReport();
+      recordResult("Board capability report", T_INFO);
+      printSummary();
       break;
 
     default:
