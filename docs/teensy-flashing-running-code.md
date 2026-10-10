@@ -201,7 +201,7 @@
 //
 // Example:
 //
-//     Opening /dev/ttyACM0 at 2500000 baud...
+//     Opening /dev/ttyACM0 at 250000 baud...
 //
 //     =================================
 //     Board Test Runner

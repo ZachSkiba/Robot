@@ -1,4 +1,4 @@
-```cpp
+Current folders is in Robot/Archive/platformio-tests/board-test.py and teensy42-basic/platformio.ini
 // ============================================================
 // HOW TO RUN AN ESP32 PROJECT FROM A NEW FOLDER
 // ============================================================
@@ -105,7 +105,6 @@
 //
 //
 //
-```cpp
 // ============================================================
 // HOW TO RUN A TEENSY 4.1 PROJECT FROM A NEW FOLDER
 // ============================================================

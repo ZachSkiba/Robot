@@ -22,7 +22,7 @@ except ImportError as exc:
     ) from exc
 
 
-DEFAULT_BAUD_RATE = 2500000
+DEFAULT_BAUD_RATE = 250000
 DEFAULT_READ_TIMEOUT = 0.25
 
 PROTOCOL_MODES = {
@@ -225,7 +225,7 @@ def parse_args() -> argparse.Namespace:
         "--baud",
         type=int,
         default=DEFAULT_BAUD_RATE,
-        help="Serial baud rate (default: 2500000)",
+        help="Serial baud rate (default: 250000)",
     )
     parser.add_argument(
         "--mode",

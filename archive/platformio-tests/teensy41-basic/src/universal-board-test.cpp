@@ -18,10 +18,10 @@
  *
  * HOW TO USE
  *   Arduino IDE : rename to universal_board_test.ino, open as its own
- *                 sketch folder, upload, Serial Monitor at 2500000 baud,
+ *                 sketch folder, upload, Serial Monitor at 250000 baud,
  *                 type "help".
  *   PlatformIO  : drop in as src/main.cpp, build, upload,
- *                 `pio device monitor -b 2500000`, type "help".
+ *                 `pio device monitor -b 250000`, type "help".
  *
  * ----------------------------------------------------------------------------
  * REVISION NOTES (after external review of the first version)
@@ -1607,7 +1607,7 @@ void handleLine(char* line) {
 // ============================================================================
 
 void initializeUniversalBoardTest() {
-  Serial.begin(2500000);
+  Serial.begin(250000);
   delay(100);
   universalPrintHelp();
 }

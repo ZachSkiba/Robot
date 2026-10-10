@@ -68,8 +68,8 @@
 // ============================================================
 
 // CHANGE THIS: Serial speed
-// Common: 9600, 2500000
-constexpr uint32_t SERIAL_BAUD = 2500000;
+// Common: 9600, 250000
+constexpr uint32_t SERIAL_BAUD = 250000;
 
 // CHANGE THIS: startup delay
 // Unit: milliseconds
@@ -435,7 +435,7 @@ void loop()
 //
 // Example:
 //
-//     Opening /dev/ttyACM0 at 2500000 baud...
+//     Opening /dev/ttyACM0 at 250000 baud...
 //
 //     =================================
 //     Board Test Runner

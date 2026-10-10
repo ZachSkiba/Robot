@@ -156,7 +156,7 @@ UNIVERSAL SERIAL THROUGHPUT TEST
 Packet format: fixed-size binary packet
 Packet size:          32 bytes
 Target packet period: 10 ms
-Configured baud:      2500000
+Configured baud:      250000
 
 Elapsed time:         10.000 s
 Packets sent:         1000
@@ -449,7 +449,7 @@ UNIVERSAL SERIAL THROUGHPUT TEST
 Packet format: fixed-size binary packet
 Packet size:          32 bytes
 Target packet period: 10 ms
-Configured baud:      2500000
+Configured baud:      250000
 
 Elapsed time:         10.000 s
 Packets sent:         1000
