@@ -44,7 +44,7 @@
 // #define RUN_SERIAL_THROUGHPUT_TEST
 // #define RUN_CALCULATION_SPEED_TEST
 // #define RUN_DIAGNOSTIC_FIRMWARE
-#define RUN_UNIVERSAL_BOARD_TEST
+ #define RUN_UNIVERSAL_BOARD_TEST
 
 #if defined(RUN_LATENCY_BENCHMARK)
 #include "latency_test.h"
@@ -295,7 +295,7 @@ void loop()
 //
 //     docker cp <container-id>:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex "$HOME\teensy-flash\firmware.hex"
 //
-// Current: docker cp b06b33600832:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex "$HOME\teensy-flash\firmware.hex"
+// Current: docker cp 76b7d87f245c:/workspace/Robot/archive/platformio-tests/teensy41-basic/.pio/build/teensy41/firmware.hex "$HOME\teensy-flash\firmware.hex"
 //
 // Verify the file:
 //

@@ -293,6 +293,7 @@ TestResult   testTrigBenchmark();
 TestResult   testNumericalCorrectness();
 TestResult   testTimingCharacterization();
 TestResult   testControlWorkloadTiming();
+TestResult   testCycleCounterTiming();
 TestResult   testCpuSustainedWorkload(uint32_t durationMs);
 TestResult   testDefensiveLogic();
 TestResult   testSoak(uint32_t durationMs);
@@ -980,10 +981,63 @@ TestResult testTimingCharacterization() {
 // no board-independent "correct" miss count. Define
 // ENFORCE_REALTIME_REQUIREMENT above to turn it into a real PASS/FAIL once
 // you know your robot's actual deadline.
+
+// Platform-specific high-resolution timing. The Teensy 4.x core enables
+// DWT CYCCNT during startup; other cores explicitly report unsupported.
+TestResult testCycleCounterTiming() {
+#if defined(TEENSYDUINO) && defined(__IMXRT1062__)
+  constexpr uint32_t N = 1000;
+  static unsigned long samples[N];
+  ControlState st{0.0f, 0.0f, 1.0f};
+
+  for (uint32_t i = 0; i < N; ++i) {
+    uint32_t begin = ARM_DWT_CYCCNT;
+    volatile float out = controlLoopWorkload(st);
+    (void)out;
+    uint32_t elapsed = ARM_DWT_CYCCNT - begin;
+    samples[i] = elapsed;
+  }
+
+  insertionSortULong(samples, N);
+  unsigned long minCycles = samples[0];
+  unsigned long maxCycles = samples[N - 1];
+  double sumCycles = 0.0;
+  for (uint32_t i = 0; i < N; ++i) sumCycles += samples[i];
+  double avgCycles = sumCycles / N;
+
+  Serial.println(F("  hardware cycle counter: ARM_DWT_CYCCNT"));
+  Serial.print(F("  CPU frequency (Hz): "));
+  Serial.println((unsigned long)F_CPU);
+  Serial.print(F("  cycles min/avg/max: "));
+  Serial.print(minCycles); Serial.print(F(" / "));
+  Serial.print(avgCycles); Serial.print(F(" / "));
+  Serial.println(maxCycles);
+  Serial.print(F("  execution time (us) min/avg/max: "));
+  Serial.print((double)minCycles * 1000000.0 / F_CPU, 4);
+  Serial.print(F(" / "));
+  Serial.print(avgCycles * 1000000.0 / F_CPU, 4);
+  Serial.print(F(" / "));
+  Serial.println((double)maxCycles * 1000000.0 / F_CPU, 4);
+  Serial.print(F("  cycles p50/p95/p99: "));
+  Serial.print(percentileULong(samples, N, 0.50f)); Serial.print(F(" / "));
+  Serial.print(percentileULong(samples, N, 0.95f)); Serial.print(F(" / "));
+  Serial.println(percentileULong(samples, N, 0.99f));
+  return (minCycles <= maxCycles) ? T_PASS : T_FAIL;
+#else
+  Serial.println(F("  hardware cycle counter unavailable for this core"));
+  return T_SKIP;
+#endif
+}
+
 TestResult testControlWorkloadTiming() {
   const uint32_t targetPeriodUs = 1000; // 1 kHz target
   const int N = 100;
-  static unsigned long execTimes[N]; // static: avoid a large transient stack frame
+  static unsigned long execTimes[N];
+  static unsigned long cycleTimes[N];
+
+  unsigned long minCycles = 0xFFFFFFFFUL;
+  unsigned long maxCycles = 0;
+  uint64_t sumCycles = 0;
   ControlState st{0.0f, 0.0f, 1.0f};
   unsigned long maxExec = 0, minExec = 0xFFFFFFFFUL, sumExec = 0;
   uint16_t missed = 0;
@@ -1003,8 +1057,31 @@ TestResult testControlWorkloadTiming() {
     long startLateness = (long)(actualStart - targetTime); // how late THIS cycle started vs the intended schedule
     if (startLateness > worstStartLatenessUs) worstStartLatenessUs = startLateness;
 
-    volatile float out = controlLoopWorkload(st); (void)out;
-    unsigned long exec = micros() - actualStart;
+
+#if defined(TEENSYDUINO) && defined(__IMXRT1062__)
+    uint32_t cycleStart = ARM_DWT_CYCCNT;
+#endif
+
+    volatile float out = controlLoopWorkload(st);
+    (void)out;
+
+#if defined(TEENSYDUINO) && defined(__IMXRT1062__)
+    uint32_t cycleFinish = ARM_DWT_CYCCNT;
+#endif
+
+    // Capture completion before updating measurement statistics.
+    unsigned long finishTime = micros();
+    unsigned long exec = finishTime - actualStart;
+
+#if defined(TEENSYDUINO) && defined(__IMXRT1062__)
+    unsigned long elapsedCycles =
+        (uint32_t)(cycleFinish - cycleStart);
+
+    cycleTimes[i] = elapsedCycles;
+    if (elapsedCycles < minCycles) minCycles = elapsedCycles;
+    if (elapsedCycles > maxCycles) maxCycles = elapsedCycles;
+    sumCycles += elapsedCycles;
+#endif
     execTimes[i] = exec;
     if (exec > maxExec) maxExec = exec;
     if (exec < minExec) minExec = exec;
@@ -1015,7 +1092,7 @@ TestResult testControlWorkloadTiming() {
     // execution time vs. the period alone. A cycle that starts 300us late
     // and finishes in 100us still misses its deadline; the old check
     // (`exec > targetPeriodUs`) would not have counted that.
-    unsigned long finishTime = actualStart + exec; // == a fresh micros() call right after the workload, computed without one
+
     unsigned long deadline = targetTime + targetPeriodUs;
     bool thisMissed = (long)(finishTime - deadline) > 0;
     if (thisMissed) {
@@ -1030,6 +1107,30 @@ TestResult testControlWorkloadTiming() {
   }
 
   insertionSortULong(execTimes, N);
+  #if defined(TEENSYDUINO) && defined(__IMXRT1062__)
+  insertionSortULong(cycleTimes, N);
+
+  unsigned long cycleP50 =
+      percentileULong(cycleTimes, N, 0.50f);
+  unsigned long cycleP95 =
+      percentileULong(cycleTimes, N, 0.95f);
+  unsigned long cycleP99 =
+      percentileULong(cycleTimes, N, 0.99f);
+
+  Serial.print(F("  workload cycles min/avg/max: "));
+  Serial.print(minCycles);
+  Serial.print(F(" / "));
+  Serial.print((double)sumCycles / N);
+  Serial.print(F(" / "));
+  Serial.println(maxCycles);
+
+  Serial.print(F("  workload cycles p50/p95/p99: "));
+  Serial.print(cycleP50);
+  Serial.print(F(" / "));
+  Serial.print(cycleP95);
+  Serial.print(F(" / "));
+  Serial.println(cycleP99);
+#endif
   unsigned long p50 = percentileULong(execTimes, N, 0.50f);
   unsigned long p95 = percentileULong(execTimes, N, 0.95f);
   unsigned long p99 = percentileULong(execTimes, N, 0.99f);
@@ -1329,7 +1430,12 @@ void runAll() {
   recordResult("Watchdog configure + recovery",    T_SKIP, "register/API differs per core; resets the board");
   recordResult("Reset-reason decode",              T_SKIP, "register/API differs per core");
   recordResult("Internal EEPROM/flash/FS test",    T_SKIP, "API differs per core; destructive by design, skipped");
-  recordResult("CPU cycle-accurate timing",        T_SKIP, "Cortex-M DWT cycle counter only");
+  #if defined(TEENSYDUINO) && defined(__IMXRT1062__)
+  recordResult("CPU cycle-counter timing", testCycleCounterTiming());
+#else
+  recordResult("CPU cycle-counter timing", testCycleCounterTiming(),
+               "hardware cycle counter adapter unavailable on this core");
+#endif
   recordResult("Die temperature",                  T_SKIP, "not exposed on most cores");
   recordResult("Stack usage / stack canary",       T_SKIP, "stack layout/introspection differs per core");
 
