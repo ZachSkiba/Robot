@@ -308,7 +308,7 @@ void loop()
 //
 // 🟦 WINDOWS POWERSHELL
 //
-//     wsl cp /mnt/c/Users/<windows-user>/teensy-flash/firmware.hex ~/teensy-flash/firmware.hex
+//     wsl cp /mnt/c/Users/Nick/teensy-flash/firmware.hex ~/teensy-flash/firmware.hex
 //
 // ============================================================
 //
