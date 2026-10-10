@@ -34,6 +34,7 @@
     "--device=/dev/bus/usb:/dev/bus/usb",
     "--device=/dev/hidraw0:/dev/hidraw0",
     "--device=/dev/ttyACM0",
+    "--device=/dev/ttyUSB0",
     "-e",
     "DISPLAY=${localEnv:DISPLAY}",
     "-e",
