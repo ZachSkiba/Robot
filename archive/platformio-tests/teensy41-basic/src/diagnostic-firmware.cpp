@@ -377,15 +377,10 @@ void initializeDiagnosticFirmware()
 {
     initializeLed();
 
-    Serial.begin(SERIAL_BAUD);
+    // Serial is initialized in main.cpp.
+    // Do not call Serial.begin() again here.
 
-    // Do not use while (!Serial) here.
-    //
-    // That can block forever on boards that use hardware UART
-    // or when no serial monitor is connected.
-    //
-    // A short delay gives some USB boards time to initialize
-    // without making the firmware dependent on a computer.
+    // Give serial startup a short settling period.
     delay(100);
 
     const uint32_t nowMs = millis();

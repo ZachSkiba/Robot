@@ -276,4 +276,177 @@ Current folders is in Robot/Archive/platformio-tests/board-test.py and teensy42-
 // ============================================================
 // END OF TEENSY NEW-FOLDER INSTRUCTIONS
 // ============================================================
-```
+//
+//
+//
+//
+// ============================================================
+// HOW TO RUN AN ARDUINO MEGA 2560 PROJECT FROM A NEW FOLDER
+// ============================================================
+//
+// CURRENT WORKFLOW:
+// Build -> Flash -> Run the shared board test runner
+//
+// Unlike the Teensy workflow, the Mega can be uploaded directly
+// from the VS Code development container using PlatformIO.
+//
+// ============================================================
+// STEP 1 - IDENTIFY THE NEW PROJECT FOLDER
+// ============================================================
+//
+// Example new project:
+//
+// /workspace/Robot/firmware/mega-motor-test
+//
+// Every independent PlatformIO project must have its own
+// platformio.ini.
+//
+// ============================================================
+// STEP 2 - CHECK THE PLATFORMIO ENVIRONMENT
+// ============================================================
+//
+// Open platformio.ini in the new project folder.
+//
+// The environment should look like:
+//
+// [env:megaatmega2560]
+// platform = atmelavr
+// board = megaatmega2560
+// framework = arduino
+// upload_protocol = wiring
+// monitor_speed = 250000
+//
+// PlatformIO's documented board ID for the Arduino Mega 2560
+// is megaatmega2560.
+//
+// Reference:
+// https://docs.platformio.org/en/latest/boards/atmelavr/megaatmega2560.html
+//
+// If the environment has a different name, use that name
+// instead of megaatmega2560 in the commands below.
+//
+// IMPORTANT:
+// monitor_speed configures the serial monitor. The firmware
+// must independently use the same baud rate in Serial.begin().
+//
+// ============================================================
+// STEP 3 - VERIFY USB ACCESS
+// ============================================================
+//
+// VS CODE DEVELOPMENT CONTAINER
+//
+// Check that the Mega is visible:
+//
+//     ls -l /dev/ttyACM0
+//
+// List detected serial devices:
+//
+//     export PATH="$HOME/.platformio/penv/bin:$PATH" && pio device list
+//
+// Previously detected Mega:
+//
+//     USB VID:PID = 2341:0042
+//     Serial device = /dev/ttyACM0
+//
+// If the port is missing, check USB passthrough before
+// attempting to upload.
+//
+// ============================================================
+// STEP 4 - BUILD, FLASH, AND RUN THE TEST
+// ============================================================
+//
+// VS CODE DEVELOPMENT CONTAINER
+//
+// Replace the example project path with your actual folder.
+//
+//     cd /workspace/Robot/firmware/mega-motor-test && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio run -e megaatmega2560 && pio run -e megaatmega2560 -t upload --upload-port /dev/ttyACM0 && cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000
+//
+// Paste the entire command as ONE LINE.
+//
+// ============================================================
+// STEP 5 - UNDERSTAND WHAT THE COMMAND DOES
+// ============================================================
+//
+// 1. Enters the new Mega project folder.
+// 2. Adds PlatformIO to PATH.
+// 3. Builds the Mega firmware.
+// 4. Uploads the firmware to /dev/ttyACM0.
+// 5. Changes to the shared test-runner folder.
+// 6. Runs board-test.py against the Mega.
+//
+// The build output is normally:
+//
+//     .pio/build/megaatmega2560/firmware.hex
+//
+// PlatformIO handles the HEX file and upload process directly.
+// No manual Docker copy, WSL copy, or Teensy HalfKay flashing
+// procedure is required.
+//
+// ============================================================
+// STEP 6 - WHAT YOU MAY NEED TO CHANGE
+// ============================================================
+//
+// PROJECT PATH:
+//     Change the project directory in the build command.
+//
+// ENVIRONMENT:
+//     Change megaatmega2560 if platformio.ini uses another name.
+//
+// SERIAL PORT:
+//     Change /dev/ttyACM0 if the Mega appears on another port.
+//
+// BAUD RATE:
+//     Change 250000 if the firmware uses another baud rate.
+//
+// TEST RUNNER:
+//     Keep the shared runner path:
+//
+//     /workspace/Robot/archive/platformio-tests/board-test.py
+//
+// ============================================================
+// IMPORTANT LIMITATIONS
+// ============================================================
+//
+// - The firmware must implement the protocol expected by
+//   board-test.py.
+// - The shared runner cannot automatically test arbitrary
+//   firmware that does not implement its protocol.
+// - The Mega has only 8 KB of SRAM and runs at 16 MHz.
+// - Some tests may require AVR-specific adaptations.
+// - A successful build does not guarantee a successful upload.
+// - A successful upload does not guarantee that tests pass.
+// - The shared runner's default command is determined by its
+//   implementation and the firmware protocol it detects.
+//
+// ============================================================
+// OPTIONAL - RUN A COMPATIBLE UNIVERSAL TEST SUITE
+// ============================================================
+//
+// If the firmware supports the universal-suite protocol:
+//
+//     cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000 --mode universal --command all
+//
+// Use this explicit command only when the Mega firmware
+// actually supports the universal-suite protocol.
+//
+// ============================================================
+// OPTIONAL - OPEN THE SERIAL MONITOR
+// ============================================================
+//
+//     cd /workspace/Robot/firmware/mega-motor-test && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio device monitor -e megaatmega2560 --port /dev/ttyACM0 --baud 250000
+//
+// Exit with Ctrl+C.
+//
+// Do not run the serial monitor and board-test.py simultaneously
+// against the same port.
+//
+// ============================================================
+// END OF ARDUINO MEGA NEW-FOLDER INSTRUCTIONS
+// ============================================================
+//
+// ONE-LINER
+//
+//     cd /workspace/Robot/firmware/mega-motor-test && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio run -e megaatmega2560 && pio run -e megaatmega2560 -t upload --upload-port /dev/ttyACM0 && cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000
+//
+// ============================================================
+

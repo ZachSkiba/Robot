@@ -1607,9 +1607,7 @@ void handleLine(char* line) {
 // ============================================================================
 
 void initializeUniversalBoardTest() {
-  Serial.begin(250000);
-  delay(100);
-  universalPrintHelp();
+    universalPrintHelp();
 }
 
 void runUniversalBoardTest() {
