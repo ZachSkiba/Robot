@@ -6,6 +6,83 @@ document neither an ESP32 nor an AVR build or physical test. Benchmark values
 depend on the flashed source revision, compiler, framework, and measurement
 conditions; do not use them as current cross-board comparisons.
 
+# Microcontroller Benchmark Results
+
+## 1. Calculation Performance
+
+Higher iterations per second means faster execution.
+
+| Benchmark | Teensy 4.1 | ESP32 | Mega 2560 | Uno R3 |
+|---|---:|---:|---:|---:|
+| Integer arithmetic | 49.14M | 4.63M | 33.6K | 34.2K |
+| Floating point | 14.21M | 2.50M | 11.4K | 11.9K |
+| Trigonometry | 2.74M | 658K | 3.01K | 3.11K |
+| Robot-style math | 4.31M | 959K | 3.93K | 4.08K |
+
+*M = million iterations/sec; K = thousand iterations/sec.*
+
+## 2. Relative Speed
+
+Approximate speedup of the Teensy 4.1 compared with each board:
+
+| Benchmark | vs. ESP32 | vs. Mega | vs. Uno |
+|---|---:|---:|---:|
+| Integer arithmetic | 10.6× | 1,463× | 1,438× |
+| Floating point | 5.7× | 1,248× | 1,194× |
+| Trigonometry | 4.2× | 911× | 881× |
+| Robot-style math | 4.5× | 1,096× | 1,057× |
+
+**Caution:** The large speedups over the AVR boards should not be treated as definitive architectural comparisons. Compiler, optimization, and implementation differences were not controlled across all builds.
+
+## 3. Firmware Performance
+
+| Metric | Teensy 4.1 | ESP32 | Mega 2560 | Uno R3 |
+|---|---:|---:|---:|---:|
+| Integer loop iterations/sec | 73.93M | 20.83M | 55.5K | 56.7K |
+| Reported loop rate | 7.23M Hz | 743.5K Hz | 46.0K Hz | 46.8K Hz |
+| Reported timer resolution | 1 µs | 5 µs | 16 µs | 4 µs |
+
+**Loop timing requires revalidation.** The reported loop rates are inconsistent with the timer resolutions and should not be interpreted as actual maximum control-loop frequencies.
+
+## 4. Latency and Serial Communication
+
+- All four boards reported zero missed packet slots in the 100-packet/sec serial test.
+- Each test accepted approximately 3,200 bytes/sec.
+- These results do not establish maximum serial throughput or end-to-end latency.
+- Actual sensor-to-motor latency must be measured through the complete control pipeline.
+- Real-time performance depends on interrupt behavior, scheduling, peripherals, and workload.
+
+## 5. Test Coverage
+
+| Board | Test Result | Limitations |
+|---|---|---|
+| Teensy 4.1 | 8 passed, 0 failed, 6 skipped | Several hardware-specific tests unavailable |
+| ESP32 | 7 passed, 0 failed, 7 skipped | No hardware cycle-counter adapter |
+| Mega 2560 | 7 passed, 0 failed, 7 skipped | No hardware cycle-counter adapter |
+| Uno R3 | Universal suite too large | Separate calculation and timing benchmarks completed |
+
+Passing the test suite does not establish production readiness or real-world robot performance.
+
+## 6. Recommendation
+
+| Application | Recommended Board |
+|---|---|
+| Primary robot control and kinematics | **Teensy 4.1** |
+| Wireless connectivity and supervisory tasks | **ESP32** |
+| Simple peripheral control and additional I/O | **Mega 2560** |
+| Basic control and small projects | **Uno R3** |
+
+For the robot project, use the Teensy 4.1 as the primary controller and consider the ESP32 for wireless communication or secondary processing.
+
+## 7. Benchmark Limitations
+
+- Historical results came from different firmware modes and builds.
+- The saved Teensy legacy benchmark is not directly comparable to the universal-suite results.
+- Results depend on source revision, compiler, framework, and measurement conditions.
+- The serial test measures bytes accepted by software, not necessarily bytes physically transmitted.
+- No complete sensor-to-motor latency test was performed.
+- The reported figures should be treated as preliminary until the same workload and compiler conditions are used across all boards.
+
 ## Teensy 4.1
 
 ================================
