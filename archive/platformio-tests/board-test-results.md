@@ -852,3 +852,197 @@ Overall: PASS WITH SKIPPED TESTS
 
 ## Arduino Uno R3
 
+================================
+Calculation Speed Benchmark
+================================
+
+Portable Arduino-style benchmark
+Higher iterations/sec = faster
+
+Benchmark duration: 5 seconds
+Batch size:         100
+
+
+================================
+DETAILED RESULTS
+================================
+
+Integer arithmetic
+  Duration:          5.000 s
+  Iterations:        170900
+  Batches:           1709
+  Iterations/sec:    34179.92
+  Average iteration: 29.256944 us
+  Minimum batch:     2900 us
+  Maximum batch:     3404 us
+  Average batch:     2908.204 us
+  Batch avg/iter:    29.082036 us
+
+32-bit floating point
+  Duration:          5.005 s
+  Iterations:        59600
+  Batches:           596
+  Iterations/sec:    11908.22
+  Average iteration: 83.975639 us
+  Minimum batch:     8240 us
+  Maximum batch:     8752 us
+  Average batch:     8380.094 us
+  Batch avg/iter:    83.800933 us
+
+Trigonometry
+  Duration:          5.014 s
+  Iterations:        15600
+  Batches:           156
+  Iterations/sec:    3111.13
+  Average iteration: 321.426147 us
+  Minimum batch:     31540 us
+  Maximum batch:     33008 us
+  Average batch:     32125.076 us
+  Batch avg/iter:    321.250762 us
+
+Robot-style math
+  Duration:          5.003 s
+  Iterations:        20400
+  Batches:           204
+  Iterations/sec:    4077.35
+  Average iteration: 245.257049 us
+  Minimum batch:     24440 us
+  Maximum batch:     24572 us
+  Average batch:     24508.019 us
+  Batch avg/iter:    245.080200 us
+
+================================
+SUMMARY
+================================
+
+Benchmark             Iterations/sec
+----------------------------------------
+Integer arithmetic    34179.92
+32-bit float          11908.22
+Trigonometry          3111.13
+Robot-style math      4077.35
+
+NOTES:
+- Results are benchmark iterations/sec.
+- They are not CPU instruction counts.
+- The same source can run on many Arduino boards.
+- Timer resolution differs between processors.
+- Compiler optimization affects the results.
+- Robot-style math is not complete 6-DOF kinematics.
+
+=== TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+================================
+UNIVERSAL FIRMWARE TIMING TEST
+================================
+
+Timing source: Arduino micros()
+Workload: portable integer firmware loop
+
+Test duration:       5.007 s
+Batch size:          1000
+Batches:             284
+Total iterations:    284000
+
+Timer resolution:    4 us
+Timer overhead:      0 us
+
+Iterations/second:   56724.58
+Average iteration:   17.629041 us
+
+Minimum batch:       17608 us
+Maximum batch:       17620 us
+Average batch:       17612.986 us
+Batch average/iter:  17.612985 us
+Minimum iter est.:   17.607999 us
+Maximum iter est.:   17.620000 us
+
+INTERPRETATION:
+- Higher iterations/sec is faster.
+- Batch timing reduces timer-resolution error.
+- Results include benchmark and timer overhead.
+- This is not complete sensor-to-motor latency.
+- Compare boards using the same compiler settings.
+
+=== TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+================================
+UNIVERSAL LOOP TIMING TEST
+================================
+
+Timing source: Arduino micros()
+Test duration:       5.000 s
+Target loop period:  1000 us
+Timer resolution:    4 us
+Timer overhead:      0 us
+
+Samples:             233886
+Minimum period:      16 us
+Maximum period:      28 us
+Average period:      21.378 us
+Average loop rate:   46777.347 Hz
+Worst positive jitter: 6.622 us
+Periods over target:  0
+Miss percentage:      0.000%
+
+Timing histogram:
+  < 1x target:        233886
+  1x to 2x target:    0
+  2x to 3x target:    0
+  3x to 4x target:    0
+  4x to 5x target:    0
+  5x to 10x target:   0
+  10x to 100x target: 0
+  > 100x target:      0
+
+INTERPRETATION:
+- This measures loop period, not pure execution time.
+- micros() overhead is included in each measurement.
+- Timer resolution differs between boards.
+- LED timing is disabled by default.
+- Interrupts and background tasks affect jitter.
+- A missed period is not automatically a missed control deadline.
+- Use the real robot control loop for final validation.
+
+=== LOOP TIMING TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+================================
+UNIVERSAL SERIAL THROUGHPUT TEST
+================================
+
+Packet format: fixed-size binary packet
+Packet size:          32 bytes
+Target packet period: 10 ms
+Configured baud:      250000
+
+Elapsed time:         10.000 s
+Packets sent:         1000
+Scheduled packets:    1000
+Bytes accepted:       32000
+Missed packet slots:  0
+
+Bytes/second:         3200.00
+Bits/second:          25600.00
+Kilobytes/second:     3.200
+Packets/second:       100.00
+Effective bit rate:   25.600 kbit/s
+
+INTERPRETATION:
+- Bytes accepted is the number returned by Serial.write().
+- Serial.write() may queue bytes instead of transmitting them.
+- Serial.flush() waits for queued serial data to finish.
+- Results depend on baud rate, buffers, USB, and host behavior.
+- This measures serial transport, not robot-control latency.
+- Binary packets avoid variable-length text overhead.
+
+=== SERIAL THROUGHPUT TEST COMPLETE ===
+@TEST_RESULT=PASS
+@TEST_COMPLETE
+
+Universal test to large for uno r3

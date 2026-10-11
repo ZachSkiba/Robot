@@ -450,3 +450,271 @@ Current folders is in Robot/Archive/platformio-tests/board-test.py and teensy42-
 //
 // ============================================================
 
+//
+// ============================================================
+// HOW TO RUN AN ARDUINO UNO R3 PROJECT FROM A NEW FOLDER
+// ============================================================
+//
+// CURRENT WORKFLOW:
+// Build -> Flash -> Run the shared board test runner
+//
+// Unlike the Teensy workflow, the Uno can be uploaded directly
+// from the VS Code development container using PlatformIO.
+//
+// ============================================================
+// STEP 1 - IDENTIFY THE NEW PROJECT FOLDER
+// ============================================================
+//
+// Example new project:
+//
+// /workspace/Robot/firmware/uno-motor-test
+//
+// Every independent PlatformIO project must have its own
+// platformio.ini.
+//
+// ============================================================
+// STEP 2 - CHECK THE PLATFORMIO ENVIRONMENT
+// ============================================================
+//
+// Open platformio.ini in the new project folder.
+//
+// The environment should look like:
+//
+// [env:uno]
+// platform = atmelavr
+// board = uno
+// framework = arduino
+// upload_protocol = arduino
+// monitor_speed = 250000
+//
+// PlatformIO's documented board ID for the Arduino Uno R3
+// is uno.
+//
+// Reference:
+// https://docs.platformio.org/page/boards/atmelavr/uno.html
+//
+// If the environment has a different name, use that name
+// instead of uno in the commands below.
+//
+// IMPORTANT:
+//
+// monitor_speed configures the serial monitor. The firmware
+// must independently use the same baud rate in Serial.begin().
+//
+// The upload baud rate used by the bootloader is separate from
+// the firmware's serial communication baud rate.
+//
+// ============================================================
+// STEP 3 - VERIFY USB ACCESS
+// ============================================================
+//
+// VS CODE DEVELOPMENT CONTAINER
+//
+// Check that the Uno is visible:
+//
+//     ls -l /dev/ttyACM0
+//
+// List detected serial devices:
+//
+//     export PATH="$HOME/.platformio/penv/bin:$PATH" && pio device list
+//
+// The serial port may differ depending on USB passthrough,
+// the USB interface, and connected devices.
+//
+// IMPORTANT:
+//
+// Do not assume the Uno uses the same USB identification as
+// the Mega. Genuine and clone boards may use different USB
+// interfaces and identifiers.
+//
+// If the port is missing, check USB passthrough before
+// attempting to upload.
+//
+// ============================================================
+// STEP 4 - BUILD, FLASH, AND RUN THE TEST
+// ============================================================
+//
+// VS CODE DEVELOPMENT CONTAINER
+//
+// Replace the example project path with your actual folder.
+//
+//     cd /workspace/Robot/firmware/uno-motor-test && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio run -e uno && pio run -e uno -t upload --upload-port /dev/ttyACM0 && cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000
+//
+// Paste the entire command as ONE LINE.
+//
+// IMPORTANT:
+//
+// This command assumes the selected firmware implements the
+// protocol expected by the shared test runner.
+//
+// ============================================================
+// STEP 5 - UNDERSTAND WHAT THE COMMAND DOES
+// ============================================================
+//
+// 1. Enters the new Uno project folder.
+// 2. Adds PlatformIO to PATH.
+// 3. Builds the Uno firmware.
+// 4. Uploads the firmware to /dev/ttyACM0.
+// 5. Changes to the shared test-runner folder.
+// 6. Runs board-test.py against the Uno.
+//
+// The build output is normally:
+//
+//     .pio/build/uno/firmware.hex
+//
+// PlatformIO handles the HEX file and upload process directly.
+// No manual Docker copy, WSL copy, or Teensy HalfKay flashing
+// procedure is required.
+//
+// ============================================================
+// STEP 6 - WHAT YOU MAY NEED TO CHANGE
+// ============================================================
+//
+// PROJECT PATH:
+//     Change the project directory in the build command.
+//
+// ENVIRONMENT:
+//     Change uno if platformio.ini uses another environment
+//     name. The environment's board setting should still target
+//     the correct Uno hardware.
+//
+// SERIAL PORT:
+//     Change /dev/ttyACM0 if the Uno appears on another port.
+//
+// BAUD RATE:
+//     Change 250000 if the firmware uses another baud rate.
+//
+// TEST RUNNER:
+//     Keep the shared runner path:
+//
+//     /workspace/Robot/archive/platformio-tests/board-test.py
+//
+// ============================================================
+// IMPORTANT - EXISTING FIRMWARE SOURCE
+// ============================================================
+//
+// If you are reusing the existing test firmware, check:
+//
+//     src/main.cpp
+//
+// Select the desired firmware using its RUN_* definition.
+//
+// Example:
+//
+//     #define RUN_LOOP_TIMING_TEST
+//
+// Only one mutually exclusive selection should be active.
+//
+// The firmware must compile for the Uno's ATmega328P.
+//
+// A new project folder also needs its own source files and
+// required headers. Creating platformio.ini alone does not
+// copy the existing test firmware into the new project.
+//
+// ============================================================
+// STEP 7 - RUN THE TEST
+// ============================================================
+//
+// The default shared runner command is:
+//
+//     cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000
+//
+// The runner must detect a compatible firmware announcement
+// and use a protocol supported by the selected firmware.
+//
+// IMPORTANT:
+//
+// Benchmark firmware may use the READY/YES startup handshake.
+//
+// The universal test suite and diagnostic firmware use their
+// own command-driven execution paths in the existing source.
+//
+// Do not assume all three automatically behave the same way.
+//
+// For the universal suite, if the firmware and runner support
+// these explicit arguments:
+//
+//     cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000 --mode universal --command all
+//
+// Verify supported arguments first:
+//
+//     python3 board-test.py --help
+//
+// Use the explicit universal command only when compatible
+// firmware and runner behavior have been confirmed.
+//
+// ============================================================
+// OPTIONAL - OPEN THE SERIAL MONITOR
+// ============================================================
+//
+//     cd /workspace/Robot/firmware/uno-motor-test && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio device monitor -e uno --port /dev/ttyACM0 --baud 250000
+//
+// Exit with Ctrl+C.
+//
+// Do not run the serial monitor and board-test.py simultaneously
+// against the same port.
+//
+// ============================================================
+// IMPORTANT - ARDUINO UNO R3 LIMITATIONS
+// ============================================================
+//
+// The Arduino Uno R3 has:
+//
+//     Microcontroller: ATmega328P
+//     CPU frequency:  16 MHz
+//     Flash:          32 KB nominal
+//     SRAM:           2 KB
+//     EEPROM:         1 KB
+//
+// Usable application flash is lower than nominal capacity
+// because bootloader space is reserved.
+//
+// Compared with the Mega 2560, the Uno has substantially less
+// RAM and flash.
+//
+// Therefore:
+//
+//     - Large arrays can exhaust SRAM.
+//     - Dynamic String operations can increase memory pressure.
+//     - Floating-point and trigonometric calculations can be
+//       substantially slower.
+//     - Timing resolution and overhead differ across boards.
+//     - Hardware-specific cycle-counter tests may be skipped.
+//     - Watchdog, reset-reason, memory, and peripheral tests
+//       may need board-specific implementations.
+//     - Results should not be compared across boards without
+//       accounting for hardware and timing differences.
+//
+// IMPORTANT:
+//
+// Check PlatformIO's reported RAM and flash usage after each
+// build. Successful compilation does not guarantee reliable
+// runtime behavior, especially with only 2 KB of SRAM.
+//
+// ============================================================
+// FINAL RULE
+// ============================================================
+//
+// Every time you change the source code, rebuild and upload
+// the firmware before expecting the Uno to run those changes.
+//
+// Building does NOT change the program stored on the board.
+//
+// Uploading installs a new firmware image.
+//
+// The Uno, Mega, ESP32, and Teensy can share the same general
+// test-runner architecture only when their firmware implements
+// compatible protocols and accounts for hardware differences.
+//
+// Verify the Uno's actual build, upload, serial announcement,
+// and test results before treating the workflow as validated.
+//
+// ============================================================
+// END OF ARDUINO UNO R3 NEW-FOLDER INSTRUCTIONS
+// ============================================================
+//
+// ONE-LINER
+//
+//     cd /workspace/Robot/firmware/uno-motor-test && export PATH="$HOME/.platformio/penv/bin:$PATH" && pio run -e uno && pio run -e uno -t upload --upload-port /dev/ttyACM0 && cd /workspace/Robot/archive/platformio-tests && python3 board-test.py --port /dev/ttyACM0 --baud 250000
+//
+// ============================================================
