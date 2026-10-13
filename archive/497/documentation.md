@@ -205,7 +205,7 @@ In parallel with the direct project work, I continued studying robotics concepts
 
 This work has been helping establish the background needed to connect the individual parts of the project together. Rather than treating the mechanical, electrical, embedded, and software systems as separate tasks, the goal is to develop an understanding of how they interact as one robotic system.
 
-## Current Project Status
+## Current Project Status (late Sept 2026)
 
 The project has progressed from primarily planning and repository setup into active development of the embedded, mechanical, manufacturing, and testing infrastructure.
 
@@ -216,3 +216,25 @@ On the mechanical side, filament calibration has been completed, material-select
 Simulation data and development artifacts have been organized so that future physical testing can be compared against previous simulation work.
 
 The project is therefore moving into a phase where the established software, embedded, manufacturing, and mechanical foundations can begin supporting more substantial robot-system development and physical prototyping.
+
+## Robot Inventory and Mechanical Prototyping
+
+I updated and reorganized the robot inventory to improve the organization of the project's hardware and mechanical components. This involved consolidating and structuring inventory information so that available components could be identified more easily during the design and prototyping process. Maintaining an organized inventory helps reduce unnecessary purchases, improves visibility into available hardware, and supports more informed decisions when selecting components for future assemblies.
+
+I also began mechanical prototyping of belt-and-pulley systems for the robot. This work focused on exploring potential belt-and-pulley configurations and developing physical prototypes to support the evaluation of mechanical layouts and transmission concepts. These prototypes provide a practical starting point for assessing how belt-driven mechanisms could be incorporated into the robot's design. Further refinement and validation will be needed as the mechanical architecture and requirements of the relevant joints and mechanisms become more defined.
+
+## Completion of Embedded Board Testing
+
+I completed the planned firmware-based board-testing work for the supported development boards. The testing effort brought together the universal board diagnostics, performance tests, firmware upload procedures, and serial communication checks developed throughout the embedded development phase.
+
+The tests were designed to establish a repeatable baseline for evaluating board operation using software-based diagnostics wherever possible. This included evaluating timing behavior, loop performance, serial communication, computational performance, and general firmware execution. The testing process also involved verifying that firmware could be built, uploaded, and executed successfully on the respective boards.
+
+Completing this work established a documented testing baseline for the embedded hardware and provided a more systematic approach to evaluating boards before integrating them into the larger robot system. The results and supporting documentation were organized to preserve the testing procedures and provide a reference for future development and troubleshooting.
+
+## Arduino IDE Board Connections and Setup Documentation
+
+I documented the Arduino IDE setup and connection procedures for the supported development boards to complement the existing PlatformIO and development-container workflows. The goal was to provide a straightforward method for preparing each board, selecting the appropriate board configuration, uploading firmware, and verifying operation through serial communication.
+
+The documentation covers connecting the board to the computer, selecting the correct board and associated settings in Arduino IDE, opening the appropriate test sketch, uploading the firmware, and checking the output through the serial monitor. Board-specific differences were documented where necessary so that the process could be followed consistently across the supported hardware.
+
+This work provides an additional firmware-development and testing workflow outside the Docker-based environment. It also makes the board-testing procedures easier to reproduce and provides a practical reference for future development, initial hardware validation, and troubleshooting.
