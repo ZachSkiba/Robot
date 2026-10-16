@@ -1,0 +1,14 @@
+# Project and developer Python packages.
+# ROS Python packages are installed from the ROS apt repository in Dockerfile.
+black
+ipywidgets
+jupyterlab
+matplotlib
+numpy
+pandas
+Pillow
+pyserial
+pytest
+PyYAML
+requests
+scipy

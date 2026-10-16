@@ -18,7 +18,7 @@ ENV LC_ALL=C.UTF-8
 # ------------------------------------------------------------
 RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     sudo git git-lfs curl wget build-essential cmake pkg-config \
-    python3-pip python3-venv python3-colcon-common-extensions \
+    python3-pip python3-venv python3-numpy python3-opencv python3-colcon-common-extensions \
     python3-rosdep python3-vcstool python3-argcomplete \
     udev usbutils mesa-utils libgl1-mesa-dri libgl1-mesa-glx \
     tio teensy-loader-cli \
@@ -43,12 +43,14 @@ RUN if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
-# 2. Python Tools
+# 2. Isolated Python Development Tools
+# Keep pip packages separate from ROS system Python and cv_bridge.
 # ------------------------------------------------------------
 COPY .devcontainer/requirements-python.txt /tmp/requirements-python.txt
-RUN python3 -m pip install --no-cache-dir --upgrade pip "setuptools<80" wheel \
-    && python3 -m pip install --no-cache-dir platformio \
-    && python3 -m pip install --no-cache-dir -r /tmp/requirements-python.txt \
+RUN python3 -m venv /opt/robot-tools-venv \
+    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir --upgrade pip "setuptools<80" wheel \
+    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir platformio \
+    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir -r /tmp/requirements-python.txt \
     && rm /tmp/requirements-python.txt
 
 # ------------------------------------------------------------

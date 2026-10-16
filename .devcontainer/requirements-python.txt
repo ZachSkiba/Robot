@@ -4,7 +4,7 @@ black
 ipywidgets
 jupyterlab
 matplotlib
-numpy
+numpy<2
 pandas
 Pillow
 pyserial
