@@ -18,6 +18,7 @@ ENV LC_ALL=C.UTF-8
 # ------------------------------------------------------------
 RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     sudo git git-lfs curl wget build-essential cmake pkg-config \
+    ccache \
     python3-pip python3-venv python3-numpy python3-opencv python3-colcon-common-extensions \
     python3-rosdep python3-vcstool python3-argcomplete \
     udev usbutils mesa-utils libgl1-mesa-dri libgl1-mesa-glx \
@@ -31,15 +32,8 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     ros-humble-ros-gz-bridge \
     ros-humble-tf2-tools \
     ros-humble-rmw-cyclonedds-cpp \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install foxglove separately so it doesn't kill the build if the repo is missing
-RUN if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
-    apt-get update --fix-missing && \
-    apt-get install -y --no-install-recommends ros-humble-foxglove-bridge; \
-    else \
-    echo "ros-humble-foxglove-bridge not found; skipping"; \
-    fi \
+    ros-humble-foxglove-bridge \
+    ros-humble-plotjuggler-ros \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
@@ -48,10 +42,13 @@ RUN if apt-cache show ros-humble-foxglove-bridge >/dev/null 2>&1; then \
 # ------------------------------------------------------------
 COPY .devcontainer/requirements-python.txt /tmp/requirements-python.txt
 RUN python3 -m venv /opt/robot-tools-venv \
-    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir --upgrade pip "setuptools<80" wheel \
-    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir platformio \
+    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir --upgrade pip==26.2.1 setuptools==79.0.1 wheel==0.48.0 \
+    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir platformio==6.2.0 \
     && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir -r /tmp/requirements-python.txt \
+    && /opt/robot-tools-venv/bin/python -m pip install --no-cache-dir black \
     && rm /tmp/requirements-python.txt
+
+ENV PATH="/opt/robot-tools-venv/bin:${PATH}"
 
 # ------------------------------------------------------------
 # 3. Create non-root devuser
@@ -69,10 +66,10 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # ------------------------------------------------------------
 # 4. Initialize rosdep
 # ------------------------------------------------------------
-RUN rosdep init 2>/dev/null || true
+RUN if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then rosdep init; fi
 
 USER $USERNAME
-RUN rosdep update || true
+RUN rosdep update
 
 # ------------------------------------------------------------
 # 5. ROS Sourcing Automation

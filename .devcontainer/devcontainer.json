@@ -21,6 +21,7 @@
   ],
   "containerEnv": {
     "ROS_DISTRO": "humble",
+    "RMW_IMPLEMENTATION": "rmw_cyclonedds_cpp",
     "ROS_WS": "/workspace/Robot",
     "PROMPT_COMMAND": "history -a",
     "HISTFILE": "/home/devuser/commandhistory/.bash_history"
@@ -30,13 +31,6 @@
     "--ipc=host",
     "--privileged",
     "--pid=host",
-    "--device=/dev/dri:/dev/dri",
-    "--device=/dev/bus/usb:/dev/bus/usb",
-    "--device=/dev/hidraw0:/dev/hidraw0",
-    "--device=/dev/ttyACM0",
-    "--device=/dev/ttyACM0:/dev/ttyACM0",
-    "--device=/dev/ttyUSB0",
-    "--device=/dev/ttyUSB0:/dev/ttyUSB0",
     "-e",
     "DISPLAY=${localEnv:DISPLAY}",
     "-e",
@@ -117,7 +111,7 @@
       }
     }
   },
-  "postCreateCommand": "bash -lc 'sudo apt-get update && sudo rosdep init 2>/dev/null || true; rosdep update; sudo rosdep install --from-paths /workspace/Robot/src --ignore-src -y || true'",
-  "postStartCommand": "bash -lc 'sudo chown -R devuser:devuser /home/devuser/commandhistory; source /opt/ros/humble/setup.bash; [ -f /workspace/Robot/install/setup.bash ] && source /workspace/Robot/install/setup.bash || true'",
+  "postCreateCommand": "bash -lc 'source /opt/ros/humble/setup.bash && rosdep check --from-paths /workspace/Robot/src --ignore-src --rosdistro humble'",
+  "postStartCommand": "bash -lc 'sudo chown -R devuser:devuser /home/devuser/commandhistory && source /opt/ros/humble/setup.bash && if [ -f /workspace/Robot/install/setup.bash ]; then source /workspace/Robot/install/setup.bash; fi'",
   "shutdownAction": "stopContainer"
 }
