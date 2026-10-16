@@ -186,6 +186,14 @@ Expected:
 
 This is the first hard gate. If this does not pass, do not move on to Gazebo, MoveIt, Teensy, or Foxglove yet.
 
+For the full container and workspace diagnostic, run:
+
+```bash
+bash docs/setup/setup-checks.sh
+```
+
+The script builds and tests the current Colcon workspace, so generated files under `build/`, `install/`, and `log/` may change. It does not install packages or change system configuration. Missing hardware and a headless GUI are reported as skipped checks rather than failures.
+
 ## Phase 4 - Daily Development Rules
 
 Inside the container:

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # 6-DOF Robot - Development Environment Verification
-# Verifies ROS, workspace integrity, Python, hardware access,
-# simulation/graphics, and development tools.
-# Does not install packages or modify system configuration.
+# Verifies the ROS workspace, Python environments, hardware visibility,
+# simulation/graphics, and development tools without installing packages.
 
 set -uo pipefail
 
@@ -21,22 +20,22 @@ section() {
 
 pass() {
     printf '  PASS: %s\n' "$1"
-    ((PASS+=1))
+    PASS=$((PASS + 1))
 }
 
 fail() {
     printf '  FAIL: %s\n' "$1"
-    ((FAIL+=1))
+    FAIL=$((FAIL + 1))
 }
 
 warn() {
     printf '  WARN: %s\n' "$1"
-    ((WARN+=1))
+    WARN=$((WARN + 1))
 }
 
 skip() {
     printf '  SKIP: %s\n' "$1"
-    ((SKIP+=1))
+    SKIP=$((SKIP + 1))
 }
 
 check() {
@@ -59,310 +58,574 @@ optional_check() {
     fi
 }
 
-if [[ ! -d "$ROOT/src" ]]; then
-    echo "ERROR: Workspace source directory missing: $ROOT/src"
-    exit 2
+source_setup() {
+    local setup_file="$1"
+    local had_nounset=0
+    local status
+
+    [[ $- == *u* ]] && had_nounset=1
+    set +u
+    # shellcheck disable=SC1090
+    source "$setup_file"
+    status=$?
+
+    if (( had_nounset )); then
+        set -u
+    else
+        set +u
+    fi
+    return "$status"
+}
+
+summary() {
+    printf '\n=== Summary ===\n'
+    printf '  PASSED:   %d\n' "$PASS"
+    printf '  FAILED:   %d\n' "$FAIL"
+    printf '  WARNINGS: %d\n' "$WARN"
+    printf '  SKIPPED:  %d\n' "$SKIP"
+
+    if (( FAIL > 0 )); then
+        printf 'RESULT: FAIL\n'
+        return 1
+    fi
+
+    printf 'RESULT: PASS (review warnings and skipped checks)\n'
+    return 0
+}
+
+if [[ ! -d "$ROOT" ]]; then
+    fail "Workspace root missing: $ROOT"
+    summary
+    exit 1
 fi
 
-cd "$ROOT" || exit 2
+if [[ ! -d "$ROOT/src" ]]; then
+    fail "Workspace source directory missing: $ROOT/src"
+    summary
+    exit 1
+fi
 
-# ------------------------------------------------------------
+cd "$ROOT" || {
+    fail "Cannot enter workspace root: $ROOT"
+    summary
+    exit 1
+}
+
+# Remove inherited ROS overlay paths so package discovery starts from the
+# Humble underlay, not from whichever ROS workspace launched this script.
+unset AMENT_PREFIX_PATH CMAKE_PREFIX_PATH COLCON_PREFIX_PATH ROS_PACKAGE_PATH
+unset ROS_VERSION ROS_PYTHON_VERSION ROS_DISTRO
+
 section "1. System and ROS Environment"
 
-check "lsb_release available" command -v lsb_release
+check "Workspace root exists" test -d "$ROOT"
+check "Workspace source directory exists" test -d "$ROOT/src"
+
+for tool in lsb_release git cmake make g++; do
+    check "$tool available" command -v "$tool"
+done
 
 if command -v lsb_release >/dev/null 2>&1; then
-    RELEASE="$(lsb_release -rs)"
+    RELEASE="$(lsb_release -rs 2>/dev/null)"
     if [[ "$RELEASE" == "22.04" ]]; then
         pass "Ubuntu 22.04"
     else
-        warn "Ubuntu version is $RELEASE (expected 22.04)"
+        fail "Ubuntu version is ${RELEASE:-unavailable} (expected 22.04)"
     fi
 fi
 
-check "ROS Humble setup file exists" test -f /opt/ros/humble/setup.bash
-
-if [[ -f /opt/ros/humble/setup.bash ]]; then
-    # ROS setup scripts may reference unset variables.
-    set +u
-    # shellcheck disable=SC1091
-    source /opt/ros/humble/setup.bash
-    ROS_SOURCE_STATUS=$?
-    set -u
-
-    if (( ROS_SOURCE_STATUS == 0 )); then
+ROS_UNDERLAY_OK=0
+if [[ -r /opt/ros/humble/setup.bash ]]; then
+    if source_setup /opt/ros/humble/setup.bash; then
+        ROS_UNDERLAY_OK=1
         pass "ROS Humble underlay sources successfully"
     else
-        fail "ROS Humble underlay sourcing"
+        fail "ROS Humble underlay sourcing failed"
     fi
 else
-    fail "ROS Humble underlay unavailable"
+    fail "ROS Humble setup file is missing or unreadable"
 fi
-
-check "ROS 2 CLI available" command -v ros2
-check "colcon available" command -v colcon
 
 if [[ "${ROS_DISTRO:-}" == "humble" ]]; then
     pass "ROS_DISTRO is humble"
 else
-    fail "ROS_DISTRO is not humble"
+    fail "ROS_DISTRO is ${ROS_DISTRO:-unset} (expected humble)"
 fi
 
 if [[ "${RMW_IMPLEMENTATION:-}" == "rmw_cyclonedds_cpp" ]]; then
     pass "CycloneDDS RMW configured"
 else
-    fail "CycloneDDS RMW is not configured"
+    fail "RMW_IMPLEMENTATION is ${RMW_IMPLEMENTATION:-unset} (expected rmw_cyclonedds_cpp)"
 fi
 
+ROS_CLI_OK=0
 if command -v ros2 >/dev/null 2>&1; then
+    ROS_CLI_OK=1
+    pass "ROS 2 CLI available"
+else
+    fail "ROS 2 CLI unavailable"
+fi
+
+COLCON_OK=0
+if command -v colcon >/dev/null 2>&1; then
+    COLCON_OK=1
+    pass "Colcon available"
+else
+    fail "Colcon unavailable"
+fi
+
+ROS_PACKAGE_LIST=""
+ROS_PACKAGE_LIST_OK=0
+if (( ROS_UNDERLAY_OK && ROS_CLI_OK )); then
+    if ROS_PACKAGE_LIST="$(ros2 pkg list 2>&1)"; then
+        ROS_PACKAGE_LIST_OK=1
+        pass "ROS package discovery from Humble underlay"
+    else
+        fail "ROS package discovery from Humble underlay failed"
+        printf '    %s\n' "$ROS_PACKAGE_LIST" | head -n 5
+    fi
+else
+    skip "ROS package discovery: underlay or ROS CLI unavailable"
+fi
+
+if (( ROS_PACKAGE_LIST_OK )); then
     for pkg in ros2_control ros2_controllers tf2_tools xacro ros_gz_bridge; do
-        if ros2 pkg list 2>/dev/null | grep -Fxq "$pkg"; then
-            pass "ROS package: $pkg"
+        if grep -Fxq -- "$pkg" <<<"$ROS_PACKAGE_LIST"; then
+            pass "Required ROS package: $pkg"
         else
             fail "Required ROS package missing: $pkg"
         fi
     done
 
     for pkg in moveit joint_state_publisher_gui foxglove_bridge plotjuggler; do
-        if ros2 pkg list 2>/dev/null | grep -Fxq "$pkg"; then
+        if grep -Fxq -- "$pkg" <<<"$ROS_PACKAGE_LIST"; then
             pass "Optional ROS package: $pkg"
         else
             warn "Optional ROS package unavailable: $pkg"
         fi
     done
 else
-    skip "ROS package discovery: ROS CLI unavailable"
+    skip "Required and optional ROS package checks: package list unavailable"
 fi
 
-# ------------------------------------------------------------
 section "2. ROS Workspace Integrity"
-
-check "Workspace source directory" test -d "$ROOT/src"
 
 for pkg in robot_control my_arm_description; do
     PKG_DIR="$ROOT/src/$pkg"
+    MANIFEST="$PKG_DIR/package.xml"
+    CMAKE_FILE="$PKG_DIR/CMakeLists.txt"
 
-    if [[ ! -d "$PKG_DIR" ]]; then
+    if [[ -d "$PKG_DIR" ]]; then
+        pass "$pkg source directory exists"
+    else
         fail "Source package directory missing: $pkg"
         continue
     fi
 
-    check "$pkg package.xml exists" test -f "$PKG_DIR/package.xml"
-    check "$pkg CMakeLists.txt exists" test -f "$PKG_DIR/CMakeLists.txt"
-
-    if [[ -f "$PKG_DIR/package.xml" ]]; then
-        if grep -Eq "<name>[[:space:]]*$pkg[[:space:]]*</name>" "$PKG_DIR/package.xml"; then
-            pass "$pkg manifest name matches expected package"
+    if [[ -r "$MANIFEST" ]]; then
+        pass "$pkg package.xml exists and is readable"
+        if grep -Eq "<name>[[:space:]]*${pkg}[[:space:]]*</name>" "$MANIFEST"; then
+            pass "$pkg manifest name matches"
         else
-            fail "$pkg manifest name mismatch"
+            fail "$pkg manifest name does not match its directory"
         fi
+    else
+        fail "$pkg package.xml is missing or unreadable"
     fi
 
-    if [[ -f "$PKG_DIR/CMakeLists.txt" ]]; then
-        if grep -Eq "project[[:space:]]*\\([[:space:]]*$pkg([[:space:])]|$)" "$PKG_DIR/CMakeLists.txt"; then
+    if [[ -r "$CMAKE_FILE" ]]; then
+        pass "$pkg CMakeLists.txt exists and is readable"
+        if grep -Eq "^[[:space:]]*project[[:space:]]*\\([[:space:]]*${pkg}([[:space:]]|\\))" "$CMAKE_FILE"; then
             pass "$pkg CMake project name matches"
         else
-            fail "$pkg CMake project name mismatch"
+            fail "$pkg CMake project name does not match its directory"
         fi
+    else
+        fail "$pkg CMakeLists.txt is missing or unreadable"
     fi
 done
 
-if [[ -f "$ROOT/src/robot_control/src/node.cpp" ]]; then
-    pass "robot_control node source exists"
+for source_file in \
+    src/robot_control/src/node.cpp \
+    src/robot_control/src/robot_node.cpp \
+    src/robot_control/include/robot_control/robot_node.hpp \
+    src/robot_control/test/test_robot_node.cpp; do
+    check "$source_file exists and is readable" test -r "$ROOT/$source_file"
+done
+
+check "Setup documentation exists and is readable" test -r "$ROOT/docs/setup/devcontainer-setup.md"
+check "Teensy workflow documentation exists and is readable" \
+    test -r "$ROOT/docs/board-workflow/teensy-flashing-running-code.md"
+
+if [[ -r "$ROOT/docs/setup/setup-checks.sh" ]]; then
+    check "Verification script syntax" bash -n "$ROOT/docs/setup/setup-checks.sh"
 else
-    fail "robot_control node source missing"
+    fail "Verification script is missing or unreadable"
 fi
 
-IGNORE_FILES="$(find "$ROOT/src" -name COLCON_IGNORE -type f -print 2>/dev/null || true)"
-if [[ -z "$IGNORE_FILES" ]]; then
-    pass "No COLCON_IGNORE files found"
+if command -v shellcheck >/dev/null 2>&1; then
+    check "ShellCheck verification script" shellcheck "$ROOT/docs/setup/setup-checks.sh"
 else
-    warn "COLCON_IGNORE files exist; inspect whether packages are intentionally excluded"
-    printf '%s\n' "$IGNORE_FILES"
+    skip "ShellCheck unavailable"
 fi
 
-if [[ -d "$ROOT/src/my_arm_description/urdf" ]] &&
-   find "$ROOT/src/my_arm_description/urdf" -type f 
-       \( -name '*.urdf' -o -name '*.xacro' \) -print -quit | grep -q .; then
-    pass "URDF/Xacro source files exist"
+if [[ -f "$ROOT/docs/backups/COLCON_IGNORE" ]]; then
+    pass "docs/backups/COLCON_IGNORE excludes backup copies from root discovery"
 else
-    warn "Robot description URDF/Xacro not implemented or not in expected directory"
+    fail "docs/backups/COLCON_IGNORE is missing; backup packages may be discovered"
 fi
 
-# ------------------------------------------------------------
+SOURCE_IGNORE_FILES=""
+if SOURCE_IGNORE_FILES="$(find "$ROOT/src" -type f -name COLCON_IGNORE -print 2>/dev/null)"; then
+    if [[ -n "$SOURCE_IGNORE_FILES" ]]; then
+        printf '  INFO: COLCON_IGNORE files under src:\n'
+        while IFS= read -r ignore_file; do
+            [[ -n "$ignore_file" ]] && printf '    %s\n' "$ignore_file"
+        done <<<"$SOURCE_IGNORE_FILES"
+    else
+        pass "No COLCON_IGNORE files under src"
+    fi
+else
+    warn "Could not inspect COLCON_IGNORE files under src"
+fi
+
+for pkg in robot_control my_arm_description; do
+    for ignore_file in "$ROOT/src/COLCON_IGNORE" "$ROOT/src/$pkg/COLCON_IGNORE"; do
+        if [[ -f "$ignore_file" ]]; then
+            fail "$ignore_file excludes expected package $pkg"
+        fi
+    done
+done
+
+COLCON_DISCOVERY_OK=0
+COLCON_LIST_OUTPUT=""
+if (( COLCON_OK )); then
+    if COLCON_LIST_OUTPUT="$(colcon list --base-paths "$ROOT")"; then
+        COLCON_DISCOVERY_OK=1
+        pass "Colcon discovers workspace packages from the root"
+
+        for pkg in robot_control my_arm_description; do
+            if awk -v wanted="$pkg" '$1 == wanted { found = 1 } END { exit !found }' \
+                <<<"$COLCON_LIST_OUTPUT"; then
+                pass "Colcon discovers expected package: $pkg"
+            else
+                fail "Colcon does not discover expected package: $pkg"
+            fi
+        done
+
+        DUPLICATE_PACKAGES="$(printf '%s\n' "$COLCON_LIST_OUTPUT" |
+            awk 'NF { count[$1]++ } END { for (name in count) if (count[name] > 1) print name }')"
+        if [[ -z "$DUPLICATE_PACKAGES" ]]; then
+            pass "No duplicate package names in root Colcon discovery"
+        else
+            fail "Duplicate package names in root Colcon discovery:"
+            printf '    %s\n' "$DUPLICATE_PACKAGES"
+        fi
+
+        BACKUP_PACKAGES="$(awk '$2 ~ /(^|\/)docs\/backups(\/|$)/ { print $1 " (" $2 ")" }' \
+            <<<"$COLCON_LIST_OUTPUT")"
+        if [[ -z "$BACKUP_PACKAGES" ]]; then
+            pass "Colcon does not discover packages from docs/backups"
+        else
+            fail "Colcon discovered package(s) from docs/backups:"
+            printf '    %s\n' "$BACKUP_PACKAGES"
+        fi
+    else
+        fail "Colcon package discovery failed from the workspace root"
+    fi
+else
+    skip "Colcon package discovery: Colcon unavailable"
+fi
+
+DESCRIPTION_DIR="$ROOT/src/my_arm_description/urdf"
+if [[ -d "$DESCRIPTION_DIR" ]]; then
+    if DESCRIPTION_FILES="$(find "$DESCRIPTION_DIR" -type f \( -name '*.urdf' -o -name '*.xacro' \) -print 2>/dev/null)"; then
+        if [[ -n "$DESCRIPTION_FILES" ]]; then
+            pass "Robot description URDF/Xacro files exist"
+            while IFS= read -r description_file; do
+                [[ -n "$description_file" ]] || continue
+                case "$description_file" in
+                    *.xacro)
+                        if command -v xacro >/dev/null 2>&1; then
+                            if xacro "$description_file" >/dev/null 2>&1; then
+                                pass "Xacro expands: ${description_file#"$ROOT"/}"
+                            else
+                                fail "Xacro expansion failed: ${description_file#"$ROOT"/}"
+                            fi
+                        else
+                            skip "Xacro validation unavailable for ${description_file#"$ROOT"/}"
+                        fi
+                        ;;
+                    *.urdf)
+                        if command -v check_urdf >/dev/null 2>&1; then
+                            if check_urdf "$description_file" >/dev/null 2>&1; then
+                                pass "URDF parses: ${description_file#"$ROOT"/}"
+                            else
+                                fail "URDF parser rejected ${description_file#"$ROOT"/}"
+                            fi
+                        else
+                            skip "check_urdf unavailable for ${description_file#"$ROOT"/}"
+                        fi
+                        ;;
+                esac
+            done <<<"$DESCRIPTION_FILES"
+        else
+            warn "No URDF/Xacro files under src/my_arm_description/urdf"
+        fi
+    else
+        fail "Could not inspect src/my_arm_description/urdf"
+    fi
+else
+    warn "Robot description directory is not implemented: src/my_arm_description/urdf"
+fi
+
 section "3. Python Environment Integrity"
 
 if [[ -x "$SYSTEM_PYTHON" ]]; then
-    check "System Python imports NumPy, OpenCV and cv_bridge" 
-        "$SYSTEM_PYTHON" -c 
-        'import numpy, cv2; from cv_bridge import CvBridge'
+    if SYSTEM_IMPORT_INFO="$("$SYSTEM_PYTHON" - <<'PY' 2>&1
+import cv2
+import numpy
+from cv_bridge import CvBridge
 
-    if "$SYSTEM_PYTHON" -c '
+print("NumPy:", numpy.__version__, numpy.__file__)
+print("OpenCV:", cv2.__version__)
+print("cv_bridge:", CvBridge.__module__)
+PY
+    )"; then
+        pass "System Python imports NumPy, OpenCV and cv_bridge"
+        printf '    %s\n' "$SYSTEM_IMPORT_INFO"
+    else
+        fail "System Python imports NumPy, OpenCV and cv_bridge"
+        printf '    %s\n' "$SYSTEM_IMPORT_INFO" | head -n 5
+    fi
+
+    if SYSTEM_ROUNDTRIP_OUTPUT="$("$SYSTEM_PYTHON" - <<'PY' 2>&1
 import numpy as np
 from cv_bridge import CvBridge
-bridge = CvBridge()
+
 image = np.zeros((16, 16, 3), dtype=np.uint8)
+bridge = CvBridge()
 message = bridge.cv2_to_imgmsg(image, encoding="bgr8")
 result = bridge.imgmsg_to_cv2(message, desired_encoding="bgr8")
-assert result.shape == image.shape
-assert result.dtype == image.dtype
-'; then
-        pass "System Python cv_bridge round-trip"
-    else
-        fail "System Python cv_bridge round-trip"
-    fi
 
-    if "$SYSTEM_PYTHON" -c '
-import sys
-bad = [p for p in sys.path if "/.local/" in p or "/home/" in p]
-if bad:
-    print("Unexpected user paths:", bad)
-    raise SystemExit(1)
-'; then
-        pass "System Python has no unexpected user-site paths"
+assert message.encoding == "bgr8", message.encoding
+assert result.shape == image.shape, (result.shape, image.shape)
+assert result.dtype == image.dtype, (result.dtype, image.dtype)
+assert np.array_equal(result, image), "round-trip pixels differ"
+print(f"shape={result.shape}, dtype={result.dtype}, encoding={message.encoding}")
+PY
+    )"; then
+        pass "System Python cv_bridge image round-trip"
+        printf '    %s\n' "$SYSTEM_ROUNDTRIP_OUTPUT"
     else
-        warn "System Python contains user/home paths; inspect for ROS dependency shadowing"
-    fi
-
-    if "$SYSTEM_PYTHON" -c '
-import numpy, os
-assert os.path.isfile(numpy.__file__)
-assert "/usr/lib/python3/dist-packages/" in numpy.__file__
-'; then
-        pass "System NumPy resolves to the expected system package path"
-    else
-        warn "System NumPy source path differs from expected apt path"
+        fail "System Python cv_bridge image round-trip"
+        printf '    %s\n' "$SYSTEM_ROUNDTRIP_OUTPUT" | head -n 5
     fi
 else
-    fail "System Python missing"
+    fail "System Python missing or not executable: $SYSTEM_PYTHON"
 fi
 
 if [[ -x "$DEV_PYTHON" ]]; then
-    check "Development Python numerical/serial imports" 
-        "$DEV_PYTHON" -c 'import numpy, scipy, pandas, serial'
+    if DEV_PYTHON_INFO="$("$DEV_PYTHON" - "$ROOT/.venv" <<'PY' 2>&1
+from pathlib import Path
+import sys
 
-    "$DEV_PYTHON" -c '
-import sys, numpy, scipy, pandas, serial
-print("  Interpreter:", sys.executable)
-print("  NumPy:", numpy.__version__)
-print("  SciPy:", scipy.__version__)
-print("  pandas:", pandas.__version__)
-print("  pyserial: available")
-' 2>/dev/null
+import numpy
+import pandas
+import scipy
+import serial
 
-    optional_check "Development Black formatter" "$DEV_PYTHON" -m black --version
+expected_prefix = Path(sys.argv[1]).resolve()
+actual_prefix = Path(sys.prefix).resolve()
+if actual_prefix != expected_prefix:
+    raise SystemExit(
+        f"Interpreter prefix {actual_prefix} is outside expected environment {expected_prefix}"
+    )
+
+print("Interpreter:", sys.executable)
+print("Environment:", sys.prefix)
+print("NumPy:", numpy.__version__)
+print("SciPy:", scipy.__version__)
+print("pandas:", pandas.__version__)
+print("pyserial:", serial.__version__)
+PY
+    )"; then
+        pass "Development virtual environment imports expected packages"
+        printf '    %s\n' "$DEV_PYTHON_INFO"
+    else
+        fail "Development virtual environment imports expected packages"
+        printf '    %s\n' "$DEV_PYTHON_INFO" | head -n 5
+    fi
+    optional_check "Development Black formatter available" "$DEV_PYTHON" -m black --version
 else
-    fail "Development virtual environment missing: $DEV_PYTHON"
+    fail "Development virtual environment missing or not executable: $DEV_PYTHON"
 fi
 
-# ------------------------------------------------------------
 section "4. Build, Registration and Automated Tests"
 
-if colcon build --symlink-install; then
-    pass "Workspace build succeeds"
-else
-    fail "Workspace build failed"
-fi
-
-if [[ -f "$ROOT/install/setup.bash" ]]; then
-    # Source in the current shell so ROS package checks see the overlay.
-    # Restore the original nounset state rather than always enabling it.
-    HAD_NOUNSET=0
-    [[ $- == *u* ]] && HAD_NOUNSET=1
-
-    set +u
-    # shellcheck disable=SC1091
-    source "$ROOT/install/setup.bash"
-    OVERLAY_STATUS=$?
-
-    if (( HAD_NOUNSET )); then
-        set -u
+BUILD_OK=0
+if (( ROS_UNDERLAY_OK && COLCON_OK && COLCON_DISCOVERY_OK )); then
+    if colcon build --symlink-install; then
+        BUILD_OK=1
+        pass "Workspace colcon build succeeds"
     else
-        set +u
-    fi
-
-    if (( OVERLAY_STATUS == 0 )); then
-        pass "Workspace setup sourcing succeeds"
-    else
-        fail "Workspace setup sourcing failed"
+        fail "Workspace colcon build failed"
     fi
 else
-    fail "install/setup.bash missing"
+    skip "Workspace build: ROS underlay, Colcon, or package discovery unavailable"
 fi
 
-if command -v ros2 >/dev/null 2>&1; then
-    if ros2 pkg list 2>/dev/null | grep -Fxq robot_control; then
-        pass "robot_control registered"
+OVERLAY_OK=0
+if (( BUILD_OK )); then
+    if [[ -r "$ROOT/install/setup.bash" ]]; then
+        pass "Generated workspace install/setup.bash exists and is readable"
+        if source_setup "$ROOT/install/setup.bash"; then
+            OVERLAY_OK=1
+            pass "Workspace overlay sources after the Humble underlay"
+        else
+            fail "Workspace overlay sourcing failed"
+        fi
     else
-        fail "robot_control not registered"
+        fail "Build succeeded but install/setup.bash is missing or unreadable"
     fi
+else
+    skip "Workspace overlay sourcing: current build did not succeed"
+fi
 
-    if ros2 pkg list 2>/dev/null | grep -Fxq my_arm_description; then
-        pass "my_arm_description registered"
-    else
-        fail "my_arm_description not registered"
-    fi
+if (( OVERLAY_OK && ROS_CLI_OK )); then
+    if OVERLAY_PACKAGE_LIST="$(ros2 pkg list 2>&1)"; then
+        for pkg in robot_control my_arm_description; do
+            if grep -Fxq -- "$pkg" <<<"$OVERLAY_PACKAGE_LIST"; then
+                pass "$pkg registered in the freshly sourced workspace overlay"
+            else
+                fail "$pkg not registered in the freshly sourced workspace overlay"
+            fi
+        done
 
-    if ros2 pkg executables robot_control 2>/dev/null |
-       grep -Eq '(^|[[:space:]])robot_node$'; then
-        pass "robot_node registered"
+        if EXECUTABLE_LIST="$(ros2 pkg executables robot_control 2>&1)"; then
+            if awk '$1 == "robot_control" && $2 == "robot_node" { found = 1 } END { exit !found }' \
+                <<<"$EXECUTABLE_LIST"; then
+                pass "robot_control/robot_node executable registered"
+            else
+                fail "robot_control/robot_node executable not registered"
+                printf '    %s\n' "$EXECUTABLE_LIST" | head -n 5
+            fi
+        else
+            fail "Could not query robot_control executable registration"
+            printf '    %s\n' "$EXECUTABLE_LIST" | head -n 5
+        fi
     else
-        fail "robot_node not registered"
+        fail "ROS package discovery failed after sourcing the workspace overlay"
+        printf '    %s\n' "$OVERLAY_PACKAGE_LIST" | head -n 5
     fi
+else
+    skip "Overlay package/executable registration: build or ROS CLI unavailable"
 fi
 
 if command -v rosdep >/dev/null 2>&1; then
-    if rosdep check --from-paths "$ROOT/src" --ignore-src -y; then
-        pass "rosdep dependency check"
+    if (( ROS_UNDERLAY_OK )); then
+        if rosdep check --from-paths "$ROOT/src" --ignore-src --rosdistro humble; then
+            pass "rosdep dependency check"
+        else
+            fail "rosdep dependency check"
+        fi
     else
-        fail "rosdep dependency check"
+        skip "rosdep dependency check: ROS underlay unavailable"
     fi
 else
     warn "rosdep unavailable; dependency validation not performed"
 fi
 
-# Run package tests only after a successful build.
-if command -v colcon >/dev/null 2>&1 && [[ -d "$ROOT/build" ]]; then
+if (( BUILD_OK && COLCON_OK )); then
+    TEST_COMMAND_OK=0
     if colcon test --return-code-on-test-failure; then
-        pass "colcon test command"
+        TEST_COMMAND_OK=1
+        pass "colcon test command completed successfully"
     else
-        fail "colcon test reported an execution or test failure"
+        fail "colcon test command reported an execution or test failure"
     fi
 
-    if colcon test-result --all --verbose; then
-        pass "colcon test-result report generated"
+    TEST_REPORT_FILE="$(mktemp)"
+    if colcon test-result --all --verbose >"$TEST_REPORT_FILE" 2>&1; then
+        TEST_RESULT_STATUS=0
     else
-        fail "colcon test-result reported failures or could not run"
+        TEST_RESULT_STATUS=$?
+    fi
+    cat "$TEST_REPORT_FILE"
+    TEST_SUMMARY="$(grep -E '^Summary:' "$TEST_REPORT_FILE" | tail -n 1 || true)"
+    rm -f -- "$TEST_REPORT_FILE"
+
+    if (( TEST_RESULT_STATUS != 0 )); then
+        fail "colcon test-result returned status $TEST_RESULT_STATUS"
+    elif [[ "$TEST_SUMMARY" =~ ^Summary:\ ([0-9]+)\ tests?,\ ([0-9]+)\ errors?,\ ([0-9]+)\ failures?,\ ([0-9]+)\ skipped? ]]; then
+        TEST_COUNT="${BASH_REMATCH[1]}"
+        TEST_ERRORS="${BASH_REMATCH[2]}"
+        TEST_FAILURES="${BASH_REMATCH[3]}"
+        if (( TEST_COUNT > 0 && TEST_ERRORS == 0 && TEST_FAILURES == 0 )); then
+            pass "Current Colcon test results: $TEST_COUNT tests, no errors or failures"
+        else
+            fail "Colcon test results are not a non-empty zero-failure suite"
+        fi
+    else
+        fail "Could not verify a Colcon test-result summary"
+    fi
+
+    if (( ! TEST_COMMAND_OK )); then
+        printf '  INFO: A successful result summary does not override the failed test command.\n'
     fi
 else
-    skip "Automated ROS tests: colcon/build prerequisites unavailable"
+    skip "Automated tests and test-result summary: current build did not succeed"
 fi
 
-# ------------------------------------------------------------
-section "5. Hardware Access"
-
-check "USB bus directory exists" test -d /dev/bus/usb
-optional_check "usbip utility installed" command -v usbip
-optional_check "Teensy loader installed" command -v teensy_loader_cli
-optional_check "Serial monitor tio installed" command -v tio
-optional_check "Git LFS installed" command -v git-lfs
+section "5. Hardware and Serial Access"
 
 if [[ -d /dev/bus/usb ]]; then
-    if find /dev/bus/usb -type c -print -quit 2>/dev/null | grep -q .; then
-        pass "USB character devices visible"
+    pass "USB bus directory is visible"
+    if USB_DEVICE="$(find /dev/bus/usb -type c -print -quit 2>/dev/null)"; then
+        if [[ -n "$USB_DEVICE" ]]; then
+            pass "USB character devices are visible"
+        else
+            skip "No USB character devices are currently visible"
+        fi
     else
-        warn "No USB character devices visible; confirm passthrough and connected hardware"
+        warn "Could not enumerate USB character devices"
     fi
+else
+    warn "USB bus directory is unavailable; USB passthrough is not visible"
+fi
+
+optional_check "usbip utility available" command -v usbip
+optional_check "Teensy loader available" command -v teensy_loader_cli
+optional_check "Serial monitor tio available" command -v tio
+
+if command -v git-lfs >/dev/null 2>&1; then
+    pass "Git LFS utility installed"
+    if LFS_FILES="$(git -C "$ROOT" lfs ls-files 2>&1)"; then
+        if [[ -n "$LFS_FILES" ]]; then
+            if git -C "$ROOT" lfs env >/dev/null 2>&1; then
+                pass "Git LFS configuration is usable for tracked LFS files"
+            else
+                warn "Git LFS files are tracked but Git LFS configuration is unavailable"
+            fi
+        else
+            skip "No Git LFS-tracked files in this repository"
+        fi
+    else
+        warn "Could not inspect Git LFS-tracked files"
+        printf '    %s\n' "$LFS_FILES" | head -n 3
+    fi
+else
+    warn "Git LFS utility unavailable"
 fi
 
 SERIAL_FOUND=0
-for dev in /dev/ttyACM* /dev/ttyUSB*; do
-    [[ -e "$dev" ]] || continue
+for device in /dev/ttyACM* /dev/ttyUSB*; do
+    [[ -e "$device" ]] || continue
     SERIAL_FOUND=1
-    if [[ -r "$dev" && -w "$dev" ]]; then
-        pass "Serial device accessible: $dev"
+    if [[ -r "$device" && -w "$device" ]]; then
+        pass "Serial device has read/write access: $device"
     else
-        warn "Serial device exists but current user lacks read/write access: $dev"
+        warn "Serial device exists without read/write access: $device"
     fi
 done
 
@@ -370,36 +633,42 @@ if (( SERIAL_FOUND == 0 )); then
     skip "No /dev/ttyACM* or /dev/ttyUSB* device connected"
 fi
 
-if id -nG 2>/dev/null | tr ' ' '\n' | grep -Fxq dialout; then
-    pass "Current user belongs to dialout group"
+if command -v id >/dev/null 2>&1; then
+    if id -nG 2>/dev/null | tr ' ' '\n' | grep -Fxq dialout; then
+        pass "Current user belongs to dialout group"
+    else
+        warn "Current user is not in dialout group; serial access may depend on device permissions"
+    fi
 else
-    warn "Current user is not in dialout group; device access may depend on udev permissions"
+    warn "Cannot check dialout membership because id is unavailable"
 fi
 
-# ------------------------------------------------------------
 section "6. Simulation, GUI and Graphics"
 
 if command -v ign >/dev/null 2>&1; then
-    pass "Gazebo Ignition executable available"
-    ign gazebo --version 2>/dev/null || true
+    if GAZEBO_VERSION="$(ign gazebo --version 2>&1)"; then
+        pass "Gazebo Ignition executable and version query"
+        printf '    %s\n' "$GAZEBO_VERSION" | head -n 2
+    else
+        warn "ign is installed but its Gazebo version query failed"
+        printf '    %s\n' "$GAZEBO_VERSION" | head -n 3
+    fi
 elif command -v gz >/dev/null 2>&1; then
-    pass "Gazebo executable available"
-    gz sim --version 2>/dev/null || true
+    if GAZEBO_VERSION="$(gz sim --version 2>&1)"; then
+        pass "Gazebo executable and version query"
+        printf '    %s\n' "$GAZEBO_VERSION" | head -n 2
+    else
+        warn "gz is installed but its Gazebo version query failed"
+        printf '    %s\n' "$GAZEBO_VERSION" | head -n 3
+    fi
 else
-    warn "Gazebo executable unavailable"
-fi
-
-if command -v ros2 >/dev/null 2>&1 &&
-   ros2 pkg list 2>/dev/null | grep -Fxq ros_gz_bridge; then
-    pass "ros_gz_bridge registered"
-else
-    warn "ros_gz_bridge unavailable"
+    warn "Gazebo executable unavailable (ign and gz not found)"
 fi
 
 if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
     pass "Display environment configured"
 else
-    skip "No GUI display configured; headless session is allowed"
+    skip "No GUI display configured; headless sessions are allowed"
 fi
 
 if [[ -d /mnt/wslg ]]; then
@@ -416,36 +685,52 @@ fi
 
 if command -v glxinfo >/dev/null 2>&1; then
     pass "OpenGL diagnostic tool installed"
-    RENDERER="$(glxinfo -B 2>/dev/null |
-        sed -n 's/^[[:space:]]*OpenGL renderer string: //p' | head -n 1)"
-    echo "  Renderer: ${RENDERER:-unavailable}"
-
-    if [[ -z "$RENDERER" ]]; then
-        warn "OpenGL renderer could not be queried"
-    elif printf '%s' "$RENDERER" | grep -qiE 'llvmpipe|softpipe|software rasterizer'; then
-        warn "Software rendering detected; hardware acceleration not verified"
+    if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+        if GLX_OUTPUT="$(glxinfo -B 2>&1)"; then
+            RENDERER="$(sed -n 's/^[[:space:]]*OpenGL renderer string: //p' <<<"$GLX_OUTPUT" | head -n 1)"
+            if [[ -z "$RENDERER" ]]; then
+                warn "glxinfo ran but did not report an OpenGL renderer"
+                printf '    %s\n' "$GLX_OUTPUT" | head -n 3
+            else
+                printf '  INFO: OpenGL renderer: %s\n' "$RENDERER"
+                if grep -qiE 'llvmpipe|softpipe|software rasterizer' <<<"$RENDERER"; then
+                    warn "Software rendering detected; GPU acceleration is not verified"
+                else
+                    pass "OpenGL renderer reported; hardware acceleration is not proven"
+                fi
+            fi
+        else
+            warn "glxinfo is installed but the renderer query failed"
+            printf '    %s\n' "$GLX_OUTPUT" | head -n 3
+        fi
     else
-        pass "OpenGL renderer reports a non-obvious software renderer"
+        skip "OpenGL renderer query: no display configured"
     fi
 else
-    skip "glxinfo unavailable; graphics acceleration not checked"
+    skip "glxinfo unavailable; OpenGL renderer was not checked"
 fi
 
 optional_check "NVIDIA utility available" command -v nvidia-smi
-optional_check "ccache installed" command -v ccache
+optional_check "ccache utility available" command -v ccache
 
-# ------------------------------------------------------------
-section "Summary"
+section "7. Git and Setup Tooling"
 
-printf '  PASSED:   %d\n' "$PASS"
-printf '  FAILED:   %d\n' "$FAIL"
-printf '  WARNINGS: %d\n' "$WARN"
-printf '  SKIPPED:  %d\n' "$SKIP"
-
-if (( FAIL > 0 )); then
-    echo "RESULT: FAIL"
-    exit 1
+if git -C "$ROOT" rev-parse --show-toplevel >/dev/null 2>&1; then
+    pass "Workspace is a Git repository"
+    if GIT_STATUS="$(git -C "$ROOT" status --short 2>&1)"; then
+        if [[ -n "$GIT_STATUS" ]]; then
+            printf '  INFO: Git worktree has changes:\n'
+            printf '    %s\n' "$GIT_STATUS"
+        else
+            pass "Git worktree is clean"
+        fi
+    else
+        warn "Could not report Git worktree status"
+        printf '    %s\n' "$GIT_STATUS" | head -n 3
+    fi
 else
-    echo "RESULT: PASS (review warnings and skipped checks)"
-    exit 0
+    fail "Workspace Git metadata unavailable"
 fi
+
+summary
+exit $?
