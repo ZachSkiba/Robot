@@ -1,7 +1,12 @@
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <rclcpp/rclcpp.hpp>
 
-class RobotNodeTest : public ::testing::Test {
+#include "robot_control/robot_node.hpp"
+
+class RobotNodeTest : public ::testing::Test
+{
 protected:
   static void SetUpTestSuite()
   {
@@ -27,6 +32,6 @@ TEST_F(RobotNodeTest, RosContextInitializes)
 
 TEST_F(RobotNodeTest, NodeHasExpectedName)
 {
-  auto node = std::make_shared<rclcpp::Node>("robot_node");
+  auto node = std::make_shared<robot_control::RobotNode>();
   EXPECT_STREQ(node->get_name(), "robot_node");
 }
