@@ -279,10 +279,12 @@ else
     skip "ShellCheck unavailable"
 fi
 
-if [[ -f "$ROOT/docs/backups/COLCON_IGNORE" ]]; then
-    pass "docs/backups/COLCON_IGNORE excludes backup copies from root discovery"
+if [[ ! -d "$ROOT/docs/backups" ]]; then
+    pass "Backup directory removed; no backup packages to discover"
+elif [[ -f "$ROOT/docs/backups/COLCON_IGNORE" ]]; then
+    pass "Backup directory excluded from Colcon discovery"
 else
-    fail "docs/backups/COLCON_IGNORE is missing; backup packages may be discovered"
+    fail "docs/backups exists without COLCON_IGNORE"
 fi
 
 SOURCE_IGNORE_FILES=""
