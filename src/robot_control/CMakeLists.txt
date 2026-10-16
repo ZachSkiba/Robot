@@ -12,4 +12,14 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(robot_node_test
+    test/test_robot_node.cpp
+  )
+
+  ament_target_dependencies(robot_node_test rclcpp)
+endif()
+
 ament_package()
